@@ -14,15 +14,7 @@
 function fcnFindDuplicateData(ss, ConfigData, shtRspn, ResponseData, RspnRow, RspnMaxRows, shtTest) {
 
   // Columns Values and Parameters
-  var ColMatchID = ConfigData[14][0];
-  var ColPrcsd = ConfigData[15][0];
-  var ColDataConflict = ConfigData[16][0];
-  var ColStatus = ConfigData[17][0];
-  var ColErrorMsg = ConfigData[18][0];
-  var ColMatchIDLastVal = ConfigData[19][0];
-  var RspnStartRow = ConfigData[20][0];
-  var RspnDataInputs = ConfigData[21][0]; // from Time Stamp to Data Processed
-  var ColNextEmptyRow = ConfigData[23][0];
+  var RspnDataInputs = ConfigData[28][0]; // from Time Stamp to Data Processed
   
   // Response Data
   var RspnWeek = ResponseData[0][3];
@@ -94,14 +86,8 @@ function fcnFindMatchingData(ss, ConfigData, shtRspn, ResponseData, RspnRow, Rsp
   var OptDualSubmission = ConfigData[0][0]; // If Dual Submission is disabled, look for duplicate instead
   
   // Columns Values and Parameters
-  var ColMatchID = ConfigData[8][0];
-  var ColPrcsd = ConfigData[9][0];
-  var ColDataConflict = ConfigData[10][0];
-  var ColErrorMsg = ConfigData[11][0];
-  var ColPrcsdLastVal = ConfigData[12][0];
-  var ColMatchIDLastVal = ConfigData[13][0];
-  var RspnStartRow = ConfigData[14][0];
-  var RspnDataInputs = ConfigData[15][0]; // from Time Stamp to Data Processed
+  var ColDataConflict = ConfigData[22][0];
+  var RspnDataInputs = ConfigData[28][0]; // from Time Stamp to Data Processed
   
   var RspnPlyrSubmit = ResponseData[0][1]; // Player Submitting
   var RspnWeek = ResponseData[0][3];
@@ -121,7 +107,7 @@ function fcnFindMatchingData(ss, ConfigData, shtRspn, ResponseData, RspnRow, Rsp
   var DataConflict = -1;
   
   // Loop to find if the other player posted the game results
-      for (var EntryRow = RspnStartRow; EntryRow <= RspnMaxRows; EntryRow++){
+      for (var EntryRow = 2; EntryRow <= RspnMaxRows; EntryRow++){
         
         // Gets Entry Data to analyze
         EntryData = shtRspn.getRange(EntryRow, 1, 1, RspnDataInputs).getValues();
@@ -190,6 +176,7 @@ function fcnPostMatchResultsWG(ss, ConfigData, shtRspn, ResponseData, MatchingRs
   var OptDualSubmission = ConfigData[0][0]; // If Dual Submission is disabled, look for duplicate instead
   var OptPostResult = ConfigData[1][0];
   var OptPlyrMatchValidation = ConfigData[2][0];
+  var OptTCGBooster = ConfigData[3][0];
   var OptWargame = ConfigData[4][0];
   
   // Cumulative Results sheet variables
@@ -350,10 +337,12 @@ function fcnPostMatchResultsWG(ss, ConfigData, shtRspn, ResponseData, MatchingRs
 function fcnPostResultWeekWG(ss, ConfigData, ResultData, shtTest) {
 
   // Code Execution Options
+  var OptTCGBooster = ConfigData[3][0];
   var OptWargame = ConfigData[4][0];
-  var OptWeekEscalation = ConfigData[12][0];
   var cfgWeekRound = ConfigData[10][0];
-  var ColPowerLevelBonus = ConfigData[22][0];
+  var OptWeekEscalation = ConfigData[12][0];
+  var ColEscalationBonus = ConfigData[29][0];
+  
   var ColPlyr = 2;
   var ColWin = 5;
   var ColLos = 6;
@@ -462,14 +451,14 @@ function fcnPostResultWeekWG(ss, ConfigData, ResultData, shtTest) {
   // If Game Type is Wargame
   if (WeekMatchTie == 0 && OptWeekEscalation == 'Enabled'){
     // Get Loser Amount of Power Level Bonus and Increase by value from Config file
-    LosrPowerLevel = shtWeekRslt.getRange(WeekLosrRow,ColPowerLevelBonus).getValue() + cfgPowerLevel;
-    shtWeekRslt.getRange(WeekLosrRow,ColPowerLevelBonus).setValue(LosrPowerLevel);
+    LosrPowerLevel = shtWeekRslt.getRange(WeekLosrRow,ColEscalationBonus).getValue() + cfgPowerLevel;
+    shtWeekRslt.getRange(WeekLosrRow,ColEscalationBonus).setValue(LosrPowerLevel);
   }
   
   // Populate Data Posted for Loser
   DataPostedLosr[0]= 1;
   DataPostedLosr[1]= WeekLosrRow;
-  DataPostedLosr[2]= ColPowerLevelBonus;
+  DataPostedLosr[2]= ColEscalationBonus;
                  
   return DataPostedLosr;
 }
@@ -507,7 +496,7 @@ function fcnUpdateStandings(){
    
   // Get Number of players
   var NbPlayers = shtConfig.getRange(11,2).getValue();
-  var RankMatchLimit = shtConfig.getRange(29,9).getValue();
+  var RankMatchLimit = shtConfig.getRange(11,9).getValue();
   var InLimit = 0;
   var OutLimit = 0;
   var PlyrInLimArray = subCreateArray(NbPlayers,6);

@@ -544,17 +544,18 @@ function fcnSetupResponseSht(){
   // Open Responses Sheets
   var shtOldRespEN = ss.getSheetByName('Responses EN');
   var shtOldRespFR = ss.getSheetByName('Responses FR');
-  var shtNewRespEN = ss.getSheetByName('Form Responses EN');
-  var shtNewRespFR = ss.getSheetByName('Form Responses FR');
+  var shtNewRespEN = ss.getSheetByName('New Responses EN');
+  var shtNewRespFR = ss.getSheetByName('New Responses FR');
     
   var OldRespMaxCol = shtOldRespEN.getMaxColumns();
   var NewRespMaxRow = shtNewRespEN.getMaxRows();
+  var DataLastCol = 7; // Response Data Last Column 
   var ColWidth;
   
   // Copy Header from Old to New sheet - Loop to Copy Value and Format from cell to cell, copy formula (or set) in last cell
   for (var col = 1; col <= OldRespMaxCol; col++){
     // Insert Column if it doesn't exist (col >=24)
-    if (col >= 8 && col < OldRespMaxCol){
+    if (col >= DataLastCol && col < OldRespMaxCol){
       shtNewRespEN.insertColumnAfter(col);
       shtNewRespFR.insertColumnAfter(col);
     }
@@ -565,16 +566,12 @@ function fcnSetupResponseSht(){
     shtNewRespEN.setColumnWidth(col,ColWidth);
     shtNewRespFR.setColumnWidth(col,ColWidth);
   }
-  // Hides Columns 9, 11-14
-  shtNewRespEN.hideColumns(9);
-  shtNewRespEN.hideColumns(11,4);
-  shtNewRespFR.hideColumns(9);
-  shtNewRespFR.hideColumns(11,4);
+  // Hides Columns 25, 27-30
+//  shtNewRespEN.hideColumns(25);
+//  shtNewRespEN.hideColumns(27,4);
+//  shtNewRespFR.hideColumns(25);
+//  shtNewRespFR.hideColumns(27,4);
   
-  // Deletes all Rows but 1-2
-  shtNewRespEN.deleteRows(3, NewRespMaxRow - 2);
-  shtNewRespFR.deleteRows(3, NewRespMaxRow - 2);
-    
   // Delete Old Sheets
   ss.deleteSheet(shtOldRespEN);
   ss.deleteSheet(shtOldRespFR);

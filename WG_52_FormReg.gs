@@ -1,18 +1,27 @@
 // **********************************************
-// function fcnCreateRegForm()
+// function fcnCreateRegForm_WG_S()
 //
 // This function creates the Registration Form 
 // based on the parameters in the Config File
 //
 // **********************************************
 
-function fcnCreateRegForm() {
+function fcnCreateRegForm_WG_S() {
+  
+  Logger.log("Routine: fcnCreateRegForm_WG_S");
   
   var ss = SpreadsheetApp.getActive();
   var shtConfig = ss.getSheetByName('Config');
+  var ConfigData = shtConfig.getRange(56,2,32,1).getValues();
+  var OptGenerateResp = ConfigData[8][0];
+  var cfgTeamFormat = ConfigData[5][0];
+  var cfgTeamMembers = ConfigData[13][0];
+  
   var shtPlayers = ss.getSheetByName('Players');
   var shtIDs = shtConfig.getRange(17,7,20,1).getValues();
-  var ssID = shtIDs[0][0]; 
+  var ssID = shtIDs[0][0];
+  var shtLog = SpreadsheetApp.openById(shtIDs[14][0]).getSheetByName('Log');
+  
   var ssSheets;
   var NbSheets;
   var SheetName;
@@ -43,29 +52,38 @@ function fcnCreateRegForm() {
   
   // Response Columns from Configuration File
   // [x][0] = Response Columns
-  var colRegRespValues = shtConfig.getRange(56,6,12,2).getValues();
+  var colRegRespValues = shtConfig.getRange(56,6,12,3).getValues();
   
   // Response Columns
   var colRespEmail = colRegRespValues[0][1];
   var colRespName = colRegRespValues[1][1];
-  var colRespFirstName = colRegRespValues[2][1];
-  var colRespLastName = colRegRespValues[3][1];
-  var colRespPhone = colRegRespValues[4][1];
-  var colRespLanguage = colRegRespValues[5][1];
-  var colRespTeamName = colRegRespValues[6][1];
-  var colRespDCI = colRegRespValues[7][1];
+  var colRespPhone = colRegRespValues[2][1];
+  var colRespLanguage = colRegRespValues[3][1];
+  var colRespTeamName = colRegRespValues[4][1];
+  var colRespTeamMembers = colRegRespValues[5][1];
+  var colRespArmyList = colRegRespValues[6][1];
   
-  var NbDetachMax   = shtConfig.getRange( 8,11).getValue();
-  var NbUnitDetach1 = shtConfig.getRange( 9,11).getValue();
-  var NbUnitDetach2 = shtConfig.getRange(10,11).getValue();
-  var NbUnitDetach3 = shtConfig.getRange(11,11).getValue();
+  var ArmyComposition = shtConfig.getRange(7,11,9,1).getValues();
+  var NbFaction     = ArmyComposition[1][0]
+  var NbDetachMax   = ArmyComposition[2][0];
+  var NbUnitDetach1 = ArmyComposition[3][0];
+  var NbUnitDetach2 = ArmyComposition[4][0];
+  var NbUnitDetach3 = ArmyComposition[5][0];
+  
   var NbUnitMax;
+  var UnitModelMin  = 1;
+  var UnitModelMax  = ArmyComposition[6][0];
+  var UnitRatingMin = 1;
+  var UnitRatingMax = ArmyComposition[7][0];
+  var ArmyRating = shtConfig.getRange(2,11).getValue(); 
+  var ArmyRatingText;
+  Logger.log('Army Rating: %s',ArmyRating);
   
-  var Detachments = shtConfig.getRange(12,10,13,2).getValues();
+  var Detachments = shtConfig.getRange(2,12,13,2).getValues();
   var DetachIncr = 0;
   var DetachTypeArray = new Array(12);
   
-  var UnitRoles = shtConfig.getRange(25,10,10,2).getValues();
+  var UnitRoles = shtConfig.getRange(2,15,10,2).getValues();
   var UnitIncr = 0;
   var UnitRoleArray = new Array(9);
   
@@ -77,12 +95,11 @@ function fcnCreateRegForm() {
   var ChDetachFR;
   var ChEndFR;
   
-  var UnitPage = new Array(325);
+  var UnitPageEN = new Array(325);
+  var UnitPageFR = new Array(325);
   var UnitIndex;
-  var UnitTitleEN;
-  var UnitTitleFR;
-  var UnitRoleEN;
-  var UnitRoleFR;
+  var UnitTitle;
+  var UnitRole;
   var TestCol = 1;
   
   // Gets the Registration ID from the Config File
@@ -167,32 +184,55 @@ function fcnCreateRegForm() {
           case 'Team Name': {
             Logger.log('%s - %s',QuestionOrder,colRegRespValues[i][0]); 
             // TEAM NAME
+            formEN.addPageBreakItem().setTitle("Team");
             formEN.addTextItem()
             .setTitle("Team Name")
             .setRequired(true);
             
+            formFR.addPageBreakItem().setTitle("Équipe");
             formFR.addTextItem()
             .setTitle("Nom d'équipe")
             .setRequired(true);
             break;
           }
+          case 'Team Members': {
+            Logger.log('%s - %s',QuestionOrder,colRegRespValues[i][0]); 
+            // TEAM MEMBERS
+            for(var member = 1; member <= cfgTeamMembers; member++){
+              formEN.addTextItem()
+              .setTitle("Teammate " + member)
+              .setRequired(true);
+              
+              formFR.addTextItem()
+              .setTitle("Équipier " + member)
+              .setRequired(true);
+            }
+            break;
+          }          
           case 'Army List': {
             Logger.log('%s - %s',QuestionOrder,colRegRespValues[i][0]); 
+            // English
             // Army List
             formEN.addPageBreakItem()
             .setTitle("Army List");
-//            .setDescription("Please fill up the following to submit your Army List");
-
-            // Faction Keyword 1
-            formEN.addTextItem()
-            .setTitle("Faction Keyword 1")
-            .setRequired(true);  
-            
-            // Faction Keyword 2
-            formEN.addTextItem()
-            .setTitle("Faction Keyword 2")
-            .setRequired(true);
-            
+            // Faction
+            if (NbFaction == 1){
+              // Faction Keyword 1
+              formEN.addTextItem()
+              .setTitle("Faction")
+              .setRequired(true);  
+            }
+            if (NbFaction == 2){
+              // Faction Keyword 1
+              formEN.addTextItem()
+              .setTitle("Faction 1")
+              .setRequired(true);  
+              
+              // Faction Keyword 2
+              formEN.addTextItem()
+              .setTitle("Faction 2")
+              .setRequired(true);
+            }
             // Warlord name
             formEN.addTextItem()
             .setTitle("Warlord Name")
@@ -202,6 +242,39 @@ function fcnCreateRegForm() {
             formEN.addTextItem()
             .setTitle("Army Name")
             .setRequired(false); 
+            
+            // French
+            // Army List
+            formFR.addPageBreakItem()
+            .setTitle("Liste d'Armée");
+            // Faction
+            if (NbFaction == 1){
+              // Faction Keyword 1
+              formFR.addTextItem()
+              .setTitle("Faction")
+              .setRequired(true);  
+            }
+            if (NbFaction == 2){
+              // Faction Keyword 1
+              formFR.addTextItem()
+              .setTitle("Faction 1")
+              .setRequired(true);  
+              
+              // Faction Keyword 2
+              formFR.addTextItem()
+              .setTitle("Faction 2")
+              .setRequired(true);
+            }
+            
+            // Warlord name
+            formFR.addTextItem()
+            .setTitle("Nom du Seigneur de Guerre")
+            .setRequired(true); 
+            
+            // Army name
+            formFR.addTextItem()
+            .setTitle("Nom d'Armée")
+            .setRequired(false);
             
             // CREATE DETACHMENT CHOICES
             // Creates the List of Detachments Allowed for League
@@ -222,6 +295,29 @@ function fcnCreateRegForm() {
               }
             }
             UnitRoleArray.length = UnitIncr;
+            
+            // CREATE UNIT VALIDATIONS
+            // Number of Models in Unit
+            var ModelValidationEN = FormApp.createTextValidation()
+            .setHelpText("Enter a number between " + UnitModelMin + " and " + UnitModelMax)
+            .requireNumberBetween(UnitModelMin, UnitModelMax)
+            .build();
+
+            var ModelValidationFR = FormApp.createTextValidation()
+            .setHelpText("Entrez un nombre entre " + UnitModelMin + " et " + UnitModelMax)
+            .requireNumberBetween(UnitModelMin, UnitModelMax)
+            .build();
+            
+            // Unit Rating (Points, Power Level etc...)
+            var RatingValidationEN = FormApp.createTextValidation()
+            .setHelpText("Enter a number between " + UnitRatingMin + " and " + UnitRatingMax)
+            .requireNumberBetween(UnitRatingMin, UnitRatingMax)
+            .build();
+            
+            var RatingValidationFR = FormApp.createTextValidation()
+            .setHelpText("Entrez un nombre entre " + UnitRatingMin + " et " + UnitRatingMax)
+            .requireNumberBetween(UnitRatingMin, UnitRatingMax)
+            .build();            
             
             // DETACHMENT 1
             // ENGLISH
@@ -313,77 +409,162 @@ function fcnCreateRegForm() {
               Logger.log('Current Detachment:%s',DetachNb);
               Logger.log('Units:%s',NbUnitMax);
               
-              // Number of Models in Unit
-              var ModelValidation = FormApp.createTextValidation()
-              .setHelpText("Enter a number between 1 and 100.")
-              .requireNumberBetween(1, 100)
-              .build();
-              
-              // Power Level of Unit
-              var LevelValidation = FormApp.createTextValidation()
-              .setHelpText("Enter a number between 1 and 100.")
-              .requireNumberBetween(1, 100)
-              .build();
-              
               for(var UnitNb = 1; UnitNb <= NbUnitMax; UnitNb++){
                 
-                // Creates the Unit Section
-                // Set Index
+                // UNIT SECTION
+                // Set Index (for Form routing)
                 UnitIndex = (DetachNb*100) + UnitNb;
+                
+                // ENGLISH
                 // Title
-                UnitTitleEN = "Detachment " + DetachNb + " - Unit " + UnitNb;
+                UnitTitle = "Detachment " + DetachNb + " - Unit " + UnitNb;
                 // Set Unit Page
-                UnitPage[UnitIndex] = formEN.addPageBreakItem().setTitle(UnitTitleEN);
+                UnitPageEN[UnitIndex] = formEN.addPageBreakItem().setTitle(UnitTitle);
+                
+                // FRENCH
+                // Title
+                UnitTitle = "Détachement " + DetachNb + " - Unité " + UnitNb;
+                // Set Unit Page
+                UnitPageFR[UnitIndex] = formFR.addPageBreakItem().setTitle(UnitTitle);
                 Logger.log(UnitIndex);
-                // Unit Title
+                
+                
+                // UNIT PROFILE
+                // ENGLISH
                 formEN.addTextItem()
-                .setTitle("Detachment " + DetachNb + " - Unit " + UnitNb + " - Unit Title")
+                .setTitle("Detachment " + DetachNb + " - Unit " + UnitNb + " - Profile")
                 .setRequired(true);
                 
-                // Unit Role
-                UnitRoleEN = formEN.addListItem();
-                UnitRoleEN.setTitle("Detachment " + DetachNb + " - Unit " + UnitNb + " - Unit Role")
-                UnitRoleEN.setRequired(true)
-                UnitRoleEN.setChoiceValues(UnitRoleArray);
+                // FRENCH
+                formFR.addTextItem()
+                .setTitle("Détachement " + DetachNb + " - Unité " + UnitNb + " - Profil")
+                .setRequired(true);
                 
+                
+                // UNIT ROLE
+                // ENGLISH
+                formEN.addListItem()
+                .setTitle("Detachment " + DetachNb + " - Unit " + UnitNb + " - Unit Role")
+                .setRequired(true)
+                .setChoiceValues(UnitRoleArray);
+                
+                // FRENCH
+                formFR.addListItem()
+                .setTitle("Détachement " + DetachNb + " - Unité " + UnitNb + " - Rôle d'Unité")
+                .setRequired(true)
+                .setChoiceValues(UnitRoleArray);
+                
+                
+                // UNIT COMPOSITION
+                // ENGLISH
                 formEN.addTextItem()
                 .setTitle("Detachment " + DetachNb + " - Unit " + UnitNb + " - Number of Models in Unit")
                 .setRequired(true)
-                .setValidation(ModelValidation);
-                
-                formEN.addTextItem()
-                .setTitle("Detachment " + DetachNb + " - Unit " + UnitNb + " - Unit Power Level")
+                .setValidation(ModelValidationEN);
+
+                // FRENCH
+                formFR.addTextItem()
+                .setTitle("Détachement " + DetachNb + " - Unité " + UnitNb + " - Nombre de modèles dans l'unité")
                 .setRequired(true)
-                .setValidation(LevelValidation);
+                .setValidation(ModelValidationFR);
                 
-                // Add Unit or Detachment 
+                
+                // POWER LEVEL / POINTS
+                // ENGLISH
+                if(ArmyRating == 'Power Level') ArmyRatingText = " - Power Level";
+                if(ArmyRating == 'Points')      ArmyRatingText = " - Total Points";
+                formEN.addTextItem()
+                .setTitle("Detachment " + DetachNb + " - Unit " + UnitNb + ArmyRatingText)
+                .setRequired(true)
+                .setValidation(RatingValidationEN);
+                
+                // FRENCH
+                if(ArmyRating == 'Power Level') ArmyRatingText = " - Niveau Puissance";
+                if(ArmyRating == 'Points')      ArmyRatingText = " - Total de Points";
+                formFR.addTextItem()
+                .setTitle("Détachement " + DetachNb + " - Unité " + UnitNb + ArmyRatingText)
+                .setRequired(true)
+                .setValidation(RatingValidationFR);                
+                
+                
+                // CONTINUITY
+                
+                // Add Unit or Detachment
+                // ENGLISH
                 var AddUnitEN = formEN.addMultipleChoiceItem();
-                AddUnitEN.setTitle("Add Another Unit or Another Detachment");
+                AddUnitEN.setTitle("Add Unit or New Detachment");
                 AddUnitEN.setRequired(true);
                 
                 // Create the different choices
-                ChUnitEN = AddUnitEN.createChoice("Add Another Unit",FormApp.PageNavigationType.CONTINUE);
-                ChEndEN = AddUnitEN.createChoice("My Army List is Complete",FormApp.PageNavigationType.SUBMIT);
+                ChUnitEN = AddUnitEN.createChoice("Add Unit",FormApp.PageNavigationType.CONTINUE);
+                ChEndEN  = AddUnitEN.createChoice("My Army List is Complete",FormApp.PageNavigationType.SUBMIT);
+                
+                // FRENCH
+                var AddUnitFR = formFR.addMultipleChoiceItem();
+                AddUnitFR.setTitle("Ajouter Unité ou Nouveau Détachement");
+                AddUnitFR.setRequired(true);
+                
+                // Create the different choices
+                ChUnitFR = AddUnitFR.createChoice("Ajouter Unité",FormApp.PageNavigationType.CONTINUE);
+                ChEndFR  = AddUnitFR.createChoice("Ma liste d'armée est complète",FormApp.PageNavigationType.SUBMIT);
+                
                 
                 // If Unit is First Detachment
-                if(DetachNb == 1 && NbDetachMax > 1) ChDetachEN = AddUnitEN.createChoice("Add Another Detachment",Detach2EN);
-                
+                if(DetachNb == 1 && NbDetachMax > 1) {
+                  ChDetachEN = AddUnitEN.createChoice("Add New Detachment",Detach2EN);
+                  ChDetachFR = AddUnitFR.createChoice("Ajouter Nouveau Détachement",Detach2FR);
+                }
                 // If Unit is Second Detachment and there are 3 Detachments
-                if(DetachNb == 2 && NbDetachMax > 2) ChDetachEN = AddUnitEN.createChoice("Add Another Detachment",Detach3EN);
-                
+                if(DetachNb == 2 && NbDetachMax > 2) {
+                  ChDetachEN = AddUnitEN.createChoice("Add New Detachment",Detach3EN);
+                  ChDetachFR = AddUnitFR.createChoice("Ajouter Nouveau Détachement",Detach3FR);
+                }
                 // Sets the Choices depending on the Unit and Detachment
                 if(DetachNb < NbDetachMax){
-                  if(UnitNb < NbUnitMax) AddUnitEN.setChoices([ChUnitEN, ChDetachEN, ChEndEN]);
-                  if(UnitNb == NbUnitMax) AddUnitEN.setChoices([ChDetachEN, ChEndEN]);
+                  if(UnitNb < NbUnitMax) {
+                    AddUnitEN.setChoices([ChUnitEN, ChDetachEN, ChEndEN]);
+                    AddUnitFR.setChoices([ChUnitFR, ChDetachFR, ChEndFR]);
+                  }
+                  if(UnitNb == NbUnitMax) {
+                    AddUnitEN.setChoices([ChDetachEN, ChEndEN]);
+                    AddUnitFR.setChoices([ChDetachFR, ChEndFR]);
+                  }
                 }
                 
                 if(DetachNb == NbDetachMax){
-                  if(UnitNb < NbUnitMax) AddUnitEN.setChoices([ChUnitEN, ChEndEN]);
-                  if(UnitNb == NbUnitMax) AddUnitEN.setChoices([ChEndEN]);
+                  if(UnitNb < NbUnitMax) {
+                    AddUnitEN.setChoices([ChUnitEN, ChEndEN]);
+                    AddUnitFR.setChoices([ChUnitFR, ChEndFR]);
+                  }
+                  if(UnitNb == NbUnitMax) {
+                    AddUnitEN.setChoices([ChEndEN]);
+                    AddUnitFR.setChoices([ChEndFR]);
+                  }
                 }
                 
                 if (DetachNb == NbDetachMax && UnitNb == NbUnitMax) UnitNb = NbUnitMax + 1; 
               }
+            }
+            // Sets Go To Detachment 2 Unit 1 Page
+            if(NbDetachMax == 2){
+              // ENGLISH
+              Detach2EN.setGoToPage(UnitPageEN[101]);
+              UnitPageEN[101].setGoToPage(UnitPageEN[201]);
+              // FRENCH
+              Detach2FR.setGoToPage(UnitPageFR[101]);
+              UnitPageFR[101].setGoToPage(UnitPageFR[201]);
+            }
+            
+            // Sets Go To Detachment 3 Unit 1 Page   
+            if(NbDetachMax == 3){
+              // ENGLISH
+              Detach2EN.setGoToPage(UnitPageEN[101]);
+              Detach3EN.setGoToPage(UnitPageEN[201]);
+              UnitPageEN[101].setGoToPage(UnitPageEN[301]);
+              // FRENCH
+              Detach2FR.setGoToPage(UnitPageFR[101]);
+              Detach3FR.setGoToPage(UnitPageFR[201]);
+              UnitPageFR[101].setGoToPage(UnitPageFR[301]);
             }
             break;
           }
@@ -394,71 +575,75 @@ function fcnCreateRegForm() {
         i = -1;
       }
     }
+    
     // RESPONSE SHEETS
     // Create Response Sheet in Main File and Rename
-    
-    // English Form
-    formEN.setDestination(FormApp.DestinationType.SPREADSHEET, ssID);
-    
-    // Find and Rename Response Sheet
-    ss = SpreadsheetApp.openById(ssID);
-    ssSheets = ss.getSheets();
-    ssSheets[0].setName('Registration EN');
-    // Move Response Sheet to appropriate spot in file
-    shtResp = ss.getSheetByName('Registration EN');
-    ss.moveActiveSheet(17);
-    shtRespMaxRow = shtResp.getMaxRows();
-    shtRespMaxCol = shtResp.getMaxColumns();
+    if(OptGenerateResp == 'Enabled'){
+      // English Form
+      formEN.setDestination(FormApp.DestinationType.SPREADSHEET, ssID);
       
-    // Delete All Empty Rows
-    shtResp.deleteRows(3, shtRespMaxRow - 2);
-    
-    // Delete All Empty Columns
-    for(var c = 1;  c <= shtRespMaxCol; c++){
-      FirstCellVal = shtResp.getRange(1, c).getValue();
-      if(FirstCellVal == '') {
-        shtResp.deleteColumns(c,shtRespMaxCol-c+1);
-        c = shtRespMaxCol + 1;
+      // Find and Rename Response Sheet
+      ss = SpreadsheetApp.openById(ssID);
+      ssSheets = ss.getSheets();
+      ssSheets[0].setName('Registration EN');
+      // Move Response Sheet to appropriate spot in file
+      shtResp = ss.getSheetByName('Registration EN');
+      ss.moveActiveSheet(17);
+      shtRespMaxRow = shtResp.getMaxRows();
+      shtRespMaxCol = shtResp.getMaxColumns();
+      
+      // Delete All Empty Rows
+      shtResp.deleteRows(3, shtRespMaxRow - 2);
+      
+      // Delete All Empty Columns
+      for(var c = 1;  c <= shtRespMaxCol; c++){
+        FirstCellVal = shtResp.getRange(1, c).getValue();
+        if(FirstCellVal == '') {
+          shtResp.deleteColumns(c,shtRespMaxCol-c+1);
+          c = shtRespMaxCol + 1;
+        }
       }
-    }
-    
-    // French Form
-    formFR.setDestination(FormApp.DestinationType.SPREADSHEET, ssID);
-    
-    // Find and Rename Response Sheet
-    ss = SpreadsheetApp.openById(ssID);
-    ssSheets = ss.getSheets();
-    ssSheets[0].setName('Registration FR');
-    
-    // Move Response Sheet to appropriate spot in file
-    shtResp = ss.getSheetByName('Registration FR');
-    ss.moveActiveSheet(18);
-    shtRespMaxRow = shtResp.getMaxRows();
-    shtRespMaxCol = shtResp.getMaxColumns();
-    
-    // Delete All Empty Rows
-    shtResp.deleteRows(3, shtRespMaxRow - 2);
-    
-    // Delete All Empty Columns
-    for(var c = 1;  c <= shtRespMaxCol; c++){
-      FirstCellVal = shtResp.getRange(1, c).getValue();
-      if(FirstCellVal == '') {
-        shtResp.deleteColumns(c,shtRespMaxCol-c+1);
-        c = shtRespMaxCol + 1;
+      
+      // French Form
+      formFR.setDestination(FormApp.DestinationType.SPREADSHEET, ssID);
+      
+      // Find and Rename Response Sheet
+      ss = SpreadsheetApp.openById(ssID);
+      ssSheets = ss.getSheets();
+      ssSheets[0].setName('Registration FR');
+      
+      // Move Response Sheet to appropriate spot in file
+      shtResp = ss.getSheetByName('Registration FR');
+      ss.moveActiveSheet(18);
+      shtRespMaxRow = shtResp.getMaxRows();
+      shtRespMaxCol = shtResp.getMaxColumns();
+      
+      // Delete All Empty Rows
+      shtResp.deleteRows(3, shtRespMaxRow - 2);
+      
+      // Delete All Empty Columns
+      for(var c = 1;  c <= shtRespMaxCol; c++){
+        FirstCellVal = shtResp.getRange(1, c).getValue();
+        if(FirstCellVal == '') {
+          shtResp.deleteColumns(c,shtRespMaxCol-c+1);
+          c = shtRespMaxCol + 1;
+        }
       }
+      
+      // Set Match Report IDs in Config File
+      FormIdEN = formEN.getId();
+      shtConfig.getRange(RowFormIdEN, 7).setValue(FormIdEN);
+      FormIdFR = formFR.getId();
+      shtConfig.getRange(RowFormIdFR, 7).setValue(FormIdFR);
+      
+      // Create Links to add to Config File  
+      urlFormEN = formEN.getPublishedUrl();
+      shtConfig.getRange(RowFormUrlEN, 2).setValue(urlFormEN); 
+      
+      urlFormFR = formFR.getPublishedUrl();
+      shtConfig.getRange(RowFormUrlFR, 2).setValue(urlFormFR);
     }
-    
-    // Set Match Report IDs in Config File
-    FormIdEN = formEN.getId();
-    shtConfig.getRange(RowFormIdEN, 7).setValue(FormIdEN);
-    FormIdFR = formFR.getId();
-    shtConfig.getRange(RowFormIdFR, 7).setValue(FormIdFR);
-    
-    // Create Links to add to Config File  
-    urlFormEN = formEN.getPublishedUrl();
-    shtConfig.getRange(RowFormUrlEN, 2).setValue(urlFormEN); 
-    
-    urlFormFR = formFR.getPublishedUrl();
-    shtConfig.getRange(RowFormUrlFR, 2).setValue(urlFormFR);
   }
+  // Post Log to Log Sheet
+  subPostLog(shtLog);
 }

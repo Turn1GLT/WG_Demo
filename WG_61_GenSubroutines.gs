@@ -7,13 +7,12 @@
 
 function subPostLog(shtLog) {
   
-  var NextRow = shtLog.getRange(1,1).getValue()+2;
   //var shtLog = SpreadsheetApp.setActiveSheet(1);
   
-  shtLog.insertRowBefore(NextRow);
-  shtLog.getRange(NextRow,1).setValue('=if(INDIRECT("R[0]C[1]",FALSE)<>"",1,"")');
-  shtLog.getRange(NextRow,2).setValue(new Date()).setNumberFormat('yyyy-MM-dd / HH:mm:ss');
-  shtLog.getRange(NextRow,3).setValue(Logger.getLog());
+  shtLog.insertRowAfter(2);
+  shtLog.getRange(3,1).setValue('=if(INDIRECT("R[0]C[1]",FALSE)<>"",1,"")');
+  shtLog.getRange(3,2).setValue(new Date()).setNumberFormat('yyyy-MM-dd / HH:mm:ss');
+  shtLog.getRange(3,3).setValue(Logger.getLog());
 //  Logger.clear();
 }
 

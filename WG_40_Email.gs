@@ -66,6 +66,34 @@ function subGetEmailAddressDbl(ss, Addresses, WinPlyr, LosPlyr){
 }
 
 // **********************************************
+// function subGetEmailRecipients()
+//
+// This function searches for all players in the  
+// list with the selected language
+//
+// **********************************************
+
+function subGetEmailRecipients(shtPlayers, NbPlayers, Language){
+  
+  // Function Variables
+  var EmailRecipients = '';
+  var PlayersData = shtPlayers.getRange(3,3,NbPlayers,2).getValues(); // ..[0]= Email Address  ..[1]=  
+  
+  // Loop through all players selected languages and concatenate their email addresses 
+  // if it matches the Language sent in parameter 
+  for(var i = 0; i < NbPlayers; i++){
+    if(PlayersData[i][1] == Language) {
+      if(EmailRecipients !='') EmailRecipients += ', '
+      EmailRecipients += PlayersData[i][0];
+    }
+  }
+  
+  return EmailRecipients;
+}
+
+// MATCH REPORT CONFIRMATION ----------------------------------------------------------------------------------------------------------
+
+// **********************************************
 // function fcnSendConfirmEmailEN()
 //
 // This function generates the confirmation email in English
@@ -79,21 +107,31 @@ function fcnSendConfirmEmailEN(shtConfig, Address, MatchData) {
   var EmailSubject;
   var EmailMessage;
   
+  // Addresses and Languages for both players
+  var Address1  = Address[1][1];
+  var Language1 = Address[1][0];
+  var Address2  = Address[2][1];
+  var Language2 = Address[2][0];
+  var AddressBCC;
+  
   // Get Document URLs
   var UrlValues = shtConfig.getRange(17,2,3,1).getValues();
-  var StandingsUrl = UrlValues[0][0];
-  var CardPoolUrl = UrlValues[1][0];
-  var MatchReporterUrl = UrlValues[2][0];
+  var urlStandings = UrlValues[0][0];
+  var urlCardList = UrlValues[1][0];
+  var urlMatchReporter = UrlValues[2][0];
+  
+  // Facebook Page Link
+  var urlFacebook = shtConfig.getRange(50, 2).getValue();
   
   // Open Email Templates
-  var ssEmailID = shtConfig.getRange(25,2).getValue();
+  var ssEmailID = shtConfig.getRange(47,2).getValue();
   var ssEmail = SpreadsheetApp.openById(ssEmailID);
   var shtEmailTemplates = ssEmail.getSheetByName('Templates');
-  var Headers = shtEmailTemplates.getRange(3,6,29,1).getValues();
+  var Headers = shtEmailTemplates.getRange(3,6,7,1).getValues();
   
   // League Name
-  var Location = shtConfig.getRange(11,2).getValue();
-  var LeagueTypeEN = shtConfig.getRange(13,2).getValue();
+  var Location = shtConfig.getRange(3,9).getValue();
+  var LeagueTypeEN = shtConfig.getRange(6,9).getValue();
   var LeagueNameEN = Location + ' ' + LeagueTypeEN;
   
   // Match Data Assignation
@@ -103,7 +141,7 @@ function fcnSendConfirmEmailEN(shtConfig, Address, MatchData) {
   var Losr    = MatchData[5][0];
   
   // Set Email Subject
-  EmailSubject = LeagueNameEN + " - Week " + Week + " - Match Result" ;
+  EmailSubject = LeagueNameEN + " - Match Result" + " Week " + Week ;
     
   // Start of Email Message
   EmailMessage = '<html><body>';
@@ -112,25 +150,140 @@ function fcnSendConfirmEmailEN(shtConfig, Address, MatchData) {
     '<br><br>Here is your match result:<br><br>';
     
   // Generate Match Data Table
-  EmailMessage = subMatchReportTable(EmailMessage, Headers, MatchData,'EN');
+  EmailMessage = subMatchReportTable(EmailMessage, Headers, MatchData, 0);
   
+  // Add League Links
   EmailMessage += "<br>Click below to access the League Standings and Results:"+
-    "<br>"+ StandingsUrl +
-      "<br><br>Click below to access your Card Pool:"+
-        "<br>"+ CardPoolUrl +
-          "<br><br>Click below to send another Match Report:"+
-            "<br>"+ MatchReporterUrl +
-              "<br><br>If you find any problems with your match result, please reply to this message and describe the situation as best you can. You will receive a response once it has been processed."+
-                "<br><br>Thank you for using Wargames League Manager from Triad Gaming Leagues & Tournaments";
+    "<br>"+ urlStandings;
+  EmailMessage += "<br><br>Click below to access your Card Pool:"+
+    "<br>"+ urlCardList;
+  EmailMessage += "<br><br>Click below to send another Match Report:"+
+    "<br>"+ urlMatchReporter;
+  
+  // Add Facebook Page Link if present
+  if(urlFacebook != ''){
+    EmailMessage += "<br><br>Please join the Community Facebook page to chat with other players and plan matches.<br><br>" + urlFacebook;
+  }
+  
+  // Add Signature
+  EmailMessage += "<br><br>If you find any problems with your match result, please reply to this message and describe the situation as best you can. You will receive a response once it has been processed."+
+    "<br><br>Thank you for using TCG Booster League Manager from Turn 1 Gaming Leagues & Tournaments";
   
   // End of Email Message
   EmailMessage += '</body></html>';
   
-  // Sends email to both players with the Match Data
-  if (Address[1][0] == 'English' && Address[1][1] != '') MailApp.sendEmail(Address[1][1], EmailSubject, EmailMessage,{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
-  if (Address[2][0] == 'English' && Address[2][1] != '') MailApp.sendEmail(Address[2][1], EmailSubject, EmailMessage,{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
+  // If both players share the same language
+  if(Language1 == 'English' && Language2 == 'English'){
+    AddressBCC = Address1 + ', ' + Address2;
+    MailApp.sendEmail("", EmailSubject, "",{bcc:AddressBCC, name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
+  }
+  
+  if(Language1 == 'English' && Language2 != 'English'){
+    MailApp.sendEmail(Address1, EmailSubject, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
+  }
+  
+  if(Language2 == 'English' && Language1 != 'English'){
+    MailApp.sendEmail(Address2, EmailSubject, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
+  }
 }
 
+
+// **********************************************
+// function fcnSendConfirmEmailFR()
+//
+// This function generates the confirmation email in French
+// after a match report has been submitted
+//
+// **********************************************
+
+function fcnSendConfirmEmailFR(shtConfig, Address, MatchData) {
+  
+  // Variables
+  var EmailSubject;
+  var EmailMessage;
+  
+  // Addresses and Languages for both players
+  var Address1  = Address[1][1];
+  var Language1 = Address[1][0];
+  var Address2  = Address[2][1];
+  var Language2 = Address[2][0];
+  var AddressBCC;
+  
+  // Get Document URLs
+  var UrlValues = shtConfig.getRange(20,2,3,1).getValues();
+  var urlStandings = UrlValues[0][0];
+  var urlCardList = UrlValues[1][0];
+  var urlMatchReporter = UrlValues[2][0];
+  
+  // Facebook Page Link
+  var urlFacebook = shtConfig.getRange(50, 2).getValue();
+  
+  // Open Email Templates
+  var ssEmailID = shtConfig.getRange(47,2).getValue();
+  var ssEmail = SpreadsheetApp.openById(ssEmailID);
+  var shtEmailTemplates = ssEmail.getSheetByName('Templates');
+  var Headers = shtEmailTemplates.getRange(3,7,7,1).getValues();
+  
+  // League Name
+  var Location = shtConfig.getRange(3,9).getValue();
+  var LeagueTypeFR = shtConfig.getRange(7,9).getValue();
+  var LeagueNameFR = LeagueTypeFR + ' du ' + Location;
+
+  // Match Data Assignation
+  var MatchID = MatchData[2][0];
+  var Week    = MatchData[3][0];
+  var Winr    = MatchData[4][0];
+  var Losr    = MatchData[5][0];
+
+  // Set Email Subject
+  EmailSubject = LeagueNameFR + " - Rapport de Match" + " Semaine " + Week;
+    
+  // Start of Email Message
+  EmailMessage = "<html><body>";
+  
+  EmailMessage += "Bonjour " + Winr + " et " + Losr + ",<br><br>Nous confirmons que nous avons bien reçu et traité le rapport de votre match de la " + LeagueNameFR + ", Semaine " + Week + 
+    "<br><br>Voici le sommaire de votre match:<br><br>";
+    
+  // Generate Match Data Table
+  EmailMessage = subMatchReportTable(EmailMessage, Headers, MatchData, 0);
+  
+  // Add League Links
+  EmailMessage += "<br>Cliquez ci-dessous pour accéder au classement et statistiques de la ligue:"+
+    "<br>"+ urlStandings;
+  EmailMessage +=   "<br><br>Cliquez ci-dessous pour accéder à votre pool de cartes:"+
+    "<br>"+ urlCardList;
+  EmailMessage += "<br><br>Cliquez ci-dessous pour envoyer un autre rapport de match:"+
+    "<br>"+ urlMatchReporter;
+  
+  // Add Facebook Page Link if present
+  if(urlFacebook != ''){
+    EmailMessage += "<br><br>Joignez vous à la page Facebook de la communauté pour discuter avec les autres joueurs et organiser vos parties.<br><br>" + urlFacebook;
+  }
+  
+  // Add Signature
+  EmailMessage += "<br><br>Si vous remarquez quel problème que ce soit dans ce rapport, SVP répondez à ce courriel en décrivant la situation de votre mieux. Vous recevrez une réponse dès que la situation sera traitée."+
+    "<br><br>Merci d'utiliser TCG Booster League Manager de Turn 1 Gaming Leagues & Tournaments";
+  
+  // End of Email Message
+  EmailMessage += "</body></html>";
+
+  // If both players share the same language
+  if(Language1 == 'Français' && Language2 == 'Français'){
+    AddressBCC = Address1 + ', ' + Address2;
+    MailApp.sendEmail("", EmailSubject, "",{bcc:AddressBCC, name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
+  }
+  
+  if(Language1 == 'Français' && Language2 != 'Français'){
+    MailApp.sendEmail(Address1, EmailSubject, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
+  }
+  
+  if(Language2 == 'Français' && Language1 != 'Français'){
+    MailApp.sendEmail(Address2, EmailSubject, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
+  }
+}
+
+
+// PROCESS ERROR MESSAGE ----------------------------------------------------------------------------------------------------------
 
 // **********************************************
 // function fcnSendErrorEmailEN()
@@ -144,25 +297,28 @@ function fcnSendErrorEmailEN(shtConfig, Address, MatchData, MatchID, Status) {
   
   // Variables
   var EmailSubject;
-  var EmailMessage;
-  var EmailName1 = '';
-  var EmailName2 = '';
+  var EmailMessage;  
+  var Address1;
+  var Language1;
+  var Address2;
+  var Language2;
+  var AddressBCC;
   
   // Get Document URLs
   var UrlValues = shtConfig.getRange(17,2,3,1).getValues();
-  var StandingsUrl = UrlValues[0][0];
-  var CardPoolUrl = UrlValues[1][0];
-  var MatchReporterUrl = UrlValues[2][0];
+  var urlStandings = UrlValues[0][0];
+  var urlCardList = UrlValues[1][0];
+  var urlMatchReporter = UrlValues[2][0];
   
   // Open Email Templates
-  var ssEmailID = shtConfig.getRange(25,2).getValue();
+  var ssEmailID = shtConfig.getRange(47,2).getValue();
   var ssEmail = SpreadsheetApp.openById(ssEmailID);
   var shtEmailTemplates = ssEmail.getSheetByName('Templates');
-  var Headers = shtEmailTemplates.getRange(3,6,29,1).getValues();
+  var Headers = shtEmailTemplates.getRange(3,6,7,1).getValues();
   
   // League Name
-  var Location = shtConfig.getRange(11,2).getValue();
-  var LeagueTypeEN = shtConfig.getRange(13,2).getValue();
+  var Location = shtConfig.getRange(3,9).getValue();
+  var LeagueTypeEN = shtConfig.getRange(6,9).getValue();
   var LeagueNameEN = Location + ' ' + LeagueTypeEN;
   
   // Match Data Assignation
@@ -193,7 +349,7 @@ function fcnSendErrorEmailEN(shtConfig, Address, MatchData, MatchID, Status) {
   }
   
   // Set Email Subject
-  EmailSubject = LeagueNameEN + ' - Week ' + Week + ' - Match Report Error' ;
+  EmailSubject = LeagueNameEN + ' - Match Report Error' + ' Week ' + Week ;
   
   // Start of Email Message
   EmailMessage = '<html><body>';
@@ -206,7 +362,7 @@ function fcnSendErrorEmailEN(shtConfig, Address, MatchData, MatchID, Status) {
           '<br><br>Here is your match result:<br><br>';
     
     // Populate the Match Data Table
-    EmailMessage = subMatchReportTable(EmailMessage, Headers, MatchData,'EN');
+    EmailMessage = subMatchReportTable(EmailMessage, Headers, MatchData,StatusMsg);
   }
 
   // If Error did not prevent Match Data to be processed (Card Name not Found for Card Number X)    
@@ -217,7 +373,7 @@ function fcnSendErrorEmailEN(shtConfig, Address, MatchData, MatchID, Status) {
           '<br><br>Here is your match result:<br><br>';
     
     // Populate the Match Data Table
-    EmailMessage = subMatchReportTable(EmailMessage, Headers, MatchData,'EN');
+    EmailMessage = subMatchReportTable(EmailMessage, Headers, MatchData,StatusMsg);
   }
 
   // If Process Error was Detected 
@@ -228,100 +384,32 @@ function fcnSendErrorEmailEN(shtConfig, Address, MatchData, MatchID, Status) {
   
   if (Status[0] >= -60) {
     EmailMessage += "<br>Click below to access the League Standings and Results:"+
-      "<br>"+ StandingsUrl +
+      "<br>"+ urlStandings +
         "<br><br>Click below to access your Card Pool:"+
-          "<br>"+ CardPoolUrl +
+          "<br>"+ urlCardList +
             "<br><br>Click below to send another Match Report:"+
-              "<br>"+ MatchReporterUrl +
+              "<br>"+ urlMatchReporter +
                 "<br><br>If you find any problems with your match result, please reply to this message and describe the situation as best you can. You will receive a response once it has been processed."+
-                  "<br><br>Thank you for using Wargames League Manager from Triad Gaming Leagues & Tournaments";
+                  "<br><br>Thank you for using TCG Booster League Manager from Turn 1 Gaming Leagues & Tournaments";
   }
   
   // End of Email Message
   EmailMessage += '</body></html>';
    
   // Send email to Administrator
-  MailApp.sendEmail(Address[0][1], EmailSubject, EmailMessage,{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
+  MailApp.sendEmail(Address[0][1], EmailSubject, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
   
   // If Error is between 0 and -60, send email to players. If not, only send to Administrator
   if (Status[0] >= -60){
     // Sends email to both players with the Match Data
     if (Address[1][0] == 'English' && Address[1][1] != '') {
-      MailApp.sendEmail(Address[1][1], EmailSubject, EmailMessage,{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
+      MailApp.sendEmail(Address[1][1], EmailSubject, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
     }
     if (Address[2][0] == 'English' && Address[2][1] != ''&& Address[1][1] != Address[2][1]) {
-      MailApp.sendEmail(Address[2][1], EmailSubject, EmailMessage,{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
+      MailApp.sendEmail(Address[2][1], EmailSubject, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
     }
   }
 }
-
-
-// **********************************************
-// function fcnSendConfirmEmailFR()
-//
-// This function generates the confirmation email in French
-// after a match report has been submitted
-//
-// **********************************************
-
-function fcnSendConfirmEmailFR(shtConfig, Address, MatchData) {
-  
-  // Variables
-  var EmailSubject;
-  var EmailMessage;
-  
-  // Get Document URLs
-  var UrlValues = shtConfig.getRange(20,2,3,1).getValues();
-  var StandingsUrl = UrlValues[0][0];
-  var CardPoolUrl = UrlValues[1][0];
-  var MatchReporterUrl = UrlValues[2][0];
-  
-  // Open Email Templates
-  var ssEmailID = shtConfig.getRange(25,2).getValue();
-  var ssEmail = SpreadsheetApp.openById(ssEmailID);
-  var shtEmailTemplates = ssEmail.getSheetByName('Templates');
-  var Headers = shtEmailTemplates.getRange(3,7,29,1).getValues();
-  
-  // League Name
-  var Location = shtConfig.getRange(11,2).getValue();
-  var LeagueTypeFR = shtConfig.getRange(14,2).getValue();
-  var LeagueNameFR = LeagueTypeFR + ' ' + Location;
-
-  // Match Data Assignation
-  var MatchID = MatchData[2][0];
-  var Week    = MatchData[3][0];
-  var Winr    = MatchData[4][0];
-  var Losr    = MatchData[5][0];
-
-  // Set Email Subject
-  EmailSubject = LeagueNameFR + " - Week " + Week + " - Rapport de Match" ;
-    
-  // Start of Email Message
-  EmailMessage = "<html><body>";
-  
-  EmailMessage += "Bonjour " + Winr + " et " + Losr + ",<br><br>Nous confirmons que nous avons bien reçu et traité le rapport de votre match de la " + LeagueNameFR + ", Semaine " + Week + 
-    "<br><br>Voici le sommaire de votre match:<br><br>";
-    
-  // Generate Match Data Table
-  EmailMessage = subMatchReportTable(EmailMessage, Headers, MatchData,'FR');
-  
-  EmailMessage += "<br>Cliquez ci-dessous pour accéder au classement et statistiques de la ligue:"+
-    "<br>"+ StandingsUrl +
-      "<br><br>Cliquez ci-dessous pour accéder à votre pool de cartes:"+
-        "<br>"+ CardPoolUrl +
-          "<br><br>Cliquez ci-dessous pour envoyer un autre rapport de match:"+
-            "<br>"+ MatchReporterUrl +
-              "<br><br>Si vous remarquez quel problème que ce soit dans ce rapport, SVP répondez à ce courriel en décrivant la situation de votre mieux. Vous recevrez une réponse dès que la situation sera traitée."+
-                "<br><br>Merci d'utiliser Wargames League Manager de Triad Gaming Leagues & Tournaments";
-  
-  // End of Email Message
-  EmailMessage += "</body></html>";
-  
-  // Sends email to both players with the Match Data
-  if (Address[1][0] == 'Français' && Address[1][1] != '') MailApp.sendEmail(Address[1][1], EmailSubject, EmailMessage,{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
-  if (Address[2][0] == 'Français' && Address[2][1] != '') MailApp.sendEmail(Address[2][1], EmailSubject, EmailMessage,{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
-}
-
 
 // **********************************************
 // function fcnSendErrorEmailFR()
@@ -335,26 +423,29 @@ function fcnSendErrorEmailFR(shtConfig, Address, MatchData, MatchID, Status) {
   
   // Variables
   var EmailSubject;
-  var EmailMessage;
-  var EmailName1 = '';
-  var EmailName2 = '';
+  var EmailMessage;  
+  var Address1;
+  var Language1;
+  var Address2;
+  var Language2;
+  var AddressBCC;
   
   // Get Document URLs
   var UrlValues = shtConfig.getRange(20,2,3,1).getValues();
-  var StandingsUrl = UrlValues[0][0];
-  var CardPoolUrl = UrlValues[1][0];
-  var MatchReporterUrl = UrlValues[2][0];
+  var urlStandings = UrlValues[0][0];
+  var urlCardList = UrlValues[1][0];
+  var urlMatchReporter = UrlValues[2][0];
   
   // Open Email Templates
-  var ssEmailID = shtConfig.getRange(25,2).getValue();
+  var ssEmailID = shtConfig.getRange(47,2).getValue();
   var ssEmail = SpreadsheetApp.openById(ssEmailID);
   var shtEmailTemplates = ssEmail.getSheetByName('Templates');
-  var Headers = shtEmailTemplates.getRange(3,7,29,1).getValues();
+  var Headers = shtEmailTemplates.getRange(3,7,7,1).getValues();
     
   // League Name
-  var Location = shtConfig.getRange(11,2).getValue();
-  var LeagueTypeFR = shtConfig.getRange(14,2).getValue();
-  var LeagueNameFR = LeagueTypeFR + ' ' + Location;
+  var Location = shtConfig.getRange(3,9).getValue();
+  var LeagueTypeFR = shtConfig.getRange(7,9).getValue();
+  var LeagueNameFR = LeagueTypeFR + ' du ' + Location;
 
   // Match Data Assignation
   var MatchID = MatchData[2][0];
@@ -384,7 +475,7 @@ function fcnSendErrorEmailFR(shtConfig, Address, MatchData, MatchID, Status) {
   }
   
   // Set Email Subject
-  EmailSubject = LeagueNameFR + ' - Week ' + Week + ' - Erreur Rapport de Match' ;
+  EmailSubject = LeagueNameFR + ' - Erreur Rapport de Match' + ' Semaine ' + Week ;
   
   // Start of Email Message
   EmailMessage = "<html><body>";
@@ -397,7 +488,7 @@ function fcnSendErrorEmailFR(shtConfig, Address, MatchData, MatchID, Status) {
           "<br><br>Voici le sommaire de votre match:<br><br>";
     
     // Populate the Match Data Table
-    EmailMessage = subMatchReportTable(EmailMessage, Headers, MatchData,'FR');
+    EmailMessage = subMatchReportTable(EmailMessage, Headers, MatchData,StatusMsg);
   }
 
   // If Error did not prevent Match Data to be processed (Card Name not Found for Card Number X)    
@@ -408,7 +499,7 @@ function fcnSendErrorEmailFR(shtConfig, Address, MatchData, MatchID, Status) {
           "<br><br>Voici le sommaire de votre match:<br><br>";
     
     // Populate the Match Data Table
-    EmailMessage = subMatchReportTable(EmailMessage, Headers, MatchData,'FR');
+    EmailMessage = subMatchReportTable(EmailMessage, Headers, MatchData,StatusMsg);
   }
 
   // If Process Error was Detected 
@@ -419,13 +510,13 @@ function fcnSendErrorEmailFR(shtConfig, Address, MatchData, MatchID, Status) {
   
   if (Status[0] >= -60) {
     EmailMessage += "<br>Cliquez ci-dessous pour accéder au classement et statistiques de la ligue:"+
-      "<br>"+ StandingsUrl +
+      "<br>"+ urlStandings +
         "<br><br>Cliquez ci-dessous pour accéder à votre pool de cartes:"+
-          "<br>"+ CardPoolUrl +
+          "<br>"+ urlCardList +
             "<br><br>Cliquez ci-dessous pour envoyer un autre rapport de match:"+
-              "<br>"+ MatchReporterUrl +
+              "<br>"+ urlMatchReporter +
                 "<br><br>Si vous remarquez quel problème que ce soit dans ce rapport, SVP répondez à ce courriel en décrivant la situation de votre mieux. Vous recevrez une réponse dès que la situation sera traitée."+
-                  "<br><br>Merci d'utiliser Wargames League Manager de Triad Gaming Leagues & Tournaments";
+                  "<br><br>Merci d'utiliser TCG Booster League Manager de Turn 1 Gaming Leagues & Tournaments";
   }
   
   // End of Email Message
@@ -438,14 +529,15 @@ function fcnSendErrorEmailFR(shtConfig, Address, MatchData, MatchID, Status) {
   if (Status[0] >= -60){
     // Sends email to both players with the Match Data
     if (Address[1][0] == 'Français' && Address[1][1] != '') {
-      MailApp.sendEmail(Address[1][1], EmailSubject, EmailMessage,{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
+      MailApp.sendEmail(Address[1][1], EmailSubject, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
     }
     if (Address[2][0] == 'Français' && Address[2][1] != ''&& Address[1][1] != Address[2][1]) {
-      MailApp.sendEmail(Address[2][1], EmailSubject, EmailMessage,{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
+      MailApp.sendEmail(Address[2][1], EmailSubject, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
     }
   }
 }
 
+// MATCH REPORT TABLE ----------------------------------------------------------------------------------------------------------
 
 // **********************************************
 // function subMatchReportTable()
@@ -457,101 +549,944 @@ function fcnSendErrorEmailFR(shtConfig, Address, MatchData, MatchID, Status) {
 
 function subMatchReportTable(EmailMessage, Headers, MatchData, Param){
   
-  for(var row=0; row<=6; ++row){
+  var Item = Headers[25][0];
+  var CardNumber = Headers[26][0];
+  var CardName = Headers[27][0];
+  var CardRarity = Headers[28][0];
+    
+  for(var row=0; row<24; ++row){
 
-    //if(row == 1) ++row;
+    // Translate MatchData if necessary
+    if (Param == 'EN' && MatchData[row][0] == 'Oui') MatchData[row][0] = 'Yes';
+    if (Param == 'EN' && MatchData[row][0] == 'Non') MatchData[row][0] = 'No' ;
+    if (Param == 'FR' && MatchData[row][0] == 'Yes') MatchData[row][0] = 'Oui';
+    if (Param == 'FR' && MatchData[row][0] == 'No' ) MatchData[row][0] = 'Non';
     
     // Start of Match Table
-    if(row == 0) EmailMessage += '<table style="border-collapse:collapse;" border = 1 cellpadding = 5><tr>';
-    
-    // Match Data
-    if(row <= 6) {
-      
-      // Translate MatchData if necessary
-      if (Param == 'EN' && MatchData[row][0] == 'Oui') MatchData[row][0] = 'Yes';
-      if (Param == 'EN' && MatchData[row][0] == 'Non') MatchData[row][0] = 'No' ;
-      if (Param == 'FR' && MatchData[row][0] == 'Yes') MatchData[row][0] = 'Oui';
-      if (Param == 'FR' && MatchData[row][0] == 'No' ) MatchData[row][0] = 'Non';
-            
-      // If Match is NOT a Tie, Do not change anything
-      if(MatchData[6][0] == 'No' || MatchData[6][0] == 'Non') {
-        if(row < 6) EmailMessage += '<tr><td>'+Headers[row][0]+'</td><td>'+MatchData[row][0]+'</td></tr>';
-      }
-      
-      // If Match is a Tie, Change some Header Values
-      if (MatchData[6][0] == 'Yes' || MatchData[6][0] == 'Oui') {
-                
-        if(row < 4) EmailMessage += '<tr><td>'+Headers[row][0]+'</td><td>'+MatchData[row][0]+'</td></tr>';
-        
-        // If Match is Tie, replace Winning Player by Player 1
-        if(row == 4 && Param == 'EN') EmailMessage += '<tr><td>Player 1</td><td>'+MatchData[row][0]+'</td></tr>';
-        
-        // If Match is Tie, replace Losing Player by Player 2
-        if(row == 5 && Param == 'EN') EmailMessage += '<tr><td>Player 2</td><td>'+MatchData[row][0]+'</td></tr>';
-        
-        // If Match is Tie, replace Joueur Gagnant by Joueur 1
-        if(row == 4 && Param == 'FR') EmailMessage += '<tr><td>Joueur 1</td><td>'+MatchData[row][0]+'</td></tr>';
-        
-        // If Match is Tie, replace Joueur Perdant by Joueur 2
-        if(row == 5 && Param == 'FR') EmailMessage += '<tr><td>Joueur 2</td><td>'+MatchData[row][0]+'</td></tr>';
-        
-        if(row == 6) EmailMessage += '<tr><td>'+Headers[row][0]+'</td><td>'+MatchData[row][0]+'</td></tr>';
-      }
+    if(row == 0) {
+      EmailMessage += '<table style="border-collapse:collapse;" border = 1 cellpadding = 5><tr>';
     }
     
-    // End of Table
-    if(row == 6) EmailMessage += '</table><br>';   
+    // Match Data
+    if(row < 7) {
+      EmailMessage += '<tr><td>'+Headers[row][0]+'</td><td>'+MatchData[row][0]+'</td></tr>';
+    }
+    
+    // End of first Table
+    if(row == 7) EmailMessage += '</table><br>';
+    
+    // Start of Pack Table
+    if(row == 9 && Param == 1) {
+      EmailMessage += 'Booster Pack Content<br><br><font size="4"><b>'+MatchData[row][0]+
+        '</b></font><br><table style="border-collapse:collapse;" border = 1 cellpadding = 5><th>'+Item+'</th><th>'+CardNumber+'</th><th>'+CardName+'</th><th>'+CardRarity+'</th>';
+    }
+    
+    // Pack Data
+    if(row > 9 && Param == 1) {
+      EmailMessage += '<tr><td>'+Headers[row][0]+'</td><td><center>'+MatchData[row][1]+'</td><td>'+MatchData[row][2]+'</td><td><center>'+MatchData[row][3]+'</td></tr>';
+    }
+
+    // If Param is Null, No Pack was opened 
+    if(row == 9 && Param == '') {
+      EmailMessage += '<br><font size="4"><b>No Booster Pack Opened</b></font><br><br>'
+      row = 24;
+    }
+    
+    // If Param is Not 1, Error is Present 
+    if(row == 9 && Param != 1) {
+      row = 24;
+    }
+    
   }
   return EmailMessage +'</table>';
 }
 
+// LEAGUE PASSWORD ERROR  ----------------------------------------------------------------------------------------------------------
 
 // **********************************************
-// function fcnSendFeedbackEmail()
+// function fcnMatchReportPwdError()
 //
-// This function generates the feedback email 
+// This function sends an email to both players
+// to report a League Password Error
 //
 // **********************************************
 
-function fcnSendFeedbackEmail(shtConfig, Address, MatchData, Feedback) {
+function fcnMatchReportPwdError(shtConfig, Address){
+
+  // Addresses and Languages for both players
+  var Address1  = Address[1][1];
+  var Language1 = Address[1][0];
+  var Address2  = Address[2][1];
+  var Language2 = Address[2][0];
+  var AddressBCC;
+  
+  
+  // ENGLISH
+  var EmailSubjectEN = 'Password Error - ' + shtConfig.getRange(11,2).getValue() + ' ' + shtConfig.getRange(13,2).getValue();
+  var EmailMessageEN = "<html><body>" + 
+    "Hi,<br><br>The League Password you entered is not valid."+
+      "<br>Please, send your Match Report again and enter the League Password."+
+        "<br><br>Don't hesitate to contact me if you are experiencing any issues."+
+          "<br><br>Thank you for your comprehension"+
+            "<br><br>Turn 1 Gaming Leagues & Tournaments"+
+              "</body></html>";
+  
+    // FRENCH
+  var EmailSubjectFR = 'Erreur Mot de Passe - ' + shtConfig.getRange(11,2).getValue() + ' ' + shtConfig.getRange(13,2).getValue();
+  var EmailMessageFR = "<html><body>" + 
+    "Bonjour,<br><br>Le mot de passe que vous avez entré n'est pas valide."+
+      "<br>SVP, renvoyez votre rapport de match et entrez le bon mot de passe."+
+        "<br><br>En cas de problème, n'hésitez pas à me contacter."+
+          "<br><br>Merci de votre compréhension"+
+            "<br><br>Turn 1 Gaming Leagues & Tournaments"+
+              "</body></html>";
+
+  
+  // Both Players English
+  if(Language1 == 'English' && Language2 == 'English'){
+    AddressBCC = Address1 + ', ' + Address2;
+    MailApp.sendEmail("", EmailSubjectEN, "",{bcc:AddressBCC, name:'Turn 1 Gaming League Manager',htmlBody:EmailMessageEN});
+  }
+  // Both Players French
+  if(Language1 == 'Français' && Language2 == 'Français'){
+    AddressBCC = Address1 + ', ' + Address2;
+    MailApp.sendEmail("", EmailSubjectFR, "",{bcc:AddressBCC, name:'Turn 1 Gaming League Manager',htmlBody:EmailMessageFR});
+  }
+  // Player 1 English, Player 2 French
+  if(Language1 == 'English' && Language2 == 'Français'){
+    MailApp.sendEmail(Address1, EmailSubjectEN, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessageEN});
+    MailApp.sendEmail(Address2, EmailSubjectFR, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessageFR});
+  }
+  // Player 1 French, Player 2 English
+  if(Language1 == 'Français' && Language1 == 'English'){
+    MailApp.sendEmail(Address1, EmailSubjectFR, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessageFR});
+    MailApp.sendEmail(Address2, EmailSubjectEN, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessageEN});
+  }
+}
+
+// NEW PLAYER CONFIRMATION  ----------------------------------------------------------------------------------------------------------
+
+// **********************************************
+// function fcnSendNewPlayerConf()
+//
+// This function sends a confirmation to the
+// New Player with Appropriate Links
+//
+// **********************************************
+
+function fcnSendNewPlayerConf(shtConfig, PlayerData){
+
+  // Variables
+  var EmailSubject;
+  var EmailMessage;
+  
+  var PlayerName  = PlayerData[2]; 
+  var PlayerEmail = PlayerData[3]; 
+  var PlayerLang  = PlayerData[4]; 
+  
+  // Location
+  var Location = shtConfig.getRange(3,9).getValue();
+  
+  // Facebook Page Link
+  var urlFacebook = shtConfig.getRange(50, 2).getValue();
+  
+  // English
+  if(PlayerLang == 'English' ){
+    
+    var LeagueTypeEN = shtConfig.getRange(6,9).getValue();
+    var LeagueNameEN = Location + ' ' + LeagueTypeEN;
+    
+    // Get Document URLs
+    var UrlValues = shtConfig.getRange(17,2,3,1).getValues();
+    var urlStandings = UrlValues[0][0];
+    var urlCardList = UrlValues[1][0];
+    var urlMatchReporter = UrlValues[2][0];
+    
+    // Set Email Subject
+    EmailSubject = 'Subscription Confirmation - ' + LeagueNameEN;
+    
+    // Start of Email Message
+    EmailMessage = '<html><body>';
+    
+    EmailMessage += 'Hi ' +PlayerName+ ','+
+      '<br><br>This message is to confirm your registration to the : '+LeagueNameEN;
+    
+    // If All links are non-null
+    if (urlMatchReporter != '' && urlStandings != '' && urlCardList != ''){ 
+      EmailMessage += '<br><br>From now on, you can submit your match results by clicking on the following link:<br><br>'+urlMatchReporter;
+      EmailMessage += '<br><br>You can look at the league results and standings at the following link:<br><br>'+urlStandings
+      EmailMessage += '<br><br>Finally, You can check your card pool as well as all other players in the league at the following link '+
+        '(I will send you a confirmation when all card pools will be completed):'+
+          '<br><br>'+urlCardList;
+    }
+       
+    // If one of them is null    
+    if (urlMatchReporter == '' || urlStandings == '' || urlCardList == ''){
+      EmailMessage += "<br><br>The League links are under construction, You will receive them as soon as they are operational.";
+    }
+    
+    // Add Facebook Page Link if present
+    if(urlFacebook != ''){
+      EmailMessage += "<br><br>Please join the Community Facebook page to chat with other players and plan matches.<br><br>" + urlFacebook;
+    }
+    
+    EmailMessage += '<br><br>If you have any question or comment, please do not hesitate to contact me, it will be my pleasure to answer you as soon as I can.'+
+      '<br><br>Thank you and Good Luck'+
+        '<br><br>---------------<br><br>Eric Bouchard<br>Turn 1 Gaming Leagues & Tournament Applications';
+    
+    // End of Email Message
+    EmailMessage += '</body></html>';
+  }
+  
+  // French
+  if(PlayerLang == 'Français'){
+
+    var LeagueTypeFR = shtConfig.getRange(7,9).getValue();
+    var LeagueNameFR = LeagueTypeFR + ' du ' + Location;
+    
+    // Get Document URLs
+    var UrlValues = shtConfig.getRange(20,2,3,1).getValues();
+    var urlStandings = UrlValues[0][0];
+    var urlCardList = UrlValues[1][0];
+    var urlMatchReporter = UrlValues[2][0];
+    
+    // Set Email Subject
+    EmailSubject = 'Confirmation Inscription - ' + LeagueNameFR;
+    
+    // Start of Email Message
+    EmailMessage = '<html><body>';
+    
+    EmailMessage += 'Bonjour ' +PlayerName+ ','+
+      '<br><br>Ceci est pour confirmer ton inscription à la ligue: '+LeagueNameFR;
+    
+    // If All links are non-null
+    if (urlMatchReporter != '' && urlStandings != '' && urlCardList != ''){    
+      EmailMessage += '<br><br>À partir de maintenant, tu peux soumettre tes rapports de matches en cliquant sur le lien suivant:<br><br>'+urlMatchReporter;
+      EmailMessage += '<br><br>Tu peux consulter le classement et statistiques de la ligue au lien suivant:<br><br>'+urlStandings;
+      EmailMessage += '<br><br>Finalement, tu peux consulter ton pool de cartes ainsi que celui de tous les autres joueurs de la ligue au lien suivant '+
+        '(je vous enverrai une confirmation lorsque les pool de cartes seront complétés):'+
+          '<br><br>'+urlCardList;
+    }
+   
+    // If one of them is null    
+    if (urlMatchReporter == '' || urlStandings == '' || urlCardList == ''){
+      EmailMessage += "<br><br>Les liens de la ligue sont en construction, ils te seront envoyés dès qu'ils seront fonctionnels.";
+    }
+    
+    // Add Facebook Page Link if present
+    if(urlFacebook != ''){
+      EmailMessage += "<br><br>Joignez vous à la page Facebook de la communauté pour discuter avec les autres joueurs et organiser vos parties.<br><br>" + urlFacebook;
+    }
+                      
+    EmailMessage += '<br><br>Si tu as des questions ou commentaires, svp n’hésite pas à me contacter, il me fera plaisir de te répondre dans les plus brefs délais.'+
+      '<br><br>Merci et bonne chance'+
+        '<br><br>---------------<br><br>Eric Bouchard<br>Turn 1 Gaming Leagues & Tournament Applications';
+    
+    // End of Email Message
+    EmailMessage += '</body></html>';
+  }
+  
+  // Send Email Confirmation
+  MailApp.sendEmail(PlayerEmail, EmailSubject,'',{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
+}
+
+// NEW PLAYER CONFIRMATION FOR LOCATION ----------------------------------------------------------------------------------------------------------
+
+// **********************************************
+// function fcnSendNewPlayerConfLocation()
+//
+// This function sends a confirmation to the
+// New Player with Appropriate Links
+//
+// **********************************************
+
+function fcnSendNewPlayerConfLocation(shtConfig, PlayerData){
+
+  // Variables
+  var EmailSubject;
+  var EmailMessage;
+  
+  var PlayerName  = PlayerData[2]; 
+  var PlayerEmail = PlayerData[3]; 
+  var PlayerLang  = PlayerData[4]; 
+  
+  // Location
+  var Location = shtConfig.getRange(3,9).getValue();
+  var LocEmail = shtConfig.getRange(4,9).getValue();
+  var LocLanguage = shtConfig.getRange(5,9).getValue();
+  
+  // Facebook Page Link
+  var urlFacebook = shtConfig.getRange(50, 2).getValue();
+  
+  // English
+  if(LocLanguage == 'English' ){
+    
+    var LeagueTypeEN = shtConfig.getRange(6,9).getValue();
+    var LeagueNameEN = Location + ' ' + LeagueTypeEN;
+    
+    // Get Document URLs
+    var UrlValues = shtConfig.getRange(17,2,3,1).getValues();
+    var urlStandings = UrlValues[0][0];
+    var urlCardList = UrlValues[1][0];
+    var urlMatchReporter = UrlValues[2][0];
+    
+    // Set Email Subject
+    EmailSubject = 'Subscription Confirmation - ' + LeagueNameEN;
+    
+    // Start of Email Message
+    EmailMessage = '<html><body>';
+    
+    EmailMessage += 'Hi ' +PlayerName+ ','+
+      '<br><br>This message is to confirm your registration to the : '+LeagueNameEN;
+    
+    // If All links are non-null
+    if (urlMatchReporter != '' && urlStandings != '' && urlCardList != ''){ 
+      EmailMessage += '<br><br>From now on, you can submit your match results by clicking on the following link:<br><br>'+urlMatchReporter;
+      EmailMessage += '<br><br>You can look at the league results and standings at the following link:<br><br>'+urlStandings
+      EmailMessage += '<br><br>Finally, You can check your card pool as well as all other players in the league at the following link '+
+        '(I will send you a confirmation when all card pools will be completed):'+
+          '<br><br>'+urlCardList;
+    }
+       
+    // If one of them is null    
+    if (urlMatchReporter == '' || urlStandings == '' || urlCardList == ''){
+      EmailMessage += "<br><br>The League links are under construction, You will receive them as soon as they are operational.";
+    }
+    
+    // Add Facebook Page Link if present
+    if(urlFacebook != ''){
+      EmailMessage += "<br><br>Please join the Community Facebook page to chat with other players and plan matches.<br><br>" + urlFacebook;
+    }
+    
+    EmailMessage += '<br><br>If you have any question or comment, please do not hesitate to contact me, it will be my pleasure to answer you as soon as I can.'+
+      '<br><br>Thank you and Good Luck'+
+        '<br><br>---------------<br><br>Eric Bouchard<br>Turn 1 Gaming Leagues & Tournament Applications';
+    
+    // End of Email Message
+    EmailMessage += '</body></html>';
+  }
+  
+  // French
+  if(LocLanguage == 'Français'){
+
+    var LeagueTypeFR = shtConfig.getRange(7,9).getValue();
+    var LeagueNameFR = LeagueTypeFR + ' du ' + Location;
+    
+    // Get Document URLs
+    var UrlValues = shtConfig.getRange(20,2,3,1).getValues();
+    var urlStandings = UrlValues[0][0];
+    var urlCardList = UrlValues[1][0];
+    var urlMatchReporter = UrlValues[2][0];
+    
+    // Set Email Subject
+    EmailSubject = 'Confirmation Inscription - ' + LeagueNameFR;
+    
+    // Start of Email Message
+    EmailMessage = '<html><body>';
+    
+    EmailMessage += 'Bonjour ' +PlayerName+ ','+
+      '<br><br>Ceci est pour confirmer ton inscription à la ligue: '+LeagueNameFR;
+    
+    // If All links are non-null
+    if (urlMatchReporter != '' && urlStandings != '' && urlCardList != ''){    
+      EmailMessage += '<br><br>À partir de maintenant, tu peux soumettre tes rapports de matches en cliquant sur le lien suivant:<br><br>'+urlMatchReporter;
+      EmailMessage += '<br><br>Tu peux consulter le classement et statistiques de la ligue au lien suivant:<br><br>'+urlStandings;
+      EmailMessage += '<br><br>Finalement, tu peux consulter ton pool de cartes ainsi que celui de tous les autres joueurs de la ligue au lien suivant '+
+        '(je vous enverrai une confirmation lorsque les pool de cartes seront complétés):'+
+          '<br><br>'+urlCardList;
+    }
+   
+    // If one of them is null    
+    if (urlMatchReporter == '' || urlStandings == '' || urlCardList == ''){
+      EmailMessage += "<br><br>Les liens de la ligue sont en construction, ils te seront envoyés dès qu'ils seront fonctionnels.";
+    }
+    
+    // Add Facebook Page Link if present
+    if(urlFacebook != ''){
+      EmailMessage += "<br><br>Joignez vous à la page Facebook de la communauté pour discuter avec les autres joueurs et organiser vos parties.<br><br>" + urlFacebook;
+    }
+                      
+    EmailMessage += '<br><br>Si tu as des questions ou commentaires, svp n’hésite pas à me contacter, il me fera plaisir de te répondre dans les plus brefs délais.'+
+      '<br><br>Merci et bonne chance'+
+        '<br><br>---------------<br><br>Eric Bouchard<br>Turn 1 Gaming Leagues & Tournament Applications';
+    
+    // End of Email Message
+    EmailMessage += '</body></html>';
+  }
+  
+  // Send Email Confirmation
+  MailApp.sendEmail(LocEmail, EmailSubject,'',{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
+}
+
+
+// WEEKLY REPORT ----------------------------------------------------------------------------------------------------------
+
+// **********************************************
+// function fcnGenWeekReportMsg()
+//
+// This function generates the HTML message for the 
+// Weekly Report in English
+//
+// **********************************************
+
+function fcnGenWeekReportMsg(ss, shtConfig, EmailData, WeekStats, WeeklyPrizeData, PlayerMost1, PlayerMost2, PlayerMost3){
+
+  // Prize Category = WeeklyPrizeData
+  
+  // Prize Category 				    
+  // [0]= Weekly Prize                 
+  // [1]= Type				 			
+  // [2]= Title EN						
+  // [3]= Message Description EN	
+  // [4]= Spare EN						
+  // [5]= Spare EN						
+  // [6]= Title FR						
+  // [7]= Message Description FR	
+  // [8]= Spare FR						
+  // [9]= Spare FR						
+
+  var Category1 = subCreateArray(10,0);
+  var Category2 = subCreateArray(10,0);
+  var Category3 = subCreateArray(10,0);
+  for(var i = 0; i<10; i++){
+    Category1[i]=WeeklyPrizeData[i][1];
+    Category2[i]=WeeklyPrizeData[i][2];
+    Category3[i]=WeeklyPrizeData[i][3];
+  }
+  
+  // Week Stats
+  //  WeekStats[0][0] = LastWeek;
+  //  WeekStats[0][1] = Week;
+  //  
+  //  WeekStats[1][0] = TotalMatch;
+  //  WeekStats[1][1] = TotalMatchStore;  
+  //  WeekStats[1][2] = TotalWins;
+  //  WeekStats[1][3] = TotalLoss;
+  
+  var EmailLanguage = EmailData[0][3];
+  var EmailMessage = EmailData[0][2];
+  
+  var WeeklyPrize = WeeklyPrizeData[0][1];
+      
+  // ENGLISH
+  if(EmailLanguage == 'English'){
+  
+    EmailMessage = 'Hello everyone,<br><br>Week ' + WeekStats[0][0] + ' is now complete and Week '+ WeekStats[0][1] +' has started.'+
+      ' <br><br>Here is the week report'+
+        '<br><br><b><font size="4">Week ' + WeekStats[0][0] + '</b></font>' + 
+          '<br><br><b>Total Matches Played: ' + WeekStats[1][0] + '</b>' +
+            '<br><b>Total Matches Played in Store: ' + WeekStats[1][1] + '</b>';
+    
+    // Player Awards are present if first category is present
+    if(Category1[1] != ''){
+      EmailMessage += '<br><br><font size="3"><b>Weekly Awards</b></font>';
+      EmailMessage += "<br><br>Each week, awards are given to the player who will finish first in each of the following categories:"
+      // Category 1
+      if(Category1[1] != '') EmailMessage += "<br><br><b>" + Category1[2] + "</b>";
+      // Category 2
+      if(Category2[1] != '') EmailMessage += "<br>" + Category2[2] + "</b>";
+      // Category 3
+      if(Category3[1] != '') EmailMessage += "<br>" + Category3[2] + "</b>";
+      // Prize Claim
+      if(WeeklyPrize != '') EmailMessage += " The winner of each category wins a <b>" + WeeklyPrize + "</b>. <br>Winners can claim their prize at the store by showing this email.";
+      
+      // Category1
+      if(Category1[1] != ''){
+        EmailMessage += '<br><br><font size="2"><b>'+ Category1[2] +'</b></font>'+
+          '<br>' + Category1[2] + ': <br><b>' + PlayerMost1[0][0] + '</b>';
+        
+        // Add other players with same record
+        if(PlayerMost1[1][0] != '') EmailMessage += "<br><b>" + PlayerMost1[1][0] + "</b>";
+        if(PlayerMost1[2][0] != '') EmailMessage += "<br><b>" + PlayerMost1[2][0] + "</b>";
+        if(PlayerMost1[3][0] != '') EmailMessage += "<br><b>" + PlayerMost1[3][0] + "</b>";
+        if(PlayerMost1[4][0] != '') EmailMessage += "<br><b>" + PlayerMost1[4][0] + "</b>";
+      }
+      
+      // Category 2
+      if(Category2[1] != ''){
+        EmailMessage += '<br><br><font size="2"><b>'+ Category2[2] +'</b></font>'+
+          '<br>' + Category2[2] + ': <br><b>' + PlayerMost2[0][0] + '</b>';
+        
+        // Add other players with same record
+        if(PlayerMost2[1][0] != '') EmailMessage += "<br><b>" + PlayerMost2[1][0] + "</b>";
+        if(PlayerMost2[2][0] != '') EmailMessage += "<br><b>" + PlayerMost2[2][0] + "</b>";
+        if(PlayerMost2[3][0] != '') EmailMessage += "<br><b>" + PlayerMost2[3][0] + "</b>";
+        if(PlayerMost2[4][0] != '') EmailMessage += "<br><b>" + PlayerMost2[4][0] + "</b>";
+      }
+      
+      // Category 3
+      if(Category3[1] != ''){
+        EmailMessage += '<br><br><font size="2"><b>'+ Category3[2] +'</b></font>'+
+          '<br>' + Category3[2] + ': <br><b>' + PlayerMost3[0][0] + '</b>';
+        
+        // Add other players with same record
+        if(PlayerMost3[1][0] != '') EmailMessage += "<br><b>" + PlayerMost3[1][0] + "</b>";
+        if(PlayerMost3[2][0] != '') EmailMessage += "<br><b>" + PlayerMost3[2][0] + "</b>";
+        if(PlayerMost3[3][0] != '') EmailMessage += "<br><b>" + PlayerMost3[3][0] + "</b>";
+        if(PlayerMost3[4][0] != '') EmailMessage += "<br><b>" + PlayerMost3[4][0] + "</b>";
+      }
+    }
+    // Message Ending
+    EmailMessage += '<br><br><font size="3">Good luck to all player for week '+ WeekStats[0][1] + '</font>';
+  }
+  
+  // FRENCH
+  if(EmailLanguage == 'Français'){
+    
+    EmailMessage = 'Bonjour tout le monde,<br><br>La semaine ' + WeekStats[0][0] + ' est maintenant terminée et la semaine '+ WeekStats[0][1] +' vient de commencer.'+
+      ' <br><br>Voici le rapport de la semaine ' + 
+        '<br><br><b><font size="4">Semaine'+ WeekStats[0][0] +'</b></font>' +
+          '<br><br><b>Nombre total de parties joués: ' + WeekStats[1][0] + '</b>' +
+            '<br><b>Nombre total de parties joués au magasin: ' + WeekStats[1][1] + '</b>';
+    
+    // Player Awards are present if first category is present
+    if(PlayerMost1[0][0] != ''){
+      EmailMessage += '<br><br><font size="3"><b>Prix de la semaine </b></font>' +
+        "<br>Chaque semaine, le joueur qui a joué le plus de parties au magasin et le joueur qui a perdu le plus de parties remportent un <b>Booster Standard Showdown GRATUIT</b>."+
+          "<br>Les personnes mentionnées ci-dessous n'ont qu'à se présenter au magasin avec ce courriel pour réclamer leur prix.";
+      
+      // PlayerMost1
+      if(PlayerMost1[0][0] != ''){
+        EmailMessage += '<br><br><font size="2"><b>Plus de Parties en Magasin</b></font>'+
+          '<br>Le joueur ayant joué le plus de parties en magasin avec <b>' + PlayerMost1[0][1] + ' parties joués</b>:' + 
+            '<br><b>' + PlayerMost1[0][0] + '</b>';
+        
+        // Add other players with same record
+        if(PlayerMost1[1][0] != '') EmailMessage += "<br><b>" + PlayerMost1[1][0] + "</b>";
+        if(PlayerMost1[2][0] != '') EmailMessage += "<br><b>" + PlayerMost1[2][0] + "</b>";
+        if(PlayerMost1[3][0] != '') EmailMessage += "<br><b>" + PlayerMost1[3][0] + "</b>";
+        if(PlayerMost1[4][0] != '') EmailMessage += "<br><b>" + PlayerMost1[4][0] + "</b>";
+      }
+      
+      // PlayerMost2
+      if(PlayerMost2[0][0] != ''){
+        EmailMessage += '<br><br><font size="2"><b>Plus de parties perdues</b></font>'+
+          '<br>Le joueur qui a perdu le plus de parties cette semaine: ' + 
+            '<br><b>' + PlayerMost2[0][0] + '</b>';
+        
+        // Add other players with same record
+        if(PlayerMost2[1][0] != '') EmailMessage += "<br><b>" + PlayerMost2[1][0] + "</b>";
+        if(PlayerMost2[2][0] != '') EmailMessage += "<br><b>" + PlayerMost2[2][0] + "</b>";
+        if(PlayerMost2[3][0] != '') EmailMessage += "<br><b>" + PlayerMost2[3][0] + "</b>";
+        if(PlayerMost2[4][0] != '') EmailMessage += "<br><b>" + PlayerMost2[4][0] + "</b>";
+      }
+      
+      // PlayerMost3
+      if(PlayerMost3[0][0] != ''){
+        EmailMessage += '<br><br><font size="2"><b>Plus de parties perdues</b></font>'+
+          '<br>Le joueur qui a perdu le plus de parties cette semaine: ' + 
+            '<br><b>' + PlayerMost3[0][0] + '</b>';
+        
+        // Add other players with same record
+        if(PlayerMost3[1][0] != '') EmailMessage += "<br><b>" + PlayerMost3[1][0] + "</b>";
+        if(PlayerMost3[2][0] != '') EmailMessage += "<br><b>" + PlayerMost3[2][0] + "</b>";
+        if(PlayerMost3[3][0] != '') EmailMessage += "<br><b>" + PlayerMost3[3][0] + "</b>";
+        if(PlayerMost3[4][0] != '') EmailMessage += "<br><b>" + PlayerMost3[4][0] + "</b>";
+      }
+    }
+    // Message Ending
+    EmailMessage += '<br><br><font size="3">Bonne chance à tous pour la semaine '+ WeekStats[0][1] + '</font>';
+    
+    
+  EmailData[0][2] = EmailMessage;
+    
+  }
+  return EmailData;
+}
+
+
+// **********************************************
+// function fcnGenWeekReportMsgEN()
+//
+// This function generates the HTML message for the 
+// Weekly Report in English
+//
+// **********************************************
+
+function fcnGenWeekReportMsgEN(EmailMessage, LastWeek, Week, MatchesPlayed, MatchesPlayedStore, PlayerMostGames, PlayerMostLoss){
+
+  EmailMessage = 'Hello everyone,<br><br>Week ' + LastWeek + ' is now complete and Week '+ Week +' has started.'+
+    ' <br><br>Here is the week report'+
+      '<br><br><b><font size="4">Week ' + LastWeek + '</b></font>' + 
+        '<br><br><b>Total Matches Played: ' + MatchesPlayed + '</b>' +
+          '<br><b>Total Matches Played in Store: ' + MatchesPlayedStore + '</b>';
+
+  // Player Awards
+  EmailMessage += '<br><br><font size="3"><b>Week Awards</b></font>' +
+    "<br>Each week, the player(s) who played the most matches at the store and the player who lost the most matches win a <b>FREE Standard Showdown Booster</b>."+
+      "<br>Players mentioned below only have to show this email to the store to claim their Booster."+
+        " <br><b>Please note that this booster CANNOT be added to your League Card Pool</b>";
+
+  
+  // Most Matches Played in Store
+  EmailMessage += '<br><br><font size="2"><b>Most Matches Played in Store</b></font>'+
+    '<br>The player with the most matches played in store this week with <b>' + PlayerMostGames[0][1] + ' games played</b>:' + 
+    '<br><b>' + PlayerMostGames[0][0] + '</b>';
+  
+  // Add other players with same record
+  if(PlayerMostGames[1][0] != '') EmailMessage += "<br><b>" + PlayerMostGames[1][0] + "</b>";
+  if(PlayerMostGames[2][0] != '') EmailMessage += "<br><b>" + PlayerMostGames[2][0] + "</b>";
+  if(PlayerMostGames[3][0] != '') EmailMessage += "<br><b>" + PlayerMostGames[3][0] + "</b>";
+  if(PlayerMostGames[4][0] != '') EmailMessage += "<br><b>" + PlayerMostGames[4][0] + "</b>";
+  
+  // Most Losses
+  EmailMessage += '<br><br><font size="2"><b>Most Losses</b></font>'+
+    '<br>The player with the most losses this week:</b> ' + 
+      '<br><b>' + PlayerMostLoss[0][0] + '</b>';
+  
+  // Add other players with same record
+  if(PlayerMostLoss[1][0] != '') EmailMessage += "<br><b>" + PlayerMostLoss[1][0] + "</b>";
+  if(PlayerMostLoss[2][0] != '') EmailMessage += "<br><b>" + PlayerMostLoss[2][0] + "</b>";
+  if(PlayerMostLoss[3][0] != '') EmailMessage += "<br><b>" + PlayerMostLoss[3][0] + "</b>";
+  if(PlayerMostLoss[4][0] != '') EmailMessage += "<br><b>" + PlayerMostLoss[4][0] + "</b>";
+  
+  // Message Ending
+  EmailMessage += '<br><br><font size="3">Good luck to all player for week '+ Week + '</font>';
+  
+  return EmailMessage;
+}
+
+// **********************************************
+// function fcnGenWeekReportMsgFR()
+//
+// This function generates the HTML message for the 
+// Weekly Report in French
+//
+// **********************************************
+
+function fcnGenWeekReportMsgFR(EmailMessage, LastWeek, Week, MatchesPlayed, MatchesPlayedStore, PlayerMostGames, PlayerMostLoss){
+  
+  EmailMessage = 'Bonjour tout le monde,<br><br>La semaine ' + LastWeek + ' est maintenant terminée et la semaine '+ Week +' vient de commencer.'+
+    ' <br><br>Voici le rapport de la semaine ' + 
+      '<br><br><b><font size="4">Semaine'+ LastWeek +'</b></font>' +
+        '<br><br><b>Nombre total de parties joués: ' + MatchesPlayed + '</b>' +
+          '<br><b>Nombre total de parties joués au magasin: ' + MatchesPlayedStore + '</b>';
+
+  // Player Awards
+  EmailMessage += '<br><br><font size="3"><b>Prix de la semaine </b></font>' +
+    "<br>Chaque semaine, le joueur qui a joué le plus de parties au magasin et le joueur qui a perdu le plus de parties remportent un <b>Booster Standard Showdown GRATUIT</b>."+
+      "<br>Les personnes mentionnées ci-dessous n'ont qu'à se présenter au magasin avec ce courriel pour réclamer leur Booster."+
+        " <br><b>SVP, prenez en note que ce Booster NE PEUT PAS être ajouté à votre Pool de Carte de Ligue</b>";
+
+  
+  // Most Matches Played in Store
+  EmailMessage += '<br><br><font size="2"><b>Plus de Parties en Magasin</b></font>'+
+    '<br>Le joueur ayant joué le plus de parties en magasin avec <b>' + PlayerMostGames[0][1] + ' parties joués</b>:' + 
+    '<br><b>' + PlayerMostGames[0][0] + '</b>';
+  
+  // Add other players with same record
+  if(PlayerMostGames[1][0] != '') EmailMessage += "<br><b>" + PlayerMostGames[1][0] + "</b>";
+  if(PlayerMostGames[2][0] != '') EmailMessage += "<br><b>" + PlayerMostGames[2][0] + "</b>";
+  if(PlayerMostGames[3][0] != '') EmailMessage += "<br><b>" + PlayerMostGames[3][0] + "</b>";
+  if(PlayerMostGames[4][0] != '') EmailMessage += "<br><b>" + PlayerMostGames[4][0] + "</b>";
+  
+  // Most Losses
+  EmailMessage += '<br><br><font size="2"><b>Plus de parties perdues</b></font>'+
+    '<br>Le joueur qui a perdu le plus de parties cette semaine: ' + 
+      '<br><b>' + PlayerMostLoss[0][0] + '</b>';
+  
+  // Add other players with same record
+  if(PlayerMostLoss[1][0] != '') EmailMessage += "<br><b>" + PlayerMostLoss[1][0] + "</b>";
+  if(PlayerMostLoss[2][0] != '') EmailMessage += "<br><b>" + PlayerMostLoss[2][0] + "</b>";
+  if(PlayerMostLoss[3][0] != '') EmailMessage += "<br><b>" + PlayerMostLoss[3][0] + "</b>";
+  if(PlayerMostLoss[4][0] != '') EmailMessage += "<br><b>" + PlayerMostLoss[4][0] + "</b>";
+  
+  // Message Ending
+  EmailMessage += '<br><br><font size="3">Bonne chance à tous pour la semaine '+ Week + '</font>';
+
+  return EmailMessage;
+}
+
+
+// WEEKLY BOOSTER CONFIRMATION ----------------------------------------------------------------------------------------------------------
+
+// **********************************************
+// function fcnSendBstrCnfrmEmail()
+//
+// This function generates the confirmation email in English
+// after a match report has been submitted
+//
+// **********************************************
+
+function fcnSendBstrCnfrmEmail(Player, Week, EmailAddresses, PackData, shtConfig) {
+  
+  // Variables
+  var EmailSubject;
+  var EmailMessage;
+  var Address  = EmailAddresses[1];
+  var Language = EmailAddresses[0];
+  
+  // Open Email Templates
+  var ssEmailID = shtConfig.getRange(47,2).getValue();  
+  
+  // League Location Name
+  var Location = shtConfig.getRange(3,9).getValue();
+  
+  // Facebook Page Link
+  var urlFacebook = shtConfig.getRange(50, 2).getValue();
+  
+  // Add Masterpiece mention if necessary
+  if (PackData[15][2] == 'Masterpiece'){
+    //var Masterpiece = PackData[14][2];
+    PackData[14][2] += ' (Masterpiece)' 
+  }
+  
+  // English
+  if(Language == 'English'){  
+    
+    // Table Headers
+    var HeadersEN = SpreadsheetApp.openById(ssEmailID).getSheetByName('Templates').getRange(12,2,20,1).getValues();
+    
+    // Document URLs
+    var UrlValuesEN = shtConfig.getRange(17,2,3,1).getValues();
+    var urlStandings = UrlValuesEN[0][0];
+    var urlCardPool = UrlValuesEN[1][0];
+    var urlMatchReporter = UrlValuesEN[2][0];
+    
+    // League Name
+    var LeagueTypeEN = shtConfig.getRange(6,9).getValue();
+    var LeagueName = Location + ' ' + LeagueTypeEN;
+    
+    // Set Email Subject
+    EmailSubject = LeagueName + " - Weekly Booster" + " Week " + Week ;
+    
+    // Start of Email Message
+    EmailMessage = '<html><body>';
+    
+    EmailMessage += 'Hi ' + Player + ',<br><br>You have succesfully added a Booster to your Card Pool for the ' + LeagueName + ', Week ' + Week + '.' +
+      '<br><br>Here is the list of cards added to your pool.';
+    
+    // Builds the Pack Table
+    EmailMessage = subBstrTable(EmailMessage, HeadersEN, PackData, Language, 1);
+    
+    EmailMessage += "<br><br>Click below to access your Card Pool."+
+      "<br>"+ urlCardPool;
+      
+    // Add Facebook Page Link if present
+    if(urlFacebook != ''){
+      EmailMessage += "<br><br>Please join the Community Facebook page to chat with other players and plan matches.<br><br>" + urlFacebook;
+    }
+    
+    // Signature
+    EmailMessage += "<br><br>Thank you for using TCG Booster League Manager from Turn 1 Gaming Leagues & Tournaments";
+    
+    // End of Email Message
+    EmailMessage += '</body></html>';
+    
+    // Send Email to player
+    MailApp.sendEmail(Address, EmailSubject, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
+  }
+  
+  // French
+  if(Language == 'Français'){  
+    
+    // Table Headers
+    var HeadersFR = SpreadsheetApp.openById(ssEmailID).getSheetByName('Templates').getRange(12,3,20,1).getValues();
+    
+    // Document URLs
+    var UrlValuesFR = shtConfig.getRange(20,2,3,1).getValues();
+    var urlStandings = UrlValuesFR[0][0];
+    var urlCardPool = UrlValuesFR[1][0];
+    var urlMatchReporter = UrlValuesFR[2][0];
+    
+    // League Name
+    var LeagueTypeFR = shtConfig.getRange(7,9).getValue();
+    var LeagueName = LeagueTypeFR + ' du ' + Location;
+    
+    // Set Email Subject
+    EmailSubject = LeagueName + " - Booster de Semaine" + " Semaine " + Week ;
+    
+    // Start of Email Message
+    EmailMessage = '<html><body>';
+    
+    EmailMessage += 'Bonjour ' + Player + ',<br><br>Vous avez ajouté avec succès un booster à votre Pool de Cartes pour la semaine ' + Week + ' de la ' + LeagueName + '.' +
+      '<br><br>Voici la liste des cartes ajoutées à votre pool.';
+    
+    // Builds the Pack Table
+    EmailMessage = subBstrTable(EmailMessage, HeadersFR, PackData, Language, 1);
+    
+    EmailMessage += "<br><br>Cliquez ci-dessous pour accéder à votre Pool de Cartes:"+
+      "<br>"+ urlCardPool;
+    
+    // Add Facebook Page Link if present
+    if(urlFacebook != ''){
+      EmailMessage += "<br><br>Joignez vous à la page Facebook de la communauté pour discuter avec les autres joueurs et organiser vos parties.<br><br>" + urlFacebook;
+    }
+
+    // Signature
+    EmailMessage += "<br><br>Merci d'utiliser TCG Booster League Manager de Turn 1 Gaming Leagues & Tournaments";
+    
+    // End of Email Message
+    EmailMessage += '</body></html>';
+    
+    // Send Email to player
+    MailApp.sendEmail(Address, EmailSubject, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
+  }
+}
+
+
+// WEEKLY BOOSTER ERROR ----------------------------------------------------------------------------------------------------------
+
+// **********************************************
+// function fcnSendBstrErrorEmailFR()
+//
+// This function generates the confirmation email in English
+// after a match report has been submitted
+//
+// **********************************************
+
+function fcnSendBstrErrorEmail(Player, Week, EmailAddresses, PackData, ErrorMsg, shtConfig) {
   
   // Variables
   var EmailSubject;
   var EmailMessage;
   
-  // League Name
-  var Location = shtConfig.getRange(11,2).getValue();
-  var LeagueTypeEN = shtConfig.getRange(13,2).getValue();
-  var LeagueNameEN = shtConfig.getRange(3,2).getValue() + ' ' + LeagueTypeEN;
+  // Email and Language Preference
+  var Language = EmailAddresses[0];
+  var Address  = EmailAddresses[1];
+
+  // Email Template Header
+  var ssEmailID = shtConfig.getRange(47,2).getValue();
+  var shtEmailTemplates = SpreadsheetApp.openById(ssEmailID).getSheetByName('Templates')
+  
+  // League Location Name
+  var Location = shtConfig.getRange(3,9).getValue();
+
+  // English
+  if(Language == 'English'){
     
-  // Match Data Assignation
-  var MatchID = MatchData[2][0];
-  var Week    = MatchData[3][0];
-  var Winr    = MatchData[4][0];
-  var Losr    = MatchData[5][0];
+    // League Name
+    var LeagueTypeEN = shtConfig.getRange(6,9).getValue();
+    var LeagueName = Location + ' ' + LeagueTypeEN;
+    
+    // Email Template Header
+    var HeadersEN = shtEmailTemplates.getRange(12,2,20,1).getValues();
+    
+    // Weekly Booster Forms URL
+    var UrlWeekBstrForm = shtConfig.getRange(27,2).getValue();
+    
+    // Set Email Subject
+    EmailSubject = LeagueName + " - Weekly Booster Error"  + " Week " + Week;
+    
+    // Start of Email Message
+    EmailMessage = "<html><body>";
+    
+    EmailMessage += "Hi,<br><br><b>The week "+ Week +" Booster for player  " + Player + ".</b> could not be processed.";
+    
+    EmailMessage += "<br><br><b>Booster Information</b>"+
+      "<br><br>Week number : <b>" + Week + "</b>"+
+        "<br>Player: <b>" + Player + "</b><br>";
+    
+    // Builds the Pack Table
+    EmailMessage = subBstrTable(EmailMessage, HeadersEN, PackData, Language, 1);
+    
+    EmailMessage += "<br><br>Error Message: <br><br><b>" + ErrorMsg[0] + "</b>";
+    
+    EmailMessage += "<br><br><br>ENTER ENGLISH MESSAGE...S'il y a un problème au niveau de l'information entrée, recommencez et assurez-vous d'entrer les bonnes informations." + 
+      "<br>Cliquez ici pour ajouter un autre Booster: "+ UrlWeekBstrForm +
+        "<br><br>Si vous éprouvez d'autres problèmes, répondez à ce courriel en me décrivant la nature de votre problème";
+    
+    // Signature
+    EmailMessage += "<br><br>Thank you for using TCG Booster League Manager from Turn 1 Gaming Leagues & Tournaments";
+    
+    // End of Email Message
+    EmailMessage += '</body></html>';
+    
+    // Send Email to player
+    MailApp.sendEmail(Address, EmailSubject, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
+  }
   
-  // Set Email Subject
-  EmailSubject = Location + ' ' + LeagueNameEN + ' - Week ' + Week + ' - Player Feedback' ;
-  
-  // Start of Email Message
-  EmailMessage = '<html><body>';
-  
-  EmailMessage += 'Match ID: ' + MatchID + '<br>' +
-    'Week: ' + Week + '<br>' +
-      'Winning Player: ' + Winr + '<br>' +
-        'Losing Player: ' + Losr + '<br><br>';
-  EmailMessage += 'Here is the feedback received by:<br><br>'+
-    Address[1][1]+'<br>'+
-      Address[2][1]+'<br><br>'+
-        Feedback;
-  
-  // End of Email Message
-  EmailMessage += '</body></html>';
-  
-  // Send email to Administrator
-  MailApp.sendEmail(Address[0][1], EmailSubject, EmailMessage,{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
+  // French
+  if(Language == 'Français'){
+    
+    // League Name
+    var LeagueTypeFR = shtConfig.getRange(7,9).getValue();
+    var LeagueName = LeagueTypeFR + ' du ' + Location;
+    
+    // Email Template Header
+    var HeadersFR = shtEmailTemplates.getRange(12,3,20,1).getValues();
+    
+    // Weekly Booster Forms URL
+    var UrlWeekBstrForm = shtConfig.getRange(28,2).getValue();
+    
+    // Set Email Subject
+    EmailSubject = LeagueName + " - Erreur Booster de Semaine" + " Semaine " + Week ;
+    
+    // Start of Email Message
+    EmailMessage = "<html><body>";
+    
+    EmailMessage += "Bonjour,<br><br>Une erreur est survenue lors du traitement du <b>Booster de Semaine "+ Week +" pour " + Player + ".</b>";
+    
+    EmailMessage += "<br><br><b>Information du Booster</b>"+
+      "<br><br>Semaine numéro : <b>" + Week + "</b>"+
+        "<br>Nom du Joueur: <b>" + Player + "</b><br>";
+    
+    // Builds the Pack Table
+    EmailMessage = subBstrTable(EmailMessage, HeadersFR, PackData, Language, 1);
+    
+    EmailMessage += "<br><br>Message d'erreur: <br><br><b>" + ErrorMsg[1] + "</b>";
+    
+    EmailMessage += "<br><br><br>S'il y a un problème au niveau de l'information entrée, recommencez et assurez-vous d'entrer les bonnes informations." + 
+      "<br>Cliquez ici pour ajouter un autre Booster: "+ UrlWeekBstrForm +
+        "<br><br>Si vous éprouvez d'autres problèmes, répondez à ce courriel en me décrivant la nature de votre problème";
+    
+    // Signature
+    EmailMessage += "<br><br><br>Merci d'utiliser TCG Booster League Manager de Turn 1 Gaming Leagues & Tournaments";
+    
+    // End of Email Message
+    EmailMessage += '</body></html>';
+    
+    // Send Email to player
+    MailApp.sendEmail(Address, EmailSubject, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
+  }
 }
 
+
+// BOOSTER DATA TABLE  ----------------------------------------------------------------------------------------------------------
+
+// **********************************************
+// function subBstrTable()
+//
+// This function generates the HTML table that displays 
+// the Match Data and Booster Pack Data
+//
+// **********************************************
+
+function subBstrTable(EmailMessage, Headers, PackData, Language, Param){
+  
+  var Item = Headers[16][0];
+  var CardNumber = Headers[17][0];
+  var CardName = Headers[18][0];
+  var CardRarity = Headers[19][0];
+    
+  for(var row=0; row<15; ++row){
+
+    // Translate MatchData if necessary
+    if (Language == 'English' && PackData[row][0] == 'Oui') PackData[row][0] = 'Yes';
+    if (Language == 'English' && PackData[row][0] == 'Non') PackData[row][0] = 'No' ;
+    if (Language == 'Français' && PackData[row][0] == 'Yes') PackData[row][0] = 'Oui';
+    if (Language == 'Français' && PackData[row][0] == 'No' ) PackData[row][0] = 'Non';
+    
+    // Start of Pack Table
+    if(row == 0 && Param == 1) {
+      // English
+      if(Language == 'English') EmailMessage += '<br><br><font size="4"><b>'+'Set: '+PackData[row][1]+'<br>';
+      
+      // French
+      if(Language == 'Français') EmailMessage += '<br><br><font size="4"><b>'+'Set: '+PackData[row][1]+'<br>';
+
+      EmailMessage += '</b></font><br><table style="border-collapse:collapse;" border = 1 cellpadding = 5><th>'+Item+'</th><th>'+CardNumber+'</th><th>'+CardName+'</th><th>'+CardRarity+'</th>';
+    }
+    
+    // Pack Data 
+    if(row > 0 && Param == 1) {
+      EmailMessage += '<tr><td>'+Headers[row][0]+'</td><td><center>'+PackData[row][1]+'</td><td>'+PackData[row][2]+'</td><td><center>'+PackData[row][3]+'</td></tr>';
+    }
+  }
+  return EmailMessage +'</table>';
+}
+
+// PENALTY LOSS TABLE  ----------------------------------------------------------------------------------------------------------
 
 // **********************************************
 // function subEmailPlayerPenaltyTable()
@@ -582,4 +1517,3 @@ function subEmailPlayerPenaltyTable(PlayerData){
   }
   return EmailMessage +'</table>';
 }
-

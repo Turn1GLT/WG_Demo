@@ -10,6 +10,7 @@
 
 function fcnProcessMatchWG() {
   
+  Logger.log("Routine: fcnProcessMatchWG");
   // Opens Spreadsheet
   var ss = SpreadsheetApp.getActiveSpreadsheet();
 //  var shtTest = ss.getSheetByName('Test');
@@ -18,15 +19,16 @@ function fcnProcessMatchWG() {
   var shtConfig = ss.getSheetByName('Config');
   var ConfigData = shtConfig.getRange(56,2,32,1).getValues();
   var OptSendEmail = ConfigData[6][0];
-  var cfgSendLog = ConfigData[8][0];
   var cfgTrigReport = ConfigData[9][0];
   
   // Columns Values and Parameters
-  var ColDataCopied = ConfigData[15][0];
-  var ColNextEmptyRow = ConfigData[23][0];
-  var ColNbUnprcsdEntries = ConfigData[24][0];
-  var RspnDataInputs = ConfigData[21][0]; // from Time Stamp to Data Processed
-  var cgfLgWeekLimit = ConfigData[27][0];
+  var ColDataCopied = ConfigData[21][0];
+  var ColNextEmptyRow = ConfigData[26][0];
+  var ColNbUnprcsdEntries = ConfigData[27][0];
+  var RspnDataInputs = ConfigData[28][0]; // from Time Stamp to Data Processed
+    
+  // League Duration
+  var LgParamDuration = shtConfig.getRange(10,9).getValue();
   
   // Get Log Sheet
   var shtIDs = shtConfig.getRange(17,7,20,1).getValues();
@@ -49,10 +51,13 @@ function fcnProcessMatchWG() {
   var ResponseData;
   var DataCopiedStatus = 0;
   var TimeStamp;
-  var Email;
-  var EmailValid = 0;
+  var Password;
+  var LeaguePassword = shtConfig.getRange(8,9).getValue();
+  var PasswordValid = 0;
   var RspnRow;
   var WeekNum;
+  
+  var EmailAddresses = subCreateArray(3,2);
   
   // Data Processing Flags
   var Status = new Array(2); // Status[0] = Status Value, Status[1] = Status Message
@@ -79,21 +84,17 @@ function fcnProcessMatchWG() {
       // Copy the new response data (from Time Stamp to Data Copied Field)
       ResponseData = shtRspnEN.getRange(RspnRow, 1, 1, RspnDataInputs).getValues();
       TimeStamp = ResponseData[0][0];
-      Email = ResponseData[0][1];
+      Password = ResponseData[0][1];
       WeekNum = ResponseData[0][3];
       DataCopiedStatus = ResponseData[0][9];
       
-      // Look if Email is valid (Email is associated to one player)
-      Logger.log('Email to find from English Response: %s', Email);
-      for(var i=0; i<=NbPlayers-1; i++){
-        if(PlayersEmail[i][0] == Email){ 
-          EmailValid = 1; 
-          i = NbPlayers}
-      }
+      // Look if Password is valid
+      Logger.log('Password Entered: %s', Password);
+      if(Password == LeaguePassword) PasswordValid = 1; 
       
       // Check if DataCopied Field is null and Email is Valid, we found new data to copy
-      if (DataCopiedStatus == '' && EmailValid == 1){
-        Logger.log('Email Valid, Data Copied to Responses');
+      if (DataCopiedStatus == '' && PasswordValid == 1){
+        Logger.log('Password Valid, Data Copied to Responses');
         DataCopiedStatus = 'Data Copied';
         shtRspnEN.getRange(RspnRow, ColDataCopied).setValue(DataCopiedStatus);
         // Creates formula to update Last Entry Processed
@@ -105,15 +106,15 @@ function fcnProcessMatchWG() {
         RspnRow = RspnNextRowEN - 1;
       }
       // If Email is not Valid, update Data Copied and Next Empty Row Cells
-      if (EmailValid == 0 && Email != ''){
-        Logger.log('Email Not Valid');
-        DataCopiedStatus = 'Email Not Valid';
+      if (PasswordValid == 0){
+        Logger.log('Password Not Valid');
+        DataCopiedStatus = 'Password Not Valid';
         shtRspnEN.getRange(RspnRow, ColDataCopied).setValue(DataCopiedStatus);
         // Creates formula to update Last Entry Processed
         shtRspnEN.getRange(RspnRow, ColNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-30]",FALSE)<>"",1,"")');
       }
       // If Data is copied or Email is not Valid or TimeStamp is null, Exit loop Responses EN to process data
-      if (DataCopiedStatus == 'Data Copied' || DataCopiedStatus == 'Email Not Valid' || (TimeStamp == '' && RspnRow >= RspnMaxRowsEN)) {
+      if (DataCopiedStatus == 'Data Copied' || DataCopiedStatus == 'Password Not Valid' || (TimeStamp == '' && RspnRow >= RspnMaxRowsEN)) {
         RspnRow = RspnMaxRowsEN + 1;
       }
     }
@@ -127,21 +128,17 @@ function fcnProcessMatchWG() {
         // Copy the new response data (from Time Stamp to Data Copied Field)
         ResponseData = shtRspnFR.getRange(RspnRow, 1, 1, RspnDataInputs).getValues();
         TimeStamp = ResponseData[0][0];
-        Email = ResponseData[0][1];
+        Password = ResponseData[0][1];
         WeekNum = ResponseData[0][3];
         DataCopiedStatus = ResponseData[0][9];
         
-        // Look if Email is valid (Email is associated to one player)
-        Logger.log('Email to find from French Response: %s', Email);
-        for(var j=0; j<=NbPlayers-1; j++){
-          if(PlayersEmail[j][0] == Email){ 
-            EmailValid = 1; 
-            j = NbPlayers}
-        }
+        // Look if Password is valid
+        Logger.log('Password Entered: %s', Password);
+        if(Password == LeaguePassword) PasswordValid = 1;
         
         // Check if DataCopied Field is null and Email is Valid, we found new data to copy
-        if (DataCopiedStatus == '' && EmailValid == 1){
-          Logger.log('Email Valid, Data Copied to Responses');
+        if (DataCopiedStatus == '' && PasswordValid == 1){
+          Logger.log('Password Valid, Data Copied to Responses');
           DataCopiedStatus = 'Data Copied';
           shtRspnFR.getRange(RspnRow, ColDataCopied).setValue(DataCopiedStatus);
           // Creates formula to update Last Entry Processed
@@ -153,15 +150,15 @@ function fcnProcessMatchWG() {
           RspnRow = RspnNextRowFR - 1;
         }
         // If Email is not Valid, update Data Copied and Next Empty Row Cells
-        if (EmailValid == 0 && Email != ''){
-          Logger.log('Email Not Valid');
-          DataCopiedStatus = 'Email Not Valid';
+        if (PasswordValid == 0){
+          Logger.log('Password Not Valid');
+          DataCopiedStatus = 'Password Not Valid';
           shtRspnFR.getRange(RspnRow, ColDataCopied).setValue(DataCopiedStatus);
           // Creates formula to update Last Entry Processed
           shtRspnFR.getRange(RspnRow, ColNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-30]",FALSE)<>"",1,"")');
         }
         // If Data is copied, Exit loop Responses FR to process data
-        if (DataCopiedStatus == 'Data Copied' || DataCopiedStatus == 'Email Not Valid' || (TimeStamp == '' && RspnRow >= RspnMaxRowsFR)) {
+        if (DataCopiedStatus == 'Data Copied' || DataCopiedStatus == 'Password Not Valid' || (TimeStamp == '' && RspnRow >= RspnMaxRowsFR)) {
           RspnRow = RspnMaxRowsFR + 1;
         }
       }
@@ -207,28 +204,17 @@ function fcnProcessMatchWG() {
     }
   }
   
-  // Send Log if necessary
-  if (cfgSendLog == 'Enabled' || (EmailValid == 0 && Email != '')){
-    if(EmailValid == 0) Logger.log('Submission Email Not Valid : %s',Email)
-    
-    // Post Log to Log Sheet
-    subPostLog(shtLog);
-    
-    // Send Error Email to sender if Email is not valid
-    if(EmailValid == 0 && Email != ''){
-      // Send Log by email
-      var recipient = Email + ', ' + Session.getActiveUser().getEmail();
-      var subject = 'Erreur Rapport de Match - ' + shtConfig.getRange(11,2).getValue() + ' ' + shtConfig.getRange(13,2).getValue();
-      var body = "<html><body>" + 
-        "Bonjour,<br><br>L'adresse courriel que vous avez entrée n'est pas valide."+
-          "<br>SVP, entrez l'adresse courriel utilisée pour votre inscription."+
-            "<br><br>En cas de problème, n'hésitez pas à me contacter."+
-              "<br><br>Merci de votre compréhension"+
-                "<br><br>Turn 1 Gaming Leagues & Tournaments"+
-                  "</body></html>";
-      MailApp.sendEmail(recipient, subject, "",{name:'Turn 1 Gaming League Manager',htmlBody:body}); 
-    }
+  // Send Error Email to sender if Email is not valid
+  if(PasswordValid == 0){
+    Logger.log('Submission Email Not Valid : %s',Email);
+    // Get Emails from both players
+    EmailAddresses = subGetEmailAddressDbl(ss, EmailAddresses, ResponseData[0][4], ResponseData[0][5]);
+    fcnMatchReportPwdError(shtConfig, EmailAddresses);
   }
+  
+  // Post Log to Log Sheet
+  subPostLog(shtLog);
+  
 }
 
 
@@ -249,20 +235,22 @@ function fcnAnalyzeResultsWG(ss, shtConfig, ConfigData, shtRspn) {
   var OptPlyrMatchValidation = ConfigData[2][0];
   var OptWargame = ConfigData[4][0];
   var OptSendEmail = ConfigData[6][0];
+  var cfgNbCards = ConfigData[13][0];
   
   // Columns Values and Parameters
-  var ColMatchID = ConfigData[14][0];
-  var ColPrcsd = ConfigData[15][0];
-  var ColDataConflict = ConfigData[16][0];
-  var ColStatus = ConfigData[17][0];
-  var ColStatusMsg = ConfigData[18][0];
-  var ColMatchIDLastVal = ConfigData[19][0];
-  var RspnStartRow = ConfigData[20][0];
-  var RspnDataInputs = ConfigData[21][0]; // from Time Stamp to Data Processed
-  var ColNextEmptyRow = ConfigData[23][0];
-  var ColNbUnprcsdEntries = ConfigData[24][0];
-  var cfgNbCards = ConfigData[29][0];
-  
+  var ColMatchID = ConfigData[20][0];
+  var ColPrcsd = ConfigData[21][0];
+  var ColDataConflict = ConfigData[22][0];
+  var ColStatus = ConfigData[23][0];
+  var ColStatusMsg = ConfigData[24][0];
+  var ColMatchIDLastVal = ConfigData[25][0];
+  var ColNextEmptyRow = ConfigData[26][0];
+  var ColNbUnprcsdEntries = ConfigData[27][0];
+  var RspnDataInputs = ConfigData[28][0]; // from Time Stamp to Data Processed
+
+  // League Duration
+  var LgParamDuration = shtConfig.getRange(10,9).getValue();
+    
   // Test Sheet (for Debug)
   var shtTest = ss.getSheetByName('Test') ;  
   

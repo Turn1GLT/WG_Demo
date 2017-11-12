@@ -1,12 +1,12 @@
 // **********************************************
-// function fcnSubmitTCG()
+// function fcnSubmitWG()
 //
 // This function analyzes the form submitted
 // and executes the appropriate functions
 //
 // **********************************************
 
-function onSubmitTCG_Demo(e) {
+function onSubmitWG_Demo40K(e) {
       
   // Get Row from New Response
   var RowResponse = e.range.getRow();
@@ -45,27 +45,29 @@ function onSubmitTCG_Demo(e) {
 // **********************************************
 
 function onOpenWG_Demo40K() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
   
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var cfgEscalation = ss.getSheetByName('Config').getRange(68,2).getValue();
+    
   var AnalyzeDataMenu  = [];
   AnalyzeDataMenu.push({name: 'Analyze New Match Entry', functionName: 'fcnMainWG_Grim40K'});
   AnalyzeDataMenu.push({name: 'Reset Match Entries', functionName:'fcnResetLeagueMatch'});
   
   var LeagueMenu = [];
   LeagueMenu.push({name:'Update Config ID & Links', functionName:'fcnUpdateLinksIDs'});
-  LeagueMenu.push({name:'Create Match Report Forms', functionName:'fcnCreateReportForm'});
+  LeagueMenu.push({name:'Create Match Report Forms', functionName:'fcnCreateReportForm_WG_S'});
   LeagueMenu.push({name:'Setup Response Sheets',functionName:'fcnSetupResponseSht'});
-  LeagueMenu.push({name:'Create Registration Forms', functionName:'fcnCreateRegForm'});
-  LeagueMenu.push({name:'Create Weekly Unit Forms', functionName:'fcnCreateWeekUnitForm'});
+  LeagueMenu.push({name:'Create Registration Forms', functionName:'fcnCreateRegForm_WG_S'});
+  if(cfgEscalation == 'Enabled') LeagueMenu.push({name:'Create Weekly Unit Forms', functionName:'fcnCreateWeekUnitForm_WG_S'});
   LeagueMenu.push({name:'Initialize League', functionName:'fcnInitLeague'});
   LeagueMenu.push(null);
   LeagueMenu.push({name:'Create Players Army DB', functionName:'fcnCrtPlayerArmyDB'});
   LeagueMenu.push({name:'Create Players Army Lists', functionName:'fcnCrtPlayerArmyList'});
-  LeagueMenu.push({name:'Create Players Weekly Units', functionName:'fcnCrtPlayerWeekUnit'});
+  if(cfgEscalation == 'Enabled') LeagueMenu.push({name:'Create Players Weekly Units', functionName:'fcnCrtPlayerWeekUnit'});
   LeagueMenu.push(null);
   LeagueMenu.push({name:'Delete Players Army DB', functionName:'fcnDelPlayerArmyDB'});
   LeagueMenu.push({name:'Delete Players Army Lists', functionName:'fcnDelPlayerArmyList'});
-  LeagueMenu.push({name:'Delete Players Weekly Units', functionName:'fcnDelPlayerWeekUnit'});
+  if(cfgEscalation == 'Enabled') LeagueMenu.push({name:'Delete Players Weekly Units', functionName:'fcnDelPlayerWeekUnit'});
   
   ss.addMenu("Manage League", LeagueMenu);
   ss.addMenu("Process Data", AnalyzeDataMenu);
