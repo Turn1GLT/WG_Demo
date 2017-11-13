@@ -16,7 +16,7 @@ function fcnInitLeague(){
   var shtStandingsEN = ss.getSheetByName('Standings');
   var shtStandingsFR = ss.getSheetByName('Standings');
   var shtMatchRslt   = ss.getSheetByName('Match Results');
-  var shtWeek;
+  var shtRound;
   var shtResponses   = ss.getSheetByName('Responses');
   var shtResponsesEN = ss.getSheetByName('Responses EN');
   var shtResponsesFR = ss.getSheetByName('Responses FR');
@@ -30,7 +30,6 @@ function fcnInitLeague(){
   var MaxRowRspnFR = shtResponsesFR.getMaxRows();
   var MaxColRspnFR = shtResponsesFR.getMaxColumns();
   
-  var cfgWeekRound = shtConfig.getRange(13,9).getValue();  
   var ColMatchID = shtConfig.getRange(17,9).getValue();
   var ColMatchIDLastVal = shtConfig.getRange(22,9).getValue();
   
@@ -43,13 +42,11 @@ function fcnInitLeague(){
   shtResponsesEN.getRange(2,1,MaxRowRspnEN-1,MaxColRspnEN).clearContent();
   shtResponsesFR.getRange(2,1,MaxRowRspnFR-1,MaxColRspnFR).clearContent()
   
-  // Week Results
-  for (var WeekNum = 1; WeekNum <= 8; WeekNum++){
-    // Select Week or Round prefix (League or Tournament)
-    if(cfgWeekRound == 'Week') shtWeek = ss.getSheetByName('Week'+WeekNum);
-    if(cfgWeekRound == 'Round') shtWeek = ss.getSheetByName('Round'+WeekNum);
-    shtWeek.getRange(5,5,32,3).clearContent();
-    shtWeek.getRange(5,9,32,3).clearContent();
+  // Round Results
+  for (var RoundNum = 1; RoundNum <= 8; RoundNum++){
+    shtRound = ss.getSheetByName('Round'+RoundNum);
+    shtRound.getRange(5,5,32,3).clearContent();
+    shtRound.getRange(5,9,32,3).clearContent();
   }
 
   Logger.log('League Data Cleared');
@@ -86,7 +83,7 @@ function fcnResetLeagueMatch(){
   var shtConfig = ss.getSheetByName('Config');
   var shtStandings   = ss.getSheetByName('Standings');
   var shtMatchRslt   = ss.getSheetByName('Match Results');
-  var shtWeek;
+  var shtRound;
   var shtResponses   = ss.getSheetByName('Responses');
   var shtResponsesEN = ss.getSheetByName('Responses EN');
   var shtResponsesFR = ss.getSheetByName('Responses FR');
@@ -100,7 +97,7 @@ function fcnResetLeagueMatch(){
   var MaxRowRspnFR = shtResponsesFR.getMaxRows();
   var MaxColRspnFR = shtResponsesFR.getMaxColumns();
 
-  var cfgWeekRound = shtConfig.getRange(13,9).getValue();  
+  var cfgRoundRound = shtConfig.getRange(13,9).getValue();  
   var ColMatchID = shtConfig.getRange(17,9).getValue();
   var ColMatchIDLastVal = shtConfig.getRange(22,9).getValue();
   
@@ -112,13 +109,11 @@ function fcnResetLeagueMatch(){
   shtResponsesEN.getRange(2,ColMatchID,MaxRowRspnEN-1,7).clearContent();
   shtResponsesFR.getRange(2,ColMatchID,MaxRowRspnFR-1,7).clearContent();
   
-  // Week Results
-  for (var WeekNum = 1; WeekNum <= 8; WeekNum++){
-    // Select Week or Round prefix (League or Tournament)
-    if(cfgWeekRound == 'Week') shtWeek = ss.getSheetByName('Week'+WeekNum);
-    if(cfgWeekRound == 'Round') shtWeek = ss.getSheetByName('Round'+WeekNum);
-    shtWeek.getRange(5,5,32,3).clearContent();
-    shtWeek.getRange(5,9,32,3).clearContent();
+  // Round Results
+  for (var RoundNum = 1; RoundNum <= 8; RoundNum++){
+    shtRound = ss.getSheetByName('Round'+RoundNum);
+    shtRound.getRange(5,5,32,3).clearContent();
+    shtRound.getRange(5,9,32,3).clearContent();
   }
 
   Logger.log('League Data Cleared');

@@ -1,14 +1,14 @@
 // **********************************************
-// function fcnCreateRegForm_WG_S()
+// function fcnCreateRegForm_WG()
 //
 // This function creates the Registration Form 
 // based on the parameters in the Config File
 //
 // **********************************************
 
-function fcnCreateRegForm_WG_S() {
+function fcnCreateRegForm_WG() {
   
-  Logger.log("Routine: fcnCreateRegForm_WG_S");
+  Logger.log("Routine: fcnCreateRegForm_WG");
   
   var ss = SpreadsheetApp.getActive();
   var shtConfig = ss.getSheetByName('Config');
@@ -18,9 +18,9 @@ function fcnCreateRegForm_WG_S() {
   var cfgTeamMembers = ConfigData[13][0];
   
   var shtPlayers = ss.getSheetByName('Players');
-  var shtIDs = shtConfig.getRange(17,7,20,1).getValues();
+  var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
   var ssID = shtIDs[0][0];
-  var shtLog = SpreadsheetApp.openById(shtIDs[14][0]).getSheetByName('Log');
+  var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName('Log');
   
   var ssSheets;
   var NbSheets;
@@ -193,10 +193,7 @@ function fcnCreateRegForm_WG_S() {
             formFR.addTextItem()
             .setTitle("Nom d'équipe")
             .setRequired(true);
-            break;
-          }
-          case 'Team Members': {
-            Logger.log('%s - %s',QuestionOrder,colRegRespValues[i][0]); 
+
             // TEAM MEMBERS
             for(var member = 1; member <= cfgTeamMembers; member++){
               formEN.addTextItem()

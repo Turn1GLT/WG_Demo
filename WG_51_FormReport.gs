@@ -11,7 +11,7 @@ function fcnCreateReportForm_WG_S() {
   var ss = SpreadsheetApp.getActive();
   var shtConfig = ss.getSheetByName('Config');
   var shtPlayers = ss.getSheetByName('Players');
-  var shtIDs = shtConfig.getRange(17,7,20,1).getValues();
+  var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
   var ssID = shtIDs[0][0]; 
   var OptGenerateResp = shtConfig.getRange(64,2).getValue();
   var OptLocation = shtConfig.getRange(67, 2).getValue();
@@ -37,8 +37,8 @@ function fcnCreateReportForm_WG_S() {
   var FormNameFR;
   var FormItemsFR;
   
-  var WeekNum = shtConfig.getRange(5,7).getValue();
-  var WeekArray = new Array(1); WeekArray[0] = WeekNum;
+  var RoundNum = shtConfig.getRange(5,7).getValue();
+  var RoundArray = new Array(1); RoundArray[0] = RoundNum;
   
   var PlayerNum = shtPlayers.getRange(2,1).getValue();
   var Players;
@@ -131,7 +131,7 @@ function fcnCreateReportForm_WG_S() {
     }
     
     //---------------------------------------------
-    // WEEK NUMBER & PLAYERS SECTION
+    // ROUND NUMBER & PLAYERS SECTION
     
     // Transfers Players Double Array to Single Array
     if (PlayerNum > 0){
@@ -143,12 +143,12 @@ function fcnCreateReportForm_WG_S() {
     }
     
     // English
-    formEN.addPageBreakItem().setTitle("Week Number & Players");
-    // Week
+    formEN.addPageBreakItem().setTitle("Round Number & Players");
+    // Round
     formEN.addListItem()
-    .setTitle("Week")
+    .setTitle("Round")
     .setRequired(true)
-    .setChoiceValues(WeekArray);
+    .setChoiceValues(RoundArray);
     
     // Winning Players
     PlayerWinList = formEN.addListItem()
@@ -176,7 +176,7 @@ function fcnCreateReportForm_WG_S() {
     formFR.addListItem()
     .setTitle("Semaine Numéro")
     .setRequired(true)
-    .setChoiceValues(WeekArray);
+    .setChoiceValues(RoundArray);
     
     // Joueurs
     PlayerWinList = formFR.addListItem()

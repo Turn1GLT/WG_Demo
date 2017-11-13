@@ -136,17 +136,17 @@ function fcnSendConfirmEmailEN(shtConfig, Address, MatchData) {
   
   // Match Data Assignation
   var MatchID = MatchData[2][0];
-  var Week    = MatchData[3][0];
+  var Round    = MatchData[3][0];
   var Winr    = MatchData[4][0];
   var Losr    = MatchData[5][0];
   
   // Set Email Subject
-  EmailSubject = LeagueNameEN + " - Match Result" + " Week " + Week ;
+  EmailSubject = LeagueNameEN + " - Match Result" + " Round " + Round ;
     
   // Start of Email Message
   EmailMessage = '<html><body>';
   
-  EmailMessage += 'Hi ' + Winr + ' and ' + Losr + ',<br><br>Your match result has been received and succesfully processed for the ' + LeagueNameEN + ', Week ' + Week + 
+  EmailMessage += 'Hi ' + Winr + ' and ' + Losr + ',<br><br>Your match result has been received and succesfully processed for the ' + LeagueNameEN + ', Round ' + Round + 
     '<br><br>Here is your match result:<br><br>';
     
   // Generate Match Data Table
@@ -231,17 +231,17 @@ function fcnSendConfirmEmailFR(shtConfig, Address, MatchData) {
 
   // Match Data Assignation
   var MatchID = MatchData[2][0];
-  var Week    = MatchData[3][0];
+  var Round    = MatchData[3][0];
   var Winr    = MatchData[4][0];
   var Losr    = MatchData[5][0];
 
   // Set Email Subject
-  EmailSubject = LeagueNameFR + " - Rapport de Match" + " Semaine " + Week;
+  EmailSubject = LeagueNameFR + " - Rapport de Match" + " Semaine " + Round;
     
   // Start of Email Message
   EmailMessage = "<html><body>";
   
-  EmailMessage += "Bonjour " + Winr + " et " + Losr + ",<br><br>Nous confirmons que nous avons bien reçu et traité le rapport de votre match de la " + LeagueNameFR + ", Semaine " + Week + 
+  EmailMessage += "Bonjour " + Winr + " et " + Losr + ",<br><br>Nous confirmons que nous avons bien reçu et traité le rapport de votre match de la " + LeagueNameFR + ", Semaine " + Round + 
     "<br><br>Voici le sommaire de votre match:<br><br>";
     
   // Generate Match Data Table
@@ -323,7 +323,7 @@ function fcnSendErrorEmailEN(shtConfig, Address, MatchData, MatchID, Status) {
   
   // Match Data Assignation
   var MatchID = MatchData[2][0];
-  var Week    = MatchData[3][0];
+  var Round    = MatchData[3][0];
   var Winr    = MatchData[4][0];
   var Losr    = MatchData[5][0];
   
@@ -334,13 +334,13 @@ function fcnSendErrorEmailEN(shtConfig, Address, MatchData, MatchID, Status) {
   
     case -10 : StatusMsg = 'Match Result has already been received and processed.'; break; // Administrator + Players
     case -11 : StatusMsg = '<b>'+Winr+'</b> is eliminated from League.'; break;    // Administrator + Players
-    case -12 : StatusMsg = '<b>'+Winr+'</b> has played too many matches this week. Matches played: '+MatchData[4][1]; break;  // Administrator + Players 
+    case -12 : StatusMsg = '<b>'+Winr+'</b> has played too many matches this Round. Matches played: '+MatchData[4][1]; break;  // Administrator + Players 
     case -21 : StatusMsg = '<b>'+Losr+'</b> is eliminated from League.'; break;    // Administrator + Players
-    case -22 : StatusMsg = '<b>'+Losr+'</b> has played too many matches this week. Matches played: '+MatchData[5][1]; break;  // Administrator + Players 
+    case -22 : StatusMsg = '<b>'+Losr+'</b> has played too many matches this Round. Matches played: '+MatchData[5][1]; break;  // Administrator + Players 
     case -31 : StatusMsg = 'Both players are eliminated from League.'; break; // Administrator + Players 
-    case -32 : StatusMsg = '<b>'+Winr+'</b> is eliminated from League.<br><b>'+Losr+'</b> has played too many matches this week. Matches played: '+MatchData[5][1]; break;  // Administrator + Players
-    case -33 : StatusMsg = '<b>'+Winr+'</b> has player too many matches this week. Matches played: <b>'+MatchData[4][1]+'</b>.<br><b>'+Losr+'</b> is eliminated from League.'; break;  // Administrator + Players
-    case -34 : StatusMsg = 'Both Players have played too many matches this week.<br><b>'+Winr+'</b> Matches played: <b>'+MatchData[4][1]+'</b><br><b>'+Losr+'</b> Matches played: <b>'+MatchData[5][1]+'</b>'; break; // Administrator + Players
+    case -32 : StatusMsg = '<b>'+Winr+'</b> is eliminated from League.<br><b>'+Losr+'</b> has played too many matches this Round. Matches played: '+MatchData[5][1]; break;  // Administrator + Players
+    case -33 : StatusMsg = '<b>'+Winr+'</b> has player too many matches this Round. Matches played: <b>'+MatchData[4][1]+'</b>.<br><b>'+Losr+'</b> is eliminated from League.'; break;  // Administrator + Players
+    case -34 : StatusMsg = 'Both Players have played too many matches this Round.<br><b>'+Winr+'</b> Matches played: <b>'+MatchData[4][1]+'</b><br><b>'+Losr+'</b> Matches played: <b>'+MatchData[5][1]+'</b>'; break; // Administrator + Players
     case -50 : StatusMsg = 'Same player selected for Win and Loss.<br>Winner: <b>'+Winr+'</b><br>Loser: <b>' +Losr+ '</b>'; break; // Administrator + Players
     case -60 : StatusMsg = Status[1]; break;  // Administrator + Players
 	case -97 : StatusMsg = 'Process Error, Match Results Post Not Executed'; break;        // Administrator
@@ -349,14 +349,14 @@ function fcnSendErrorEmailEN(shtConfig, Address, MatchData, MatchID, Status) {
   }
   
   // Set Email Subject
-  EmailSubject = LeagueNameEN + ' - Match Report Error' + ' Week ' + Week ;
+  EmailSubject = LeagueNameEN + ' - Match Report Error' + ' Round ' + Round ;
   
   // Start of Email Message
   EmailMessage = '<html><body>';
 
   // If Error prevented Match Data to be processed (Duplicate Entry or Player Match is not valid)  
   if (Status[0] < 0 && Status[0] > -60) {
-    EmailMessage += 'Hi ' + Winr + ' and ' + Losr + ',<br><br>Your match result has been succesfully received for the ' + LeagueNameEN + ', Week ' + Week + 
+    EmailMessage += 'Hi ' + Winr + ' and ' + Losr + ',<br><br>Your match result has been succesfully received for the ' + LeagueNameEN + ', Round ' + Round + 
       "<br><br>An error has been detected in one of the player's record. Unfortunately, this error prevented us to process the match report.<br><br>"+
         "<b>Error Detected</b><br>" + StatusMsg +
           '<br><br>Here is your match result:<br><br>';
@@ -367,7 +367,7 @@ function fcnSendErrorEmailEN(shtConfig, Address, MatchData, MatchID, Status) {
 
   // If Error did not prevent Match Data to be processed (Card Name not Found for Card Number X)    
   if (Status[0] == -60){
-    EmailMessage += 'Hi ' + Winr + ' and ' + Losr + ',<br><br>Your match result has been succesfully received for the ' + LeagueNameEN + ', Week ' + Week + 
+    EmailMessage += 'Hi ' + Winr + ' and ' + Losr + ',<br><br>Your match result has been succesfully received for the ' + LeagueNameEN + ', Round ' + Round + 
       "<br><br>We were able to process the match data but an error has been detected in the submitted form.<br>Please contact us to resolve this error as soon as possible<br><br>"+
         "<b>Error Detected</b><br>" + StatusMsg +
           '<br><br>Here is your match result:<br><br>';
@@ -449,7 +449,7 @@ function fcnSendErrorEmailFR(shtConfig, Address, MatchData, MatchID, Status) {
 
   // Match Data Assignation
   var MatchID = MatchData[2][0];
-  var Week    = MatchData[3][0];
+  var Round    = MatchData[3][0];
   var Winr    = MatchData[4][0];
   var Losr    = MatchData[5][0];
   
@@ -475,14 +475,14 @@ function fcnSendErrorEmailFR(shtConfig, Address, MatchData, MatchID, Status) {
   }
   
   // Set Email Subject
-  EmailSubject = LeagueNameFR + ' - Erreur Rapport de Match' + ' Semaine ' + Week ;
+  EmailSubject = LeagueNameFR + ' - Erreur Rapport de Match' + ' Semaine ' + Round ;
   
   // Start of Email Message
   EmailMessage = "<html><body>";
 
   // If Error prevented Match Data to be processed (Duplicate Entry or Player Match is not valid)  
   if (Status[0] < 0 && Status[0] > -60) {
-    EmailMessage += "Bonjour " + Winr + " et " + Losr + ",<br><br>Nous confirmons que nous avons bien reçu le résultat de votre match de la " + LeagueNameFR + ", Semaine " + Week + 
+    EmailMessage += "Bonjour " + Winr + " et " + Losr + ",<br><br>Nous confirmons que nous avons bien reçu le résultat de votre match de la " + LeagueNameFR + ", Semaine " + Round + 
       "<br><br>Nous avons détecté une erreur dans la fiche d'un joueur qui nous a empêché de traiter le rapport du match.<br><br>"+
         "<b>Erreur détectée</b><br>" + StatusMsg +
           "<br><br>Voici le sommaire de votre match:<br><br>";
@@ -493,7 +493,7 @@ function fcnSendErrorEmailFR(shtConfig, Address, MatchData, MatchID, Status) {
 
   // If Error did not prevent Match Data to be processed (Card Name not Found for Card Number X)    
   if (Status[0] == -60){
-    EmailMessage += "Bonjour " + Winr + " et " + Losr + ",<br><br>Nous confirmons que nous avons bien reçu le résultat de votre match de la " + LeagueNameFR + ", Semaine " + Week + 
+    EmailMessage += "Bonjour " + Winr + " et " + Losr + ",<br><br>Nous confirmons que nous avons bien reçu le résultat de votre match de la " + LeagueNameFR + ", Semaine " + Round + 
       "<br><br>Nous avons été en mesure de traiter le rapport de votre match mais avons détecté une erreur dans les informations reçues.<br>SVP, contactez-nous le plus rapidement possible pour corriger cette erreur<br><br>"+
         "<b>Erreur détectée</b><br>" + StatusMsg +
           "<br><br>Voici le sommaire de votre match:<br><br>";
@@ -919,22 +919,22 @@ function fcnSendNewPlayerConfLocation(shtConfig, PlayerData){
 }
 
 
-// WEEKLY REPORT ----------------------------------------------------------------------------------------------------------
+// ROUND REPORT ----------------------------------------------------------------------------------------------------------
 
 // **********************************************
-// function fcnGenWeekReportMsg()
+// function fcnGenRoundReportMsg()
 //
 // This function generates the HTML message for the 
-// Weekly Report in English
+// Round Report in English
 //
 // **********************************************
 
-function fcnGenWeekReportMsg(ss, shtConfig, EmailData, WeekStats, WeeklyPrizeData, PlayerMost1, PlayerMost2, PlayerMost3){
+function fcnGenRoundReportMsg(ss, shtConfig, EmailData, RoundStats, RoundPrizeData, PlayerMost1, PlayerMost2, PlayerMost3){
 
-  // Prize Category = WeeklyPrizeData
+  // Prize Category = RoundPrizeData
   
   // Prize Category 				    
-  // [0]= Weekly Prize                 
+  // [0]= Round Prize                 
   // [1]= Type				 			
   // [2]= Title EN						
   // [3]= Message Description EN	
@@ -949,38 +949,38 @@ function fcnGenWeekReportMsg(ss, shtConfig, EmailData, WeekStats, WeeklyPrizeDat
   var Category2 = subCreateArray(10,0);
   var Category3 = subCreateArray(10,0);
   for(var i = 0; i<10; i++){
-    Category1[i]=WeeklyPrizeData[i][1];
-    Category2[i]=WeeklyPrizeData[i][2];
-    Category3[i]=WeeklyPrizeData[i][3];
+    Category1[i]=RoundPrizeData[i][1];
+    Category2[i]=RoundPrizeData[i][2];
+    Category3[i]=RoundPrizeData[i][3];
   }
   
-  // Week Stats
-  //  WeekStats[0][0] = LastWeek;
-  //  WeekStats[0][1] = Week;
+  // Round Stats
+  //  RoundStats[0][0] = LastRound;
+  //  RoundStats[0][1] = Round;
   //  
-  //  WeekStats[1][0] = TotalMatch;
-  //  WeekStats[1][1] = TotalMatchStore;  
-  //  WeekStats[1][2] = TotalWins;
-  //  WeekStats[1][3] = TotalLoss;
+  //  RoundStats[1][0] = TotalMatch;
+  //  RoundStats[1][1] = TotalMatchStore;  
+  //  RoundStats[1][2] = TotalWins;
+  //  RoundStats[1][3] = TotalLoss;
   
   var EmailLanguage = EmailData[0][3];
   var EmailMessage = EmailData[0][2];
   
-  var WeeklyPrize = WeeklyPrizeData[0][1];
+  var RoundPrize = RoundPrizeData[0][1];
       
   // ENGLISH
   if(EmailLanguage == 'English'){
   
-    EmailMessage = 'Hello everyone,<br><br>Week ' + WeekStats[0][0] + ' is now complete and Week '+ WeekStats[0][1] +' has started.'+
-      ' <br><br>Here is the week report'+
-        '<br><br><b><font size="4">Week ' + WeekStats[0][0] + '</b></font>' + 
-          '<br><br><b>Total Matches Played: ' + WeekStats[1][0] + '</b>' +
-            '<br><b>Total Matches Played in Store: ' + WeekStats[1][1] + '</b>';
+    EmailMessage = 'Hello everyone,<br><br>Round ' + RoundStats[0][0] + ' is now complete and Round '+ RoundStats[0][1] +' has started.'+
+      ' <br><br>Here is the Round report'+
+        '<br><br><b><font size="4">Round ' + RoundStats[0][0] + '</b></font>' + 
+          '<br><br><b>Total Matches Played: ' + RoundStats[1][0] + '</b>' +
+            '<br><b>Total Matches Played in Store: ' + RoundStats[1][1] + '</b>';
     
     // Player Awards are present if first category is present
     if(Category1[1] != ''){
-      EmailMessage += '<br><br><font size="3"><b>Weekly Awards</b></font>';
-      EmailMessage += "<br><br>Each week, awards are given to the player who will finish first in each of the following categories:"
+      EmailMessage += '<br><br><font size="3"><b>Round Awards</b></font>';
+      EmailMessage += "<br><br>Each Round, awards are given to the player who will finish first in each of the following categories:"
       // Category 1
       if(Category1[1] != '') EmailMessage += "<br><br><b>" + Category1[2] + "</b>";
       // Category 2
@@ -988,7 +988,7 @@ function fcnGenWeekReportMsg(ss, shtConfig, EmailData, WeekStats, WeeklyPrizeDat
       // Category 3
       if(Category3[1] != '') EmailMessage += "<br>" + Category3[2] + "</b>";
       // Prize Claim
-      if(WeeklyPrize != '') EmailMessage += " The winner of each category wins a <b>" + WeeklyPrize + "</b>. <br>Winners can claim their prize at the store by showing this email.";
+      if(RoundPrize != '') EmailMessage += " The winner of each category wins a <b>" + RoundPrize + "</b>. <br>Winners can claim their prize at the store by showing this email.";
       
       // Category1
       if(Category1[1] != ''){
@@ -1027,17 +1027,17 @@ function fcnGenWeekReportMsg(ss, shtConfig, EmailData, WeekStats, WeeklyPrizeDat
       }
     }
     // Message Ending
-    EmailMessage += '<br><br><font size="3">Good luck to all player for week '+ WeekStats[0][1] + '</font>';
+    EmailMessage += '<br><br><font size="3">Good luck to all player for Round '+ RoundStats[0][1] + '</font>';
   }
   
   // FRENCH
   if(EmailLanguage == 'Français'){
     
-    EmailMessage = 'Bonjour tout le monde,<br><br>La semaine ' + WeekStats[0][0] + ' est maintenant terminée et la semaine '+ WeekStats[0][1] +' vient de commencer.'+
+    EmailMessage = 'Bonjour tout le monde,<br><br>La semaine ' + RoundStats[0][0] + ' est maintenant terminée et la semaine '+ RoundStats[0][1] +' vient de commencer.'+
       ' <br><br>Voici le rapport de la semaine ' + 
-        '<br><br><b><font size="4">Semaine'+ WeekStats[0][0] +'</b></font>' +
-          '<br><br><b>Nombre total de parties joués: ' + WeekStats[1][0] + '</b>' +
-            '<br><b>Nombre total de parties joués au magasin: ' + WeekStats[1][1] + '</b>';
+        '<br><br><b><font size="4">Semaine'+ RoundStats[0][0] +'</b></font>' +
+          '<br><br><b>Nombre total de parties joués: ' + RoundStats[1][0] + '</b>' +
+            '<br><b>Nombre total de parties joués au magasin: ' + RoundStats[1][1] + '</b>';
     
     // Player Awards are present if first category is present
     if(PlayerMost1[0][0] != ''){
@@ -1085,7 +1085,7 @@ function fcnGenWeekReportMsg(ss, shtConfig, EmailData, WeekStats, WeeklyPrizeDat
       }
     }
     // Message Ending
-    EmailMessage += '<br><br><font size="3">Bonne chance à tous pour la semaine '+ WeekStats[0][1] + '</font>';
+    EmailMessage += '<br><br><font size="3">Bonne chance à tous pour la semaine '+ RoundStats[0][1] + '</font>';
     
     
   EmailData[0][2] = EmailMessage;
@@ -1096,31 +1096,31 @@ function fcnGenWeekReportMsg(ss, shtConfig, EmailData, WeekStats, WeeklyPrizeDat
 
 
 // **********************************************
-// function fcnGenWeekReportMsgEN()
+// function fcnGenRoundReportMsgEN()
 //
 // This function generates the HTML message for the 
-// Weekly Report in English
+// Round Report in English
 //
 // **********************************************
 
-function fcnGenWeekReportMsgEN(EmailMessage, LastWeek, Week, MatchesPlayed, MatchesPlayedStore, PlayerMostGames, PlayerMostLoss){
+function fcnGenRoundReportMsgEN(EmailMessage, LastRound, Round, MatchesPlayed, MatchesPlayedStore, PlayerMostGames, PlayerMostLoss){
 
-  EmailMessage = 'Hello everyone,<br><br>Week ' + LastWeek + ' is now complete and Week '+ Week +' has started.'+
-    ' <br><br>Here is the week report'+
-      '<br><br><b><font size="4">Week ' + LastWeek + '</b></font>' + 
+  EmailMessage = 'Hello everyone,<br><br>Round ' + LastRound + ' is now complete and Round '+ Round +' has started.'+
+    ' <br><br>Here is the Round report'+
+      '<br><br><b><font size="4">Round ' + LastRound + '</b></font>' + 
         '<br><br><b>Total Matches Played: ' + MatchesPlayed + '</b>' +
           '<br><b>Total Matches Played in Store: ' + MatchesPlayedStore + '</b>';
 
   // Player Awards
-  EmailMessage += '<br><br><font size="3"><b>Week Awards</b></font>' +
-    "<br>Each week, the player(s) who played the most matches at the store and the player who lost the most matches win a <b>FREE Standard Showdown Booster</b>."+
+  EmailMessage += '<br><br><font size="3"><b>Round Awards</b></font>' +
+    "<br>Each Round, the player(s) who played the most matches at the store and the player who lost the most matches win a <b>FREE Standard Showdown Booster</b>."+
       "<br>Players mentioned below only have to show this email to the store to claim their Booster."+
         " <br><b>Please note that this booster CANNOT be added to your League Card Pool</b>";
 
   
   // Most Matches Played in Store
   EmailMessage += '<br><br><font size="2"><b>Most Matches Played in Store</b></font>'+
-    '<br>The player with the most matches played in store this week with <b>' + PlayerMostGames[0][1] + ' games played</b>:' + 
+    '<br>The player with the most matches played in store this Round with <b>' + PlayerMostGames[0][1] + ' games played</b>:' + 
     '<br><b>' + PlayerMostGames[0][0] + '</b>';
   
   // Add other players with same record
@@ -1131,7 +1131,7 @@ function fcnGenWeekReportMsgEN(EmailMessage, LastWeek, Week, MatchesPlayed, Matc
   
   // Most Losses
   EmailMessage += '<br><br><font size="2"><b>Most Losses</b></font>'+
-    '<br>The player with the most losses this week:</b> ' + 
+    '<br>The player with the most losses this Round:</b> ' + 
       '<br><b>' + PlayerMostLoss[0][0] + '</b>';
   
   // Add other players with same record
@@ -1141,24 +1141,24 @@ function fcnGenWeekReportMsgEN(EmailMessage, LastWeek, Week, MatchesPlayed, Matc
   if(PlayerMostLoss[4][0] != '') EmailMessage += "<br><b>" + PlayerMostLoss[4][0] + "</b>";
   
   // Message Ending
-  EmailMessage += '<br><br><font size="3">Good luck to all player for week '+ Week + '</font>';
+  EmailMessage += '<br><br><font size="3">Good luck to all player for Round '+ Round + '</font>';
   
   return EmailMessage;
 }
 
 // **********************************************
-// function fcnGenWeekReportMsgFR()
+// function fcnGenRoundReportMsgFR()
 //
 // This function generates the HTML message for the 
-// Weekly Report in French
+// Round Report in French
 //
 // **********************************************
 
-function fcnGenWeekReportMsgFR(EmailMessage, LastWeek, Week, MatchesPlayed, MatchesPlayedStore, PlayerMostGames, PlayerMostLoss){
+function fcnGenRoundReportMsgFR(EmailMessage, LastRound, Round, MatchesPlayed, MatchesPlayedStore, PlayerMostGames, PlayerMostLoss){
   
-  EmailMessage = 'Bonjour tout le monde,<br><br>La semaine ' + LastWeek + ' est maintenant terminée et la semaine '+ Week +' vient de commencer.'+
+  EmailMessage = 'Bonjour tout le monde,<br><br>La semaine ' + LastRound + ' est maintenant terminée et la semaine '+ Round +' vient de commencer.'+
     ' <br><br>Voici le rapport de la semaine ' + 
-      '<br><br><b><font size="4">Semaine'+ LastWeek +'</b></font>' +
+      '<br><br><b><font size="4">Semaine'+ LastRound +'</b></font>' +
         '<br><br><b>Nombre total de parties joués: ' + MatchesPlayed + '</b>' +
           '<br><b>Nombre total de parties joués au magasin: ' + MatchesPlayedStore + '</b>';
 
@@ -1192,13 +1192,13 @@ function fcnGenWeekReportMsgFR(EmailMessage, LastWeek, Week, MatchesPlayed, Matc
   if(PlayerMostLoss[4][0] != '') EmailMessage += "<br><b>" + PlayerMostLoss[4][0] + "</b>";
   
   // Message Ending
-  EmailMessage += '<br><br><font size="3">Bonne chance à tous pour la semaine '+ Week + '</font>';
+  EmailMessage += '<br><br><font size="3">Bonne chance à tous pour la semaine '+ Round + '</font>';
 
   return EmailMessage;
 }
 
 
-// WEEKLY BOOSTER CONFIRMATION ----------------------------------------------------------------------------------------------------------
+// ROUND BOOSTER CONFIRMATION ----------------------------------------------------------------------------------------------------------
 
 // **********************************************
 // function fcnSendBstrCnfrmEmail()
@@ -1208,7 +1208,7 @@ function fcnGenWeekReportMsgFR(EmailMessage, LastWeek, Week, MatchesPlayed, Matc
 //
 // **********************************************
 
-function fcnSendBstrCnfrmEmail(Player, Week, EmailAddresses, PackData, shtConfig) {
+function fcnSendBstrCnfrmEmail(Player, Round, EmailAddresses, PackData, shtConfig) {
   
   // Variables
   var EmailSubject;
@@ -1248,12 +1248,12 @@ function fcnSendBstrCnfrmEmail(Player, Week, EmailAddresses, PackData, shtConfig
     var LeagueName = Location + ' ' + LeagueTypeEN;
     
     // Set Email Subject
-    EmailSubject = LeagueName + " - Weekly Booster" + " Week " + Week ;
+    EmailSubject = LeagueName + " - Round Booster" + " Round " + Round ;
     
     // Start of Email Message
     EmailMessage = '<html><body>';
     
-    EmailMessage += 'Hi ' + Player + ',<br><br>You have succesfully added a Booster to your Card Pool for the ' + LeagueName + ', Week ' + Week + '.' +
+    EmailMessage += 'Hi ' + Player + ',<br><br>You have succesfully added a Booster to your Card Pool for the ' + LeagueName + ', Round ' + Round + '.' +
       '<br><br>Here is the list of cards added to your pool.';
     
     // Builds the Pack Table
@@ -1294,12 +1294,12 @@ function fcnSendBstrCnfrmEmail(Player, Week, EmailAddresses, PackData, shtConfig
     var LeagueName = LeagueTypeFR + ' du ' + Location;
     
     // Set Email Subject
-    EmailSubject = LeagueName + " - Booster de Semaine" + " Semaine " + Week ;
+    EmailSubject = LeagueName + " - Booster de Semaine" + " Semaine " + Round ;
     
     // Start of Email Message
     EmailMessage = '<html><body>';
     
-    EmailMessage += 'Bonjour ' + Player + ',<br><br>Vous avez ajouté avec succès un booster à votre Pool de Cartes pour la semaine ' + Week + ' de la ' + LeagueName + '.' +
+    EmailMessage += 'Bonjour ' + Player + ',<br><br>Vous avez ajouté avec succès un booster à votre Pool de Cartes pour la semaine ' + Round + ' de la ' + LeagueName + '.' +
       '<br><br>Voici la liste des cartes ajoutées à votre pool.';
     
     // Builds the Pack Table
@@ -1325,7 +1325,7 @@ function fcnSendBstrCnfrmEmail(Player, Week, EmailAddresses, PackData, shtConfig
 }
 
 
-// WEEKLY BOOSTER ERROR ----------------------------------------------------------------------------------------------------------
+// ROUND BOOSTER ERROR ----------------------------------------------------------------------------------------------------------
 
 // **********************************************
 // function fcnSendBstrErrorEmailFR()
@@ -1335,7 +1335,7 @@ function fcnSendBstrCnfrmEmail(Player, Week, EmailAddresses, PackData, shtConfig
 //
 // **********************************************
 
-function fcnSendBstrErrorEmail(Player, Week, EmailAddresses, PackData, ErrorMsg, shtConfig) {
+function fcnSendBstrErrorEmail(Player, Round, EmailAddresses, PackData, ErrorMsg, shtConfig) {
   
   // Variables
   var EmailSubject;
@@ -1362,19 +1362,19 @@ function fcnSendBstrErrorEmail(Player, Week, EmailAddresses, PackData, ErrorMsg,
     // Email Template Header
     var HeadersEN = shtEmailTemplates.getRange(12,2,20,1).getValues();
     
-    // Weekly Booster Forms URL
-    var UrlWeekBstrForm = shtConfig.getRange(27,2).getValue();
+    // Round Booster Forms URL
+    var UrlRoundBstrForm = shtConfig.getRange(27,2).getValue();
     
     // Set Email Subject
-    EmailSubject = LeagueName + " - Weekly Booster Error"  + " Week " + Week;
+    EmailSubject = LeagueName + " - Round Booster Error"  + " Round " + Round;
     
     // Start of Email Message
     EmailMessage = "<html><body>";
     
-    EmailMessage += "Hi,<br><br><b>The week "+ Week +" Booster for player  " + Player + ".</b> could not be processed.";
+    EmailMessage += "Hi,<br><br><b>The Round "+ Round +" Booster for player  " + Player + ".</b> could not be processed.";
     
     EmailMessage += "<br><br><b>Booster Information</b>"+
-      "<br><br>Week number : <b>" + Week + "</b>"+
+      "<br><br>Round number : <b>" + Round + "</b>"+
         "<br>Player: <b>" + Player + "</b><br>";
     
     // Builds the Pack Table
@@ -1383,7 +1383,7 @@ function fcnSendBstrErrorEmail(Player, Week, EmailAddresses, PackData, ErrorMsg,
     EmailMessage += "<br><br>Error Message: <br><br><b>" + ErrorMsg[0] + "</b>";
     
     EmailMessage += "<br><br><br>ENTER ENGLISH MESSAGE...S'il y a un problème au niveau de l'information entrée, recommencez et assurez-vous d'entrer les bonnes informations." + 
-      "<br>Cliquez ici pour ajouter un autre Booster: "+ UrlWeekBstrForm +
+      "<br>Cliquez ici pour ajouter un autre Booster: "+ UrlRoundBstrForm +
         "<br><br>Si vous éprouvez d'autres problèmes, répondez à ce courriel en me décrivant la nature de votre problème";
     
     // Signature
@@ -1406,19 +1406,19 @@ function fcnSendBstrErrorEmail(Player, Week, EmailAddresses, PackData, ErrorMsg,
     // Email Template Header
     var HeadersFR = shtEmailTemplates.getRange(12,3,20,1).getValues();
     
-    // Weekly Booster Forms URL
-    var UrlWeekBstrForm = shtConfig.getRange(28,2).getValue();
+    // Round Booster Forms URL
+    var UrlRoundBstrForm = shtConfig.getRange(28,2).getValue();
     
     // Set Email Subject
-    EmailSubject = LeagueName + " - Erreur Booster de Semaine" + " Semaine " + Week ;
+    EmailSubject = LeagueName + " - Erreur Booster de Semaine" + " Semaine " + Round ;
     
     // Start of Email Message
     EmailMessage = "<html><body>";
     
-    EmailMessage += "Bonjour,<br><br>Une erreur est survenue lors du traitement du <b>Booster de Semaine "+ Week +" pour " + Player + ".</b>";
+    EmailMessage += "Bonjour,<br><br>Une erreur est survenue lors du traitement du <b>Booster de Semaine "+ Round +" pour " + Player + ".</b>";
     
     EmailMessage += "<br><br><b>Information du Booster</b>"+
-      "<br><br>Semaine numéro : <b>" + Week + "</b>"+
+      "<br><br>Semaine numéro : <b>" + Round + "</b>"+
         "<br>Nom du Joueur: <b>" + Player + "</b><br>";
     
     // Builds the Pack Table
@@ -1427,7 +1427,7 @@ function fcnSendBstrErrorEmail(Player, Week, EmailAddresses, PackData, ErrorMsg,
     EmailMessage += "<br><br>Message d'erreur: <br><br><b>" + ErrorMsg[1] + "</b>";
     
     EmailMessage += "<br><br><br>S'il y a un problème au niveau de l'information entrée, recommencez et assurez-vous d'entrer les bonnes informations." + 
-      "<br>Cliquez ici pour ajouter un autre Booster: "+ UrlWeekBstrForm +
+      "<br>Cliquez ici pour ajouter un autre Booster: "+ UrlRoundBstrForm +
         "<br><br>Si vous éprouvez d'autres problèmes, répondez à ce courriel en me décrivant la nature de votre problème";
     
     // Signature
@@ -1506,7 +1506,7 @@ function subEmailPlayerPenaltyTable(PlayerData){
       
       // Start of Table
       if(row == 0) {
-        EmailMessage = 'Players who have not completed the minimum number of matches have received penalty losses on their record.<br>Here is the list of penalty losses this week.<br><br><font size="4"><b><table style="border-collapse:collapse;" border = 1 cellpadding = 5><tr>';
+        EmailMessage = 'Players who have not completed the minimum number of matches have received penalty losses on their record.<br>Here is the list of penalty losses this Round.<br><br><font size="4"><b><table style="border-collapse:collapse;" border = 1 cellpadding = 5><tr>';
         EmailMessage += '<tr><td><b>Player Name</b></td><td><b>Penalty Losses</b></td></tr>';
       }
       

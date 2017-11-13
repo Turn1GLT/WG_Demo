@@ -15,8 +15,8 @@ function fcnRegistrationWG(shtResponse, RowResponse){
   
   var shtConfig = ss.getSheetByName('Config');
   var shtPlayers = ss.getSheetByName('Players');
-  var shtIDs = shtConfig.getRange(17,7,20,1).getValues();
-  var shtLog = SpreadsheetApp.openById(shtIDs[14][0]).getSheetByName('Log');
+  var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
+  var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName('Log');
   
   var PlayerData = new Array(10);
   PlayerData[0] = 0 ; // Function Status
@@ -38,21 +38,21 @@ function fcnRegistrationWG(shtResponse, RowResponse){
   var NbPlayers  = PlayerData[1];
   var PlayerName = PlayerData[2];
   
-  // If Player was succesfully added, Generate Army DB, Generate Army List, Generate Startin Pool, Modify Match Report Form and Add Player to Weekly Booster
+  // If Player was succesfully added, Generate Army DB, Generate Army List, Generate Startin Pool, Modify Match Report Form and Add Player to Round Booster
   if(PlayerData[0] == "New Player" && PlayerData[0] != "New Player" ) {
     fcnCrtPlayerArmyDB();
     Logger.log('Army Database Generated');
     fcnCrtPlayerArmyList();
     Logger.log('Army Lists Generated');  
-    fcnCrtPlayerWeekUnit();
-    Logger.log('Weekly Booster Generated');   
+    fcnCrtPlayerRoundUnit();
+    Logger.log('Round Booster Generated');   
     fcnModifyReportFormTCG(ss, shtConfig, shtPlayers, shtIDs);
     
     // Execute Ranking function in Standing tab
     fcnUpdateStandings(ss, shtConfig);
     
     // Copy all data to Standing League Spreadsheet
-    fcnCopyStandingsSheets(ss, shtConfig, 0, 1);
+    fcnCopyStandingsSheets(ss, shtConfig, cfgLgTrParam, 0, 1);
     
     // Send Confirmation to New Player
     fcnSendNewPlayerConf(shtConfig, PlayerData);
@@ -259,11 +259,11 @@ function fcnModifyReportFormTCG(ss, shtConfig, shtPlayers, shtIDs) {
   var MatchFormItemFR = MatchFormFR.getItems();
   var NbMatchFormItem = MatchFormItemFR.length;
   
-  var WeekUnitFormEN = FormApp.openById(shtIDs[12][0]);
-  var WeekUnitFormItemEN = WeekUnitFormEN.getItems();
-  var WeekUnitFormFR = FormApp.openById(shtIDs[13][0]);
-  var WeekUnitFormItemFR = WeekUnitFormFR.getItems();
-  var NbWeekUnitFormItem = WeekUnitFormItemFR.length;
+  var RoundUnitFormEN = FormApp.openById(shtIDs[12][0]);
+  var RoundUnitFormItemEN = RoundUnitFormEN.getItems();
+  var RoundUnitFormFR = FormApp.openById(shtIDs[13][0]);
+  var RoundUnitFormItemFR = RoundUnitFormFR.getItems();
+  var NbRoundUnitFormItem = RoundUnitFormItemFR.length;
 
   // Function Variables
   var ItemTitle;
@@ -294,20 +294,20 @@ function fcnModifyReportFormTCG(ss, shtConfig, shtPlayers, shtIDs) {
     }
   }
   
-  // Loops in Weekly Unit Form to Find Players List
-  for(var item = 0; item < NbWeekUnitFormItem; item++){
-    ItemTitle = WeekUnitFormItemEN[item].getTitle();
+  // Loops in Round Unit Form to Find Players List
+  for(var item = 0; item < NbRoundUnitFormItem; item++){
+    ItemTitle = RoundUnitFormItemEN[item].getTitle();
     if(ItemTitle == 'Player'){
       
-      // Get the List Item from the Weekly Booster Report Form
-      ItemPlayerListEN = WeekUnitFormItemEN[item].asListItem();
-      ItemPlayerListFR = WeekUnitFormItemFR[item].asListItem();
+      // Get the List Item from the Round Booster Report Form
+      ItemPlayerListEN = RoundUnitFormItemEN[item].asListItem();
+      ItemPlayerListFR = RoundUnitFormItemFR[item].asListItem();
       
       // Build the Player List from the Players Sheet     
       for (i = 0; i < NbPlayers; i++){
         ListPlayers[i] = Players[i][0];
       }
-      // Set the Player List to the Weekly Booster Report Forms
+      // Set the Player List to the Round Booster Report Forms
       ItemPlayerListEN.setChoiceValues(ListPlayers);
       ItemPlayerListFR.setChoiceValues(ListPlayers);
     }

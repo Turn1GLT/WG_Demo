@@ -29,9 +29,9 @@ function onSubmitWG_Demo40K(e) {
     fcnRegistrationWG(shtResponse, RowResponse);
   }
   
-  // If Form Submitted is a Weekly Booster, Enter Weekly Booster
-  if(ShtName == 'WeekUnit EN' || ShtName == 'WeekUnit FR'){
-    fcnWeekUnitWG(shtResponse, RowResponse);
+  // If Form Submitted is a Round Bonus Unit, Enter Bonus Unit
+  if(ShtName == 'RoundUnit EN' || ShtName == 'RoundUnit FR'){
+    fcnRoundUnitWG(shtResponse, RowResponse);
   }
 } 
 
@@ -47,7 +47,7 @@ function onSubmitWG_Demo40K(e) {
 function onOpenWG_Demo40K() {
   
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var cfgEscalation = ss.getSheetByName('Config').getRange(68,2).getValue();
+  var LgTrEscalation = ss.getSheetByName('Config').getRange(68,2).getValue();
     
   var AnalyzeDataMenu  = [];
   AnalyzeDataMenu.push({name: 'Analyze New Match Entry', functionName: 'fcnMainWG_Grim40K'});
@@ -57,31 +57,31 @@ function onOpenWG_Demo40K() {
   LeagueMenu.push({name:'Update Config ID & Links', functionName:'fcnUpdateLinksIDs'});
   LeagueMenu.push({name:'Create Match Report Forms', functionName:'fcnCreateReportForm_WG_S'});
   LeagueMenu.push({name:'Setup Response Sheets',functionName:'fcnSetupResponseSht'});
-  LeagueMenu.push({name:'Create Registration Forms', functionName:'fcnCreateRegForm_WG_S'});
-  if(cfgEscalation == 'Enabled') LeagueMenu.push({name:'Create Weekly Unit Forms', functionName:'fcnCreateWeekUnitForm_WG_S'});
+  LeagueMenu.push({name:'Create Registration Forms', functionName:'fcnCreateRegForm_WG'});
+  if(LgTrEscalation == 'Enabled') LeagueMenu.push({name:'Create Round Bonus Unit Forms', functionName:'fcnCreateRoundUnitForm_WG_S'});
   LeagueMenu.push({name:'Initialize League', functionName:'fcnInitLeague'});
   LeagueMenu.push(null);
   LeagueMenu.push({name:'Create Players Army DB', functionName:'fcnCrtPlayerArmyDB'});
   LeagueMenu.push({name:'Create Players Army Lists', functionName:'fcnCrtPlayerArmyList'});
-  if(cfgEscalation == 'Enabled') LeagueMenu.push({name:'Create Players Weekly Units', functionName:'fcnCrtPlayerWeekUnit'});
+  if(LgTrEscalation == 'Enabled') LeagueMenu.push({name:'Create Players Round Bonus Units', functionName:'fcnCrtPlayerRoundUnit'});
   LeagueMenu.push(null);
   LeagueMenu.push({name:'Delete Players Army DB', functionName:'fcnDelPlayerArmyDB'});
   LeagueMenu.push({name:'Delete Players Army Lists', functionName:'fcnDelPlayerArmyList'});
-  if(cfgEscalation == 'Enabled') LeagueMenu.push({name:'Delete Players Weekly Units', functionName:'fcnDelPlayerWeekUnit'});
+  if(LgTrEscalation == 'Enabled') LeagueMenu.push({name:'Delete Players Round Bonus Units', functionName:'fcnDelPlayerRoundUnit'});
   
   ss.addMenu("Manage League", LeagueMenu);
   ss.addMenu("Process Data", AnalyzeDataMenu);
 }
 
 // **********************************************
-// function fcnWeekChangeWG()
+// function fcnRoundChangeWG()
 //
-// When the Week number changes, this function analyzes all
-// generates a weekly report 
+// When the Round number changes, this function analyzes all
+// generates a Round report 
 //
 // **********************************************
 
-function onWeekChangeWG_Demo40K(){
+function onRoundChangeWG_Demo40K(){
 
   // Main Spreadsheet
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -89,62 +89,231 @@ function onWeekChangeWG_Demo40K(){
   // Open Configuration Spreadsheet
   var shtConfig = ss.getSheetByName('Config');
   
-  // League Name EN
-  var Location = shtConfig.getRange(12,2).getValue();
-  var LeagueTypeEN = shtConfig.getRange(13,2).getValue();
-  var LeagueTypeFR = shtConfig.getRange(14,2).getValue();
-  var LeagueNameEN = shtConfig.getRange(3,2).getValue() + ' ' + LeagueTypeEN;
-  var LeagueNameFR = LeagueTypeFR + ' ' + shtConfig.getRange(3,2).getValue();
-  
-  // Open Cumulative Spreadsheet
-  var shtCumul = ss.getSheetByName('Cumulative Results');
-  var Week = shtCumul.getRange(2,3).getValue();
-  var LastWeek = Week - 1;
-  var WeekShtName = 'Week'+Week;
-  var shtWeek = ss.getSheetByName(WeekShtName);
-  var PenaltyTable;
-  var EmailSubject;
-  var EmailMessage;
-  var MatchPlyd;
-  var MatchesPlayed = 0;
-  
-  // Players Array to return Penalty Losses
-  var PlayerData = new Array(32); // 0= Player Name, 1= Penalty Losses
-  for(var plyr = 0; plyr < 32; plyr++){
-    PlayerData[plyr] = new Array(2); 
-    for (var val = 0; val < 2; val++) PlayerData[plyr][val] = '';
-  }
-  
-  // Get Amount of matches played this week.
-  MatchPlyd = shtWeek.getRange(5, 5, 32, 1).getValues();
-  for(var plyr=0; plyr<32; plyr++){
-    if(MatchPlyd[plyr][0] > 0) MatchesPlayed = MatchesPlayed + MatchPlyd[plyr][0];
-  }
+  // Configuration Parameters
+  var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
+  var cfgUrl = shtConfig.getRange(4,11,20,1).getValues();
+  var cfgLgTrParam = shtConfig.getRange(4,4,32,1).getValues();
+  var cfgRspShtCol = shtConfig.getRange(4,18,16,1).getValues();
+  var cfgRndShtCol = shtConfig.getRange(4,21,16,1).getValues();
+  var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
 
-  // Analyze if Players have missing matches to apply Loss Penalties
-  PlayerData = fcnAnalyzeLossPenalty(ss, Week, PlayerData);
+  // Get Log Sheet
+  var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName('Log');
   
-  for(var row = 0; row<32; row++){
-    if (PlayerData[row][0] != '') Logger.log('Player: %s - Missing: %s',PlayerData[row][0], PlayerData[row][1]);
+   // Get Document URLs
+  var urlStandingsEN = cfgUrl[5][0];
+  var urlStandingsFR = cfgUrl[6][0];
+  
+  // Facebook Page Link
+  var urlFacebook = shtConfig.getRange(4,15).getValue(); 
+  
+  // League / Tournament Parameters
+  var LgTrNameEN = cfgLgTrParam[0][0] + ' ' + cfgLgTrParam[7][0];
+  var LgTrNameFR = cfgLgTrParam[8][0] + ' ' + cfgLgTrParam[0][0];
+  var LgTrMinGame = cfgLgTrParam[15][0];
+  var LocationEmail = cfgLgTrParam[1][0];
+  
+  // Email Variables
+  // [0][0]= Recipients, [0][1]= Subject, [0][2]= Message, [0][3]= Language 
+  var EmailDataEN = subCreateArray(1,4);
+  var EmailDataFR = subCreateArray(1,4);
+  EmailDataEN[0][3] = 'English';
+  EmailDataFR[0][3] = 'Français';
+  
+  var GenRecipients;
+  var AdminEmail = Session.getActiveUser().getEmail();
+  
+  // Function Values
+  var shtCumul = ss.getSheetByName('Cumulative Results');
+  var Round = shtCumul.getRange(2,3).getValue();
+  var LastRound = Round - 1;
+  var RoundShtName = 'Round'+LastRound;
+  var shtRound = ss.getSheetByName(RoundShtName);
+  var shtPlayers = ss.getSheetByName('Players');
+  var NbPlayers = shtPlayers.getRange(2,1).getValue();
+  
+  // Function Variables
+  var PenaltyTable;
+  var RoundData;
+  var TotalMatch = 0;
+  var TotalWins = 0;
+  var TotalLoss = 0;
+  var TotalMatchStore = 0;
+  var MostParam;
+  
+  // Array to Find Player with Most Matches Played in Store
+  // [0][0]= Type (Wins, Loss, Win%, Store, PunPack)
+  // [0][1]= Round Award Description
+  // [0][2]= 
+  // [0][3]= 
+  // [x][0]= Player Name, [x][1]= Value
+  
+  // RoundPrize Data
+  var RoundPrizeData = shtConfig.getRange(4,39,10,4).getValues();
+  
+  // [x][1]= Prize Category 1 				[x][2]= Prize Category 2				[x][3]= Prize Category 3					
+  // [0][1]= Round Prize                    [0][2]= Round Prize                    [0][3]= Round Prize
+  // [1][1]= Type				 			[1][2]= Type 							[1][3]= Type				 													
+  
+  var PlayerMost1 = subCreateArray(NbPlayers+1,4);
+  PlayerMost1[0][0]= RoundPrizeData[2][1];
+
+  // Array to Find Player with Most Losses
+  var PlayerMost2 = subCreateArray(NbPlayers+1,4);
+  PlayerMost2[0][0]= RoundPrizeData[2][2];
+
+  // Array to Find Player with Most Losses
+  var PlayerMost3 = subCreateArray(NbPlayers+1,4);
+  PlayerMost3[0][0]= RoundPrizeData[2][3];
+
+  // Modify the Round Number in the Match Report Sheet
+  fcnModifyRoundMatchReport(ss, shtConfig);
+  
+  
+  
+ // Verify Round Matches Data Integrity
+  RoundData = shtRound.getRange(5,4,NbPlayers,7).getValues(); //[0]= Matches Played [1]= Wins [2]= Losses [3]= Ties [6]= Matches in Store
+  var RoundTotals = shtRound.getRange(2, 4, 1, 6).getValues();
+  // Get Total Matches Played
+  TotalMatch = RoundTotals[0][0];
+  
+  // Get Total Wins
+  TotalWins = RoundTotals[0][1];
+  
+  // Get Total Losses
+  TotalLoss = RoundTotals[0][2];
+  
+  // Get Amount of matches played at the store this Round.
+  TotalMatchStore = RoundTotals[0][5];
+  
+  // Create RoundStats Array
+  var RoundStats = subCreateArray(2,4); 
+    
+  RoundStats[0][0] = LastRound;
+  RoundStats[0][1] = Round;
+  
+  RoundStats[1][0] = TotalMatch;
+  RoundStats[1][1] = TotalMatchStore;  
+  RoundStats[1][2] = TotalWins;
+  RoundStats[1][3] = TotalLoss;
+  
+  
+  // If All Totals are equal, Round Data is Valid, Send Round Report
+  if(TotalMatch == TotalWins &&  TotalMatch == TotalLoss && TotalWins == TotalLoss) {
+    
+    // Round Awards
+    //Player with Most 1
+    PlayerMost1 = fcnPlayerWithMost(PlayerMost1, NbPlayers, shtRound);
+    
+    // Player with Most 2
+    PlayerMost2 = fcnPlayerWithMost(PlayerMost2, NbPlayers, shtRound);
+  
+    // Player with Most 3
+    PlayerMost3 = fcnPlayerWithMost(PlayerMost3, NbPlayers, shtRound);
+
+    // Send Round Report Email
+    
+    // Email Subject
+    EmailDataEN[0][1] = LgTrNameEN +" - Round Report " + LastRound;
+    EmailDataFR[0][1] = LgTrNameFR +" - Rapport du Round " + LastRound;
+    
+
+    // Generate Round Report Messages
+    // Email Message
+    EmailDataEN = fcnGenRoundReportMsg(ss, shtConfig, EmailDataEN, RoundStats, RoundPrizeData, PlayerMost1, PlayerMost2, PlayerMost3);
+    
+    EmailDataFR = fcnGenRoundReportMsg(ss, shtConfig, EmailDataFR, RoundStats, RoundPrizeData, PlayerMost1, PlayerMost2, PlayerMost3);
+    
+    
+    
+    // If there is a minimum games to play per Round, generate the Penalty Losses for players who have played less than the minimum
+    if(LgTrMinGame > 0){
+      
+      // Players Array to return Penalty Losses
+      var PlayerData = new Array(32); // 0= Player Name, 1= Penalty Losses
+      for(var plyr = 0; plyr < 32; plyr++){
+        PlayerData[plyr] = new Array(2); 
+        for (var val = 0; val < 2; val++) PlayerData[plyr][val] = '';
+      }
+      
+      // Analyze if Players have missing matches to apply Loss Penalties
+      PlayerData = fcnAnalyzeLossPenalty(ss, Round, PlayerData);
+      
+      // Logs All Players Record
+      for(var row = 0; row<32; row++){
+        if (PlayerData[row][0] != '') Logger.log('Player: %s - Missing: %s',PlayerData[row][0], PlayerData[row][1]);
+      }
+      
+      // Populate the Penalty Table for the Round Report
+      PenaltyTable = subEmailPlayerPenaltyTable(PlayerData);  
+      // Update the Email message to add the Penalty Losses table
+      EmailDataEN[0][2] += PenaltyTable;
+      EmailDataFR[0][2] += PenaltyTable;
+    }
+    
+    
+    
+    
+    // English Custom Message
+    // Add Final Tournament
+    EmailDataEN[0][2] += '<br><br><b><font size="3">Final Tournament<font></b>'+
+      '<br>The first 8 players with the best Win Ratio <b>AND at least 10 games played</b> will qualify for the final tournament.';
+    // Add Standings Link
+    EmailDataEN[0][2] += "<br><br>Click here to access the League Standings and Results:<br>" + urlStandingsEN ;
+    // Add Facebook Page Link
+    EmailDataEN[0][2] += "<br><br>Please join the Community Facebook page to chat with other players and plan matches.<br><br>" + urlFacebook;
+    // Turn1 Signature
+    EmailDataEN[0][2] += "<br><br>Thank you for using TCG Booster League Manager from Turn 1 Gaming Leagues & Tournaments";
+    
+    // French Custom Message
+    // Add Final Tournament
+    EmailDataFR[0][2] += '<br><br><b><font size="3">Tournoi Final<font></b>'+
+      '<br>Les 8 premiers joueurs qui ont le meilleur ratio de victoire <b>ET au moins 10 parties jouées</b> vont se qualifier pour le tournoi final.';
+    // Add Standings Link
+    EmailDataFR[0][2] += "<br><br>Cliquez ici pour accéder aux résutlats et classement de la ligue:<br>" + urlStandingsFR ;
+    // Add Facebook Page Link
+    EmailDataFR[0][2] += "<br><br>Joignez vous à la page Facebook de la communauté pour discuter avec les autres joueurs et organiser vos parties.<br><br>" + urlFacebook;
+    // Turn1 Signature
+    EmailDataFR[0][2] += "<br><br>Merci d'utiliser TCG Booster League Manager de Turn 1 Gaming Ligues & Tournois";
+    
+    // General Recipients
+    GenRecipients = AdminEmail + ', ' + LocationEmail;
+    //Recipients = Session.getActiveUser().getEmail();
+    
+    // Get English Players Email
+    EmailDataEN[0][0] = subGetEmailRecipients(shtPlayers, NbPlayers, EmailDataEN[0][3]);
+    
+    // Get French Players Email
+    EmailDataFR[0][0] = subGetEmailRecipients(shtPlayers, NbPlayers, EmailDataFR[0][3]);
+    
+    // Send English Email
+    MailApp.sendEmail(GenRecipients, EmailDataEN[0][1],"",{bcc:EmailDataEN[0][0],name:'Turn 1 Gaming League Manager',htmlBody:EmailDataEN[0][2]});
+    
+    // Send French Email
+    MailApp.sendEmail(GenRecipients, EmailDataFR[0][1],"",{bcc:EmailDataFR[0][0],name:'Turn 1 Gaming League Manager',htmlBody:EmailDataFR[0][2]});
+    
+    // Execute Ranking function in Standing tab
+    fcnUpdateStandings(ss, shtConfig);
+    
+    // Copy all data to League Spreadsheet
+    fcnCopyStandingsSheets(ss, shtConfig, cfgLgTrParam, LastRound, 0);
   }
   
-  // Populate the Penalty Table for the Weekly Report
-  PenaltyTable = subEmailPlayerPenaltyTable(PlayerData);
+  // If Round Match Data is not Valid
+  else{
+    Logger.log('Round Match Data is not Valid');
+    Logger.log('Total Match Played: %s',TotalMatch);
+    Logger.log('Total Wins: %s',TotalWins);
+    Logger.log('Total Losses: %s',TotalLoss);
   
-  // Send Weekly Report Email
-  EmailSubject = LeagueNameEN +' - Week ' + LastWeek + ' Report';
-  EmailMessage = 'Week ' + LastWeek + ' is now complete and Week '+ Week +' has started. <br><br>Here is the week report for Week ' + LastWeek + '.<br><br>' +
-    MatchesPlayed +' matches were played this week.<br>'+
-      'etc etc etc...<br><br>';
+    // Send Log by email
+    var recipient = Session.getActiveUser().getEmail();
+    var subject = LeagueNameEN + ' - Round ' + LastRound + ' - Round Data is not Valid';
+    var body = Logger.getLog();
+    MailApp.sendEmail(recipient, subject, body)
+  }
   
-  EmailMessage += PenaltyTable;
-  
-  MailApp.sendEmail('triadgaminglt@gmail.com', EmailSubject, EmailMessage,{name:'Triad Gaming Booster League Manager',htmlBody:EmailMessage});
-  
-  // Execute Ranking function in Standing tab
-  fcnUpdateStandings(ss);
-  
-  // Copy all data to League Spreadsheet
-  fcnCopyStandingsResults(ss, shtConfig);
+  // Post Log to Log Sheet
+  subPostLog(shtLog);
   
 }
