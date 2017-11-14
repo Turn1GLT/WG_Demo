@@ -1,20 +1,24 @@
 // **********************************************
-// function fcnUpdateCardDB()
+// function fcnUpdateArmyDB()
 //
-// This function updates the Player card database  
-// with the list of cards sent in arguments
+// This function updates the Player Army List  
 //
 // **********************************************
 
 function fcnUpdateArmyDB(shtConfig, Player, AvailValue, shtTest){
   
+  Logger.log("Routine: fcnUpdateArmyDB");
+  
+  var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
+  var cfgArmyBuild = shtConfig.getRange(4,33,20,1).getValues();
+  
   // Config Spreadsheet
-  var ssArmyDBID = shtConfig.getRange(31,2).getValue();
-  var ssArmyListEnID = shtConfig.getRange(32,2).getValue();
-  var ssArmyListFrID = shtConfig.getRange(33,2).getValue();
+  var ssArmyDBID = shtIDs[2][0];
+  var ssArmyListEnID = shtIDs[3][0];
+  var ssArmyListFrID = shtIDs[4][0];
 
-  var cfgRatingMode = shtConfig.getRange(6,7).getValue();
-  var cfgCurrRoundValue = shtConfig.getRange(10,7).getValue();
+  var armyBldRatingMode = cfgArmyBuild[0][0];
+  var armyBldCurrRoundValue = shtConfig.getRange(10,7).getValue();
   
   // Player Card DB Spreadsheet
   var shtArmyDB = SpreadsheetApp.openById(ssArmyDBID).getSheetByName(Player);
@@ -37,17 +41,17 @@ function fcnUpdateArmyDB(shtConfig, Player, AvailValue, shtTest){
   var rngArmyListFrAvailPoints = shtArmyListFr.getRange(5,12);
   
   // Get Cells to Update according to the Army Rating Mode (Power Level or Points)
-  if(cfgRatingMode == 'Power Level'){
+  if(armyBldRatingMode == 'Power Level'){
     // Update the Army DB
-    rngArmyDBCurrRoundPwrLvl.setValue(cfgCurrRoundValue);
+    rngArmyDBCurrRoundPwrLvl.setValue(armyBldCurrRoundValue);
     rngArmyDBAvailPwrLvl.setValue(AvailValue);
     
-    // Update the Losing Player Army List
+    // Update the Player Army List
     // English File
-    rngArmyListEnCurrRoundPwrLvl.setValue(cfgCurrRoundValue);
+    rngArmyListEnCurrRoundPwrLvl.setValue(armyBldCurrRoundValue);
     rngArmyListEnAvailPwrLvl.setValue(AvailValue);
     // French File
-    rngArmyListFrCurrRoundPwrLvl.setValue(cfgCurrRoundValue);
+    rngArmyListFrCurrRoundPwrLvl.setValue(armyBldCurrRoundValue);
     rngArmyListFrAvailPwrLvl.setValue(AvailValue);
     
     // Hide Points Columns (6-7-8, 11-12)
@@ -57,23 +61,23 @@ function fcnUpdateArmyDB(shtConfig, Player, AvailValue, shtTest){
     shtArmyListFr.hideColumns(11, 2);
   }
 
-  if(cfgRatingMode == 'Points'){
+  if(armyBldRatingMode == 'Points'){
     // Update the Army DB
-    rngArmyDBCurrRoundPoints.setValue(cfgCurrRoundValue);
+    rngArmyDBCurrRoundPoints.setValue(armyBldCurrRoundValue);
     rngArmyDBAvailPoints.setValue(AvailValue);
     
-    // Update the Losing Player Army List
+    // Update the Player Army List
     // English File
-    rngArmyListEnCurrRoundPoints.setValue(cfgCurrRoundValue);
+    rngArmyListEnCurrRoundPoints.setValue(armyBldCurrRoundValue);
     rngArmyListEnAvailPoints.setValue(AvailValue);
     // French File
-    rngArmyListFrCurrRoundPoints.setValue(cfgCurrRoundValue);
+    rngArmyListFrCurrRoundPoints.setValue(armyBldCurrRoundValue);
     rngArmyListFrAvailPoints.setValue(AvailValue);
   
     // Hide Power Level Columns (5, 9-10)
-    shtArmyListEn.hideColumn(5);
+    shtArmyListEn.hideColumns(5, 1);
     shtArmyListEn.hideColumns(9, 2);    
-    shtArmyListFr.hideColumn(5);
+    shtArmyListFr.hideColumns(5, 1);
     shtArmyListFr.hideColumns(9, 2);
   }
 }

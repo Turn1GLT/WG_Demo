@@ -19,18 +19,18 @@ function fcnProcessMatchWG() {
   var shtConfig = ss.getSheetByName('Config');
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
   var cfgLgTrParam = shtConfig.getRange(4,4,32,1).getValues();
-  var cfgRspShtCol = shtConfig.getRange(4,18,16,1).getValues();
-  var cfgRndShtCol = shtConfig.getRange(4,21,16,1).getValues();
+  var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
+  var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
   var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
   
   var exeSendEmail = cfgExecData[5][0];
   var exeTrigReport = cfgExecData[4][0];
   
   // Columns Values and Parameters
-  var RspnDataInputs = cfgRspShtCol[0][0]; // from Time Stamp to Data Processed
-  var colDataCopied = cfgRspShtCol[2][0];
-  var colNextEmptyRow = cfgRspShtCol[7][0];
-  var colNbUnprcsdEntries = cfgRspShtCol[8][0];
+  var RspnDataInputs = cfgColRspSht[0][0]; // from Time Stamp to Data Processed
+  var colDataCopied = cfgColRspSht[2][0];
+  var colNextEmptyRow = cfgColRspSht[7][0];
+  var colNbUnprcsdEntries = cfgColRspSht[8][0];
     
   // League Parameters
   var LgTrRoundDuration = cfgLgTrParam[13][0];
@@ -188,7 +188,7 @@ function fcnProcessMatchWG() {
       if (EntriesProcessing == 1){
         // Execute Game Results Analysis for as long as there are unprocessed entries
         while (EntriesProcessing >= 1) {
-          Status = fcnAnalyzeResultsWG(ss, shtConfig, cfgLgTrParam, cfgRspShtCol, cfgRndShtCol, cfgExecData, shtRspn);
+          Status = fcnAnalyzeResultsWG(ss, shtConfig, cfgLgTrParam, cfgColRspSht, cfgColRndSht, cfgExecData, shtRspn);
           EntriesProcessing = shtRspn.getRange(1, colNbUnprcsdEntries).getValue();
           Logger.log('Nb of Entries Pending After Processing: %s',EntriesProcessing)
         }
@@ -229,7 +229,9 @@ function fcnProcessMatchWG() {
 //
 // **********************************************
 
-function fcnAnalyzeResultsWG(ss, shtConfig, cfgLgTrParam, cfgRspShtCol, cfgRndShtCol, cfgExecData, shtRspn) {
+function fcnAnalyzeResultsWG(ss, shtConfig, cfgLgTrParam, cfgColRspSht, cfgColRndSht, cfgExecData, shtRspn) {
+  
+  Logger.log("Routine: fcnAnalyzeResultsWG");
   
   // Data from Configuration File
   // Code Execution Options
@@ -239,15 +241,15 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgLgTrParam, cfgRspShtCol, cfgRndSh
   var exeSendEmail = cfgExecData[6][0];
   
   // Columns Values and Parameters
-  var RspnDataInputs = cfgRspShtCol[0][0]; // from Time Stamp to Data Processed
-  var colMatchID = cfgRspShtCol[1][0];
-  var colPrcsd = cfgRspShtCol[2][0];
-  var colDataConflict = cfgRspShtCol[3][0];
-  var colStatus = cfgRspShtCol[4][0];
-  var colStatusMsg = cfgRspShtCol[5][0];
-  var colMatchIDLastVal = cfgRspShtCol[6][0];
-  var colNextEmptyRow = cfgRspShtCol[7][0];
-  var colNbUnprcsdEntries = cfgRspShtCol[8][0];
+  var RspnDataInputs = cfgColRspSht[0][0]; // from Time Stamp to Data Processed
+  var colMatchID = cfgColRspSht[1][0];
+  var colPrcsd = cfgColRspSht[2][0];
+  var colDataConflict = cfgColRspSht[3][0];
+  var colStatus = cfgColRspSht[4][0];
+  var colStatusMsg = cfgColRspSht[5][0];
+  var colMatchIDLastVal = cfgColRspSht[6][0];
+  var colNextEmptyRow = cfgColRspSht[7][0];
+  var colNbUnprcsdEntries = cfgColRspSht[8][0];
 
   // League Parameters
   var LgTrGameType = cfgLgTrParam[4][0];
@@ -378,7 +380,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgLgTrParam, cfgRspShtCol, cfgRndSh
               Status[1] = subUpdateStatus(shtRspn, RspnRow, colStatus, colStatusMsg, Status[0]);
             }
             // function returns row where the matching data was found
-            MatchingRspn = fcnFindMatchingData(ss, cfgRspShtCol, cfgExecData, shtRspn, ResponseData, RspnRow, RspnMaxRows, shtTest);
+            MatchingRspn = fcnFindMatchingData(ss, cfgColRspSht, cfgExecData, shtRspn, ResponseData, RspnRow, RspnMaxRows, shtTest);
             if (MatchingRspn < 0) DuplicateRspn = 0 - MatchingRspn;
           }
           
@@ -403,7 +405,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgLgTrParam, cfgRspShtCol, cfgRndSh
                 Status[1] = subUpdateStatus(shtRspn, RspnRow, colStatus, colStatusMsg, Status[0]);
               }
               // Execute function to populate Match Result Sheet from Response Sheet
-              MatchData = fcnPostMatchResultsWG(ss, cfgLgTrParam, cfgRspShtCol, cfgRndShtCol, cfgExecData, shtRspn, ResponseData, MatchingRspnData, MatchID, MatchData, shtTest);
+              MatchData = fcnPostMatchResultsWG(ss, cfgLgTrParam, cfgColRspSht, cfgColRndSht, cfgExecData, shtRspn, ResponseData, MatchingRspnData, MatchID, MatchData, shtTest);
               MatchPostStatus = MatchData[25][0];
               
               Logger.log('Match Post Status: %s',MatchPostStatus);

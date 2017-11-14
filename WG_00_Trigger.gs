@@ -51,7 +51,7 @@ function onOpenWG_Demo40K() {
     
   var AnalyzeDataMenu  = [];
   AnalyzeDataMenu.push({name: 'Analyze New Match Entry', functionName: 'fcnMainWG_Grim40K'});
-  AnalyzeDataMenu.push({name: 'Reset Match Entries', functionName:'fcnResetLeagueMatch'});
+  AnalyzeDataMenu.push({name: 'Clear Match Results and Entries', functionName:'fcnClearMatchResults'});
   
   var LeagueMenu = [];
   LeagueMenu.push({name:'Update Config ID & Links', functionName:'fcnUpdateLinksIDs'});
@@ -59,7 +59,7 @@ function onOpenWG_Demo40K() {
   LeagueMenu.push({name:'Setup Response Sheets',functionName:'fcnSetupResponseSht'});
   LeagueMenu.push({name:'Create Registration Forms', functionName:'fcnCreateRegForm_WG'});
   if(LgTrEscalation == 'Enabled') LeagueMenu.push({name:'Create Round Bonus Unit Forms', functionName:'fcnCreateRoundUnitForm_WG_S'});
-  LeagueMenu.push({name:'Initialize League', functionName:'fcnInitLeague'});
+  LeagueMenu.push({name:'Initialize Event', functionName:'fcnInitializeEvent'});
   LeagueMenu.push(null);
   LeagueMenu.push({name:'Create Players Army DB', functionName:'fcnCrtPlayerArmyDB'});
   LeagueMenu.push({name:'Create Players Army Lists', functionName:'fcnCrtPlayerArmyList'});
@@ -93,8 +93,8 @@ function onRoundChangeWG_Demo40K(){
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
   var cfgUrl = shtConfig.getRange(4,11,20,1).getValues();
   var cfgLgTrParam = shtConfig.getRange(4,4,32,1).getValues();
-  var cfgRspShtCol = shtConfig.getRange(4,18,16,1).getValues();
-  var cfgRndShtCol = shtConfig.getRange(4,21,16,1).getValues();
+  var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
+  var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
   var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
 
   // Get Log Sheet

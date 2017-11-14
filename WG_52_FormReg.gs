@@ -57,8 +57,8 @@ function fcnCreateRegForm_WG() {
   // Response Columns
   var colRespEmail = colRegRespValues[0][1];
   var colRespName = colRegRespValues[1][1];
-  var colRespPhone = colRegRespValues[2][1];
-  var colRespLanguage = colRegRespValues[3][1];
+  var colRespLanguage = colRegRespValues[2][1];
+  var colRespPhone = colRegRespValues[3][1];
   var colRespTeamName = colRegRespValues[4][1];
   var colRespTeamMembers = colRegRespValues[5][1];
   var colRespArmyList = colRegRespValues[6][1];
@@ -153,18 +153,6 @@ function fcnCreateRegForm_WG() {
             .setRequired(true);
             break;
           }
-          case 'Phone Number': {
-            Logger.log('%s - %s',QuestionOrder,colRegRespValues[i][0]); 
-            // PHONE NUMBER    
-            formEN.addTextItem()
-            .setTitle("Phone Number")
-            .setRequired(true);
-            
-            formFR.addTextItem()
-            .setTitle("Numéro de téléphone")
-            .setRequired(true);
-            break;
-          }
           case 'Language': {
             Logger.log('%s - %s',QuestionOrder,colRegRespValues[i][0]); 
             // LANGUAGE
@@ -181,6 +169,19 @@ function fcnCreateRegForm_WG() {
             .setChoiceValues(["English","Français"]);
             break;
           }
+          case 'Phone Number': {
+            Logger.log('%s - %s',QuestionOrder,colRegRespValues[i][0]); 
+            // PHONE NUMBER    
+            formEN.addTextItem()
+            .setTitle("Phone Number")
+            .setRequired(true);
+            
+            formFR.addTextItem()
+            .setTitle("Numéro de téléphone")
+            .setRequired(true);
+            break;
+          }
+
           case 'Team Name': {
             Logger.log('%s - %s',QuestionOrder,colRegRespValues[i][0]); 
             // TEAM NAME

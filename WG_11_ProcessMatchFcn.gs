@@ -13,6 +13,8 @@
 
 function fcnFindDuplicateData(ss, shtRspn, RspnDataInputs, ResponseData, RspnRow, RspnMaxRows, shtTest) {
   
+  Logger.log("Routine: fcnFindDuplicateData");
+  
   // Response Data
   var RspnRound = ResponseData[0][3];
   var RspnWinr = ResponseData[0][4];
@@ -75,14 +77,16 @@ function fcnFindDuplicateData(ss, shtRspn, RspnDataInputs, ResponseData, RspnRow
 //
 // **********************************************
 
-function fcnFindMatchingData(ss, cfgRspShtCol, cfgExecData, shtRspn, ResponseData, RspnRow, RspnMaxRows, shtTest) {
+function fcnFindMatchingData(ss, cfgColRspSht, cfgExecData, shtRspn, ResponseData, RspnRow, RspnMaxRows, shtTest) {
+  
+  Logger.log("Routine: fcnFindMatchingData");
 
   // Code Execution Options
   var exeDualSubmission = cfgExecData[0][0]; // If Dual Submission is disabled, look for duplicate instead
   
   // Columns Values and Parameters
-  var RspnDataInputs = cfgRspShtCol[0][0]; // from Time Stamp to Data Processed
-  var ColDataConflict = cfgRspShtCol[3][0];
+  var RspnDataInputs = cfgColRspSht[0][0]; // from Time Stamp to Data Processed
+  var ColDataConflict = cfgColRspSht[3][0];
   
   var RspnPlyrSubmit = ResponseData[0][1]; // Player Submitting
   var RspnRound = ResponseData[0][3];
@@ -165,7 +169,9 @@ function fcnFindMatchingData(ss, cfgRspShtCol, cfgExecData, shtRspn, ResponseDat
 //
 // **********************************************
 
-function fcnPostMatchResultsWG(ss, cfgLgTrParam, cfgRspShtCol, cfgRndShtCol, cfgExecData, shtRspn, ResponseData, MatchingRspnData, MatchID, MatchData, shtTest) {
+function fcnPostMatchResultsWG(ss, cfgLgTrParam, cfgColRspSht, cfgColRndSht, cfgExecData, shtRspn, ResponseData, MatchingRspnData, MatchID, MatchData, shtTest) {
+  
+  Logger.log("Routine: fcnPostMatchResultsWG");
   
   // Code Execution Options
   var exeDualSubmission = cfgExecData[0][0]; // If Dual Submission is disabled, look for duplicate instead
@@ -267,7 +273,7 @@ function fcnPostMatchResultsWG(ss, cfgLgTrParam, cfgRspShtCol, cfgRndShtCol, cfg
     
     // Post Results in Appropriate Round Number for Both Players
     // DataPostedLosr is an Array with [0]=Post Status (1=Success) [1]=Loser Row [2]=Power Level Column
-    DataPostedLosr = fcnPostResultRoundWG(ss, cfgLgTrParam, cfgRspShtCol, cfgRndShtCol, ResultData, shtTest);
+    DataPostedLosr = fcnPostResultRoundWG(ss, cfgLgTrParam, cfgColRspSht, cfgColRndSht, ResultData, shtTest);
     
     // Gets New Power Level / Points Bonus for Loser from Cumulative Results Sheet
     shtCumul = ss.getSheetByName('Cumulative Results');
@@ -329,15 +335,17 @@ function fcnPostMatchResultsWG(ss, cfgLgTrParam, cfgRspShtCol, cfgRndShtCol, cfg
 //
 // **********************************************
 
-function fcnPostResultRoundWG(ss, cfgLgTrParam, cfgRspShtCol, cfgRndShtCol, ResultData, shtTest) {
+function fcnPostResultRoundWG(ss, cfgLgTrParam, cfgColRspSht, cfgColRndSht, ResultData, shtTest) {
+  
+  Logger.log("Routine: fcnPostResultRoundWG");
 
   // Column Values
-  var colPlyr = cfgRndShtCol[0][0];
-  var colTeam = cfgRndShtCol[1][0];
-  var colWin = cfgRndShtCol[3][0];
-  var colLos = cfgRndShtCol[4][0];
-  var colLocation = cfgRndShtCol[8][0];
-  var colBalanceBonus = cfgRndShtCol[10][0];
+  var colPlyr = cfgColRndSht[0][0];
+  var colTeam = cfgColRndSht[1][0];
+  var colWin = cfgColRndSht[3][0];
+  var colLos = cfgColRndSht[4][0];
+  var colLocation = cfgColRndSht[8][0];
+  var colBalanceBonus = cfgColRndSht[10][0];
   
   // League Parameters
   var LgTrGameType = cfgLgTrParam[4][0];
@@ -459,7 +467,9 @@ function fcnPostResultRoundWG(ss, cfgLgTrParam, cfgRspShtCol, cfgRndShtCol, Resu
 //
 // **********************************************
 
-function fcnUpdateStandings(ss, cfgLgTrParam, cfgRspShtCol, cfgRndShtCol, cfgExecData){
+function fcnUpdateStandings(ss, cfgLgTrParam, cfgColRspSht, cfgColRndSht, cfgExecData){
+  
+  Logger.log("Routine: fcnPostResultRoundWG");
   
   // League / Tournament Parameters
   var LgTrRanking = cfgLgTrParam[17][0];
@@ -467,14 +477,14 @@ function fcnUpdateStandings(ss, cfgLgTrParam, cfgRspShtCol, cfgRndShtCol, cfgExe
   var LgTrNbPlayers = cfgLgTrParam[31][0];
     
   // Column Values
-  var colPlyr = cfgRndShtCol[0][0];
-  var colTeam = cfgRndShtCol[1][0];
-  var colMatchPlayed = cfgRndShtCol[2][0];
-  var colWins = cfgRndShtCol[3][0];
-  var colLoss = cfgRndShtCol[4][0];
-  var colPts = cfgRndShtCol[6][0];
-  var colWinPerc = cfgRndShtCol[7][0];
-  var colLocation = cfgRndShtCol[8][0];
+  var colPlyr = cfgColRndSht[0][0];
+  var colTeam = cfgColRndSht[1][0];
+  var colMatchPlayed = cfgColRndSht[2][0];
+  var colWins = cfgColRndSht[3][0];
+  var colLoss = cfgColRndSht[4][0];
+  var colPts = cfgColRndSht[6][0];
+  var colWinPerc = cfgColRndSht[7][0];
+  var colLocation = cfgColRndSht[8][0];
   
   // Sheets
   var shtCumul = ss.getSheetByName('Cumulative Results');
@@ -555,6 +565,8 @@ function fcnUpdateStandings(ss, cfgLgTrParam, cfgRspShtCol, cfgRndShtCol, cfgExe
 // **********************************************
 
 function fcnCopyStandingsSheets(ss, shtConfig, cfgLgTrParam, RspnRoundNum, AllSheets){
+  
+  Logger.log("Routine: fcnCopyStandingsSheets");
 
   var shtIDs = shtConfig.getRange(4, 7,20,1).getValues();
   var shtUrl = shtConfig.getRange(4,11,20,1).getValues();
@@ -724,6 +736,8 @@ function fcnCopyStandingsSheets(ss, shtConfig, cfgLgTrParam, RspnRoundNum, AllSh
 
 function fcnAnalyzeLossPenalty(ss, Round, PlayerData){
   
+  Logger.log("Routine: fcnAnalyzeLossPenalty");
+  
   var shtCumul = ss.getSheetByName('Cumulative Results');
   var CumulMaxCol = shtCumul.getMaxColumns();
   var RoundShtName = 'Round'+Round;
@@ -779,6 +793,8 @@ function fcnAnalyzeLossPenalty(ss, Round, PlayerData){
 // **********************************************
 
 function fcnModifyRoundMatchReport(ss, shtConfig){
+  
+  Logger.log("Routine: fcnModifyRoundMatchReport");
 
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
   var MatchFormEN = FormApp.openById(shtIDs[7][0]);
