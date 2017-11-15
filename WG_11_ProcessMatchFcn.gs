@@ -169,7 +169,7 @@ function fcnFindMatchingData(ss, cfgColRspSht, cfgExecData, shtRspn, ResponseDat
 //
 // **********************************************
 
-function fcnPostMatchResultsWG(ss, cfgLgTrParam, cfgColRspSht, cfgColRndSht, cfgExecData, shtRspn, ResponseData, MatchingRspnData, MatchID, MatchData, shtTest) {
+function fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExecData, shtRspn, ResponseData, MatchingRspnData, MatchID, MatchData, shtTest) {
   
   Logger.log("Routine: fcnPostMatchResultsWG");
   
@@ -178,7 +178,7 @@ function fcnPostMatchResultsWG(ss, cfgLgTrParam, cfgColRspSht, cfgColRndSht, cfg
   var exePlyrMatchValidation = cfgExecData[2][0];
   
   // League Parameters
-  var LgTrGameType = cfgLgTrParam[4][0];
+  var EvntGameType = cfgEvntParam[4][0];
   
   // Cumulative Results sheet variables
   var shtCumul;
@@ -273,7 +273,7 @@ function fcnPostMatchResultsWG(ss, cfgLgTrParam, cfgColRspSht, cfgColRndSht, cfg
     
     // Post Results in Appropriate Round Number for Both Players
     // DataPostedLosr is an Array with [0]=Post Status (1=Success) [1]=Loser Row [2]=Power Level Column
-    DataPostedLosr = fcnPostResultRoundWG(ss, cfgLgTrParam, cfgColRspSht, cfgColRndSht, ResultData, shtTest);
+    DataPostedLosr = fcnPostResultRoundWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, ResultData, shtTest);
     
     // Gets New Power Level / Points Bonus for Loser from Cumulative Results Sheet
     shtCumul = ss.getSheetByName('Cumulative Results');
@@ -335,7 +335,7 @@ function fcnPostMatchResultsWG(ss, cfgLgTrParam, cfgColRspSht, cfgColRndSht, cfg
 //
 // **********************************************
 
-function fcnPostResultRoundWG(ss, cfgLgTrParam, cfgColRspSht, cfgColRndSht, ResultData, shtTest) {
+function fcnPostResultRoundWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, ResultData, shtTest) {
   
   Logger.log("Routine: fcnPostResultRoundWG");
 
@@ -344,13 +344,16 @@ function fcnPostResultRoundWG(ss, cfgLgTrParam, cfgColRspSht, cfgColRndSht, Resu
   var colTeam = cfgColRndSht[1][0];
   var colWin = cfgColRndSht[3][0];
   var colLos = cfgColRndSht[4][0];
+  var colTie = cfgColRndSht[5][0];
+  var colPoints = cfgColRndSht[6][0];
+  var colWinPerc = cfgColRndSht[7][0];
   var colLocation = cfgColRndSht[8][0];
   var colBalanceBonus = cfgColRndSht[10][0];
   
   // League Parameters
-  var LgTrGameType = cfgLgTrParam[4][0];
-  var LgTrBalance = cfgLgTrParam[21][0];
-  var LgTrBalanceBonus = cfgLgTrParam[22][0];
+  var EvntGameType = cfgEvntParam[4][0];
+  var EvntBalance = cfgEvntParam[21][0];
+  var EvntBalanceBonus = cfgEvntParam[22][0];
   
   // function variables
   var shtRoundRslt;
@@ -445,9 +448,9 @@ function fcnPostResultRoundWG(ss, cfgLgTrParam, cfgColRspSht, cfgColRndSht, Resu
   
 
   // If Game Type is Wargame
-  if (RoundMatchTie == 0 && LgTrBalance == 'Enabled'){
+  if (RoundMatchTie == 0 && EvntBalance == 'Enabled'){
     // Get Loser Amount of Power Level Bonus and Increase by value from Config file
-    LosrPowerLevel = shtRoundRslt.getRange(RoundLosrRow,colBalanceBonus).getValue() + LgTrBalanceBonus;
+    LosrPowerLevel = shtRoundRslt.getRange(RoundLosrRow,colBalanceBonus).getValue() + EvntBalanceBonus;
     shtRoundRslt.getRange(RoundLosrRow,colBalanceBonus).setValue(LosrPowerLevel);
   }
   
@@ -467,14 +470,14 @@ function fcnPostResultRoundWG(ss, cfgLgTrParam, cfgColRspSht, cfgColRndSht, Resu
 //
 // **********************************************
 
-function fcnUpdateStandings(ss, cfgLgTrParam, cfgColRspSht, cfgColRndSht, cfgExecData){
+function fcnUpdateStandings(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExecData){
   
   Logger.log("Routine: fcnPostResultRoundWG");
   
   // League / Tournament Parameters
-  var LgTrRanking = cfgLgTrParam[17][0];
-  var LgTrRankMatchLimit = cfgLgTrParam[18][0];
-  var LgTrNbPlayers = cfgLgTrParam[31][0];
+  var EvntRanking = cfgEvntParam[17][0];
+  var EvntRankMatchLimit = cfgEvntParam[18][0];
+  var EvntNbPlayers = cfgEvntParam[31][0];
     
   // Column Values
   var colPlyr = cfgColRndSht[0][0];
@@ -499,19 +502,19 @@ function fcnUpdateStandings(ss, cfgLgTrParam, cfgColRspSht, cfgColRndSht, cfgExe
    
   var InLimit = 0;
   var OutLimit = 0;
-  var PlyrInLimArray = subCreateArray(LgTrNbPlayers,6);
-  var PlyrOutLimArray = subCreateArray(LgTrNbPlayers,6);
+  var PlyrInLimArray = subCreateArray(EvntNbPlayers,6);
+  var PlyrOutLimArray = subCreateArray(EvntNbPlayers,6);
   
   // Find Players with enough matches played
-  for(var i=0; i<LgTrNbPlayers; i++){
+  for(var i=0; i<EvntNbPlayers; i++){
     // If player has played enough matches, put it in InLimit Array
-    if(ValCumul[i][2] >= LgTrRankMatchLimit){
+    if(ValCumul[i][2] >= EvntRankMatchLimit){
       PlyrInLimArray[InLimit] = ValCumul[i];
       Logger.log('In Limit - Player: %s - MP: %s',PlyrInLimArray[InLimit][0], PlyrInLimArray[InLimit][2]);
       InLimit++;
     }
     // If player has not played enough matches, put it in OutLimit Array
-    if(ValCumul[i][2] < LgTrRankMatchLimit){
+    if(ValCumul[i][2] < EvntRankMatchLimit){
       PlyrOutLimArray[OutLimit] = ValCumul[i];
       Logger.log('Out Limit - Player: %s - MP: %s',PlyrOutLimArray[OutLimit][0], PlyrOutLimArray[OutLimit][2]);
       OutLimit++;
@@ -534,21 +537,21 @@ function fcnUpdateStandings(ss, cfgLgTrParam, cfgColRspSht, cfgColRndSht, cfgExe
   }
   
   // Points - Sorts the Standings Values by Points and Matches Played
-  if(LgTrRanking == 'Points'){
+  if(EvntRanking == 'Points'){
     // Sort In Limit Range
     RngStandInLim.sort([{column: colPts, ascending: false},{column: colMatchPlayed, ascending: false}]);
     // Sort Out Limit Range
     RngStandOutLim.sort([{column: colPts, ascending: false},{column: colMatchPlayed, ascending: false}]);
   }
   // Wins - Sorts the Standings Values by Wins and Win Percentage
-  if(LgTrRanking == 'Wins'){
+  if(EvntRanking == 'Wins'){
     // Sort In Limit Range
     RngStandInLim.sort([{column: colWins, ascending: false},{column: colWinPerc, ascending: false}]);
     // Sort Out Limit Range
     RngStandOutLim.sort([{column: colWins, ascending: false},{column: colWinPerc, ascending: false}]);
   }
   // Win % - Sorts the Standings Values by Win Percentage and Matches Played
-  if(LgTrRanking == 'Win%'){
+  if(EvntRanking == 'Win%'){
     // Sort In Limit Range
     RngStandInLim.sort([{column: colWinPerc, ascending: false},{column: colMatchPlayed, ascending: false}]);
     // Sort Out Limit Range
@@ -564,7 +567,7 @@ function fcnUpdateStandings(ss, cfgLgTrParam, cfgColRspSht, cfgColRndSht, cfgExe
 //
 // **********************************************
 
-function fcnCopyStandingsSheets(ss, shtConfig, cfgLgTrParam, RspnRoundNum, AllSheets){
+function fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, RspnRoundNum, AllSheets){
   
   Logger.log("Routine: fcnCopyStandingsSheets");
 
@@ -580,10 +583,10 @@ function fcnCopyStandingsSheets(ss, shtConfig, cfgLgTrParam, RspnRoundNum, AllSh
   var FormUrlFR = shtUrl[8][0];
   
   // League Name
-  var LgTrNameEN = cfgLgTrParam[0][0] + ' ' + cfgLgTrParam[7][0];
-  var LgTrNameFR = cfgLgTrParam[8][0] + ' ' + cfgLgTrParam[0][0];
-  var LgTrNbPlayers = cfgLgTrParam[31][0];
-  var LgTrRoundLimit = cfgLgTrParam[13][0];
+  var EvntNameEN = cfgEvntParam[0][0] + ' ' + cfgEvntParam[7][0];
+  var EvntNameFR = cfgEvntParam[8][0] + ' ' + cfgEvntParam[0][0];
+  var EvntNbPlayers = cfgEvntParam[31][0];
+  var EvntRoundLimit = cfgEvntParam[13][0];
   var RoundSheet = RspnRoundNum + 1;
   
   // Sheet Initialization
@@ -653,11 +656,11 @@ function fcnCopyStandingsSheets(ss, shtConfig, cfgLgTrParam, RspnRoundNum, AllSh
       ssLgShtFr.getRange(ssMstrShtStartRow,1,NumValues,ssMstrShtNbCol).setValues(ssMstrShtData);
       
       // Hide Unused Rows
-      if(LgTrNbPlayers > 0){
+      if(EvntNbPlayers > 0){
         ssLgShtEn.hideRows(ssMstrShtStartRow, ssMstrShtMaxRows - ssMstrShtStartRow + 1);
-        ssLgShtEn.showRows(ssMstrShtStartRow, LgTrNbPlayers);
+        ssLgShtEn.showRows(ssMstrShtStartRow, EvntNbPlayers);
         ssLgShtFr.hideRows(ssMstrShtStartRow, ssMstrShtMaxRows - ssMstrShtStartRow + 1);
-        ssLgShtFr.showRows(ssMstrShtStartRow, LgTrNbPlayers);
+        ssLgShtFr.showRows(ssMstrShtStartRow, EvntNbPlayers);
       }
        
       // Round Sheet 
@@ -672,7 +675,7 @@ function fcnCopyStandingsSheets(ss, shtConfig, cfgLgTrParam, RspnRoundNum, AllSh
       }
       
       // If the current sheet is greater than League Round Limit, hide sheet
-      if(sht > LgTrRoundLimit + 1){
+      if(sht > EvntRoundLimit + 1){
         ssLgShtEn.hideSheet();
         ssLgShtFr.hideSheet();
       }
@@ -684,8 +687,8 @@ function fcnCopyStandingsSheets(ss, shtConfig, cfgLgTrParam, RspnRoundNum, AllSh
       if (sht == 0){
         Logger.log('Standings Sheet Updated');
         // Update League Name
-        ssLgShtEn.getRange(4,2).setValue(LgTrNameEN + ' Standings')
-        ssLgShtFr.getRange(4,2).setValue('Classement ' + LgTrNameFR)
+        ssLgShtEn.getRange(4,2).setValue(EvntNameEN + ' Standings')
+        ssLgShtFr.getRange(4,2).setValue('Classement ' + EvntNameFR)
         // Update Form Link
         ssLgShtEn.getRange(2,5).setValue('=HYPERLINK("' + FormUrlEN + '","Send Match Results")');      
         ssLgShtFr.getRange(2,5).setValue('=HYPERLINK("' + FormUrlFR + '","Envoyer Résultats de Match")'); 

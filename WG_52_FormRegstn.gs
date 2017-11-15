@@ -1,27 +1,78 @@
 // **********************************************
-// function fcnCreateRegForm_WG()
+// function fcnCrtRegstnForm_WG()
 //
 // This function creates the Registration Form 
 // based on the parameters in the Config File
 //
 // **********************************************
 
-function fcnCreateRegForm_WG() {
+function fcnCrtRegstnForm_WG() {
   
   Logger.log("Routine: fcnCreateRegForm_WG");
   
-  var ss = SpreadsheetApp.getActive();
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
   var shtConfig = ss.getSheetByName('Config');
-  var ConfigData = shtConfig.getRange(56,2,32,1).getValues();
-  var OptGenerateResp = ConfigData[8][0];
-  var cfgTeamFormat = ConfigData[5][0];
-  var cfgTeamMembers = ConfigData[13][0];
-  
   var shtPlayers = ss.getSheetByName('Players');
+    
+  // Configuration Data
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
-  var ssID = shtIDs[0][0];
+  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+  var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
+  var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
+  var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
+  var cfgArmyBuild = shtConfig.getRange(4,33,20,1).getValues();
+  
+  // Registration Form Construction 
+  // Column 1 = Category Name
+  // Column 2 = Category Order in Form
+  // Column 3 = Column Value in Player/Team Sheet
+  var cfgRegFormCnstrVal = shtConfig.getRange(4,26,16,3).getValues();
+  
+  // Execution Parameters
+  var exeGnrtResp = cfgExecData[3][0];
+  
+  // League Parameters
+  var EvntFormat = cfgEvntParam[9][0];
+  var EvntNbPlyrTeam = cfgEvntParam[10][0];
+    
+  // Log Sheet
   var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName('Log');
   
+  // Registration ID from the Config File
+  var ssID = shtIDs[0][0];
+  var FormIdEN = shtIDs[9][0];
+  var FormIdFR = shtIDs[10][0];
+ 
+  // Row Column Values to Write Form IDs and URLs
+  var rowFormEN  = 13;
+  var rowFormFR  = 14;
+  var colFormID  = 7;
+  var colFormURL = 11
+  
+  var ErrorVal = '';
+  var QuestionOrder = 2;
+  
+  // Army Building Options
+  var ArmyRating = cfgArmyBuild[0][0]; 
+  var NbFaction     = cfgArmyBuild[6][0];
+  var NbDetachMax   = cfgArmyBuild[7][0];
+  var NbUnitDetach1 = cfgArmyBuild[8][0];
+  var NbUnitDetach2 = cfgArmyBuild[9][0];
+  var NbUnitDetach3 = cfgArmyBuild[10][0];
+  var UnitModelMin  = 1;
+  var UnitModelMax  = cfgArmyBuild[11][0];
+  var UnitRatingMin = 1;
+  var UnitRatingMax = cfgArmyBuild[12][0];
+  
+  var DetachList = shtConfig.getRange(2,12,13,2).getValues();
+  var DetachIncr = 0;
+  var DetachTypeArray = new Array(12);
+  
+  var UnitRolesList = shtConfig.getRange(2,15,10,2).getValues();
+  var UnitIncr = 0;
+  var UnitRoleArray = new Array(9);
+  
+  // Routine Variables
   var ssSheets;
   var NbSheets;
   var SheetName;
@@ -31,80 +82,31 @@ function fcnCreateRegForm_WG() {
   var FirstCellVal;
     
   var formEN;
-  var FormIdEN;
   var FormNameEN;
   var FormItemsEN;
   var urlFormEN;
   
   var formFR;
-  var FormIdFR;
   var FormNameFR;
   var FormItemsFR;
   var urlFormFR;
   
-  var RowFormUrlEN = 23;
-  var RowFormUrlFR = 24;
-  var RowFormIdEN = 25;
-  var RowFormIdFR = 26;
-  
-  var ErrorVal = '';
-  var QuestionOrder = 1;
-  
-  // Response Columns from Configuration File
-  // [x][0] = Response Columns
-  var colRegRespValues = shtConfig.getRange(56,6,12,3).getValues();
-  
-  // Response Columns
-  var colRespEmail = colRegRespValues[0][1];
-  var colRespName = colRegRespValues[1][1];
-  var colRespLanguage = colRegRespValues[2][1];
-  var colRespPhone = colRegRespValues[3][1];
-  var colRespTeamName = colRegRespValues[4][1];
-  var colRespTeamMembers = colRegRespValues[5][1];
-  var colRespArmyList = colRegRespValues[6][1];
-  
-  var ArmyComposition = shtConfig.getRange(7,11,9,1).getValues();
-  var NbFaction     = ArmyComposition[1][0]
-  var NbDetachMax   = ArmyComposition[2][0];
-  var NbUnitDetach1 = ArmyComposition[3][0];
-  var NbUnitDetach2 = ArmyComposition[4][0];
-  var NbUnitDetach3 = ArmyComposition[5][0];
-  
-  var NbUnitMax;
-  var UnitModelMin  = 1;
-  var UnitModelMax  = ArmyComposition[6][0];
-  var UnitRatingMin = 1;
-  var UnitRatingMax = ArmyComposition[7][0];
-  var ArmyRating = shtConfig.getRange(2,11).getValue(); 
-  var ArmyRatingText;
-  Logger.log('Army Rating: %s',ArmyRating);
-  
-  var Detachments = shtConfig.getRange(2,12,13,2).getValues();
-  var DetachIncr = 0;
-  var DetachTypeArray = new Array(12);
-  
-  var UnitRoles = shtConfig.getRange(2,15,10,2).getValues();
-  var UnitIncr = 0;
-  var UnitRoleArray = new Array(9);
-  
-  var ChUnitEN;
-  var ChDetachEN;
-  var ChEndEN;
+  var ChcUnitEN;
+  var ChcDetachEN;
+  var ChcEndEN;
 
-  var ChUnitFR;
-  var ChDetachFR;
-  var ChEndFR;
+  var ChcUnitFR;
+  var ChcDetachFR;
+  var ChcEndFR;
   
+  var ArmyRatingText;
+  var NbUnitMax;
   var UnitPageEN = new Array(325);
   var UnitPageFR = new Array(325);
   var UnitIndex;
   var UnitTitle;
   var UnitRole;
   var TestCol = 1;
-  
-  // Gets the Registration ID from the Config File
-  FormIdEN = shtConfig.getRange(RowFormIdEN, 7).getValue();
-  FormIdFR = shtConfig.getRange(RowFormIdFR, 7).getValue();
   
   // If Form Exists, Log Error Message
   if(FormIdEN != ''){
@@ -127,12 +129,12 @@ function fcnCreateRegForm_WG() {
     formFR = FormApp.create(FormNameFR).setTitle(FormNameFR);
     
     // Loops in Response Columns Values and Create Appropriate Question
-    for(var i = 0; i < colRegRespValues.length; i++){
+    for(var i = 1; i < cfgRegFormCnstrVal.length; i++){
       // Look for Col Equal to Question Order
-      if(QuestionOrder == colRegRespValues[i][1]){
-        switch(colRegRespValues[i][0]){
+      if(QuestionOrder == cfgRegFormCnstrVal[i][1]){
+        switch(cfgRegFormCnstrVal[i][0]){
           case 'Email': {
-            Logger.log('%s - %s',QuestionOrder,colRegRespValues[i][0]);
+            Logger.log('%s - %s',QuestionOrder,cfgRegFormCnstrVal[i][0]);
             // EMAIL
             // Set Registration Email collection
             formEN.setCollectEmail(true);
@@ -140,7 +142,7 @@ function fcnCreateRegForm_WG() {
             break;
           }
           case 'Name': {
-            Logger.log('%s - %s',QuestionOrder,colRegRespValues[i][0]); 
+            Logger.log('%s - %s',QuestionOrder,cfgRegFormCnstrVal[i][0]); 
             // FULL NAME   
             formEN.addTextItem()
             .setTitle("Name")
@@ -154,7 +156,7 @@ function fcnCreateRegForm_WG() {
             break;
           }
           case 'Language': {
-            Logger.log('%s - %s',QuestionOrder,colRegRespValues[i][0]); 
+            Logger.log('%s - %s',QuestionOrder,cfgRegFormCnstrVal[i][0]); 
             // LANGUAGE
             formEN.addMultipleChoiceItem()
             .setTitle("Language Preference")
@@ -170,7 +172,7 @@ function fcnCreateRegForm_WG() {
             break;
           }
           case 'Phone Number': {
-            Logger.log('%s - %s',QuestionOrder,colRegRespValues[i][0]); 
+            Logger.log('%s - %s',QuestionOrder,cfgRegFormCnstrVal[i][0]); 
             // PHONE NUMBER    
             formEN.addTextItem()
             .setTitle("Phone Number")
@@ -183,32 +185,34 @@ function fcnCreateRegForm_WG() {
           }
 
           case 'Team Name': {
-            Logger.log('%s - %s',QuestionOrder,colRegRespValues[i][0]); 
-            // TEAM NAME
-            formEN.addPageBreakItem().setTitle("Team");
-            formEN.addTextItem()
-            .setTitle("Team Name")
-            .setRequired(true);
-            
-            formFR.addPageBreakItem().setTitle("Équipe");
-            formFR.addTextItem()
-            .setTitle("Nom d'équipe")
-            .setRequired(true);
-
-            // TEAM MEMBERS
-            for(var member = 1; member <= cfgTeamMembers; member++){
+            Logger.log('%s - %s',QuestionOrder,cfgRegFormCnstrVal[i][0]); 
+            if(EvntFormat == 'Team'){
+              // TEAM NAME
+              formEN.addPageBreakItem().setTitle("Team");
               formEN.addTextItem()
-              .setTitle("Teammate " + member)
+              .setTitle("Team Name")
               .setRequired(true);
               
+              formFR.addPageBreakItem().setTitle("Équipe");
               formFR.addTextItem()
-              .setTitle("Équipier " + member)
+              .setTitle("Nom d'équipe")
               .setRequired(true);
+              
+              // TEAM MEMBERS
+              for(var member = 1; member <= EvntNbPlyrTeam; member++){
+                formEN.addTextItem()
+                .setTitle("Teammate " + member)
+                .setRequired(true);
+                
+                formFR.addTextItem()
+                .setTitle("Équipier " + member)
+                .setRequired(true);
+              }
             }
             break;
           }          
           case 'Army List': {
-            Logger.log('%s - %s',QuestionOrder,colRegRespValues[i][0]); 
+            Logger.log('%s - %s',QuestionOrder,cfgRegFormCnstrVal[i][0]); 
             // English
             // Army List
             formEN.addPageBreakItem()
@@ -277,8 +281,8 @@ function fcnCreateRegForm_WG() {
             // CREATE DETACHMENT CHOICES
             // Creates the List of Detachments Allowed for League
             for(var detach = 1; detach <= 12; detach++) {
-              if(Detachments[detach][1] == 'Yes') {
-                DetachTypeArray[DetachIncr] = Detachments[detach][0];
+              if(DetachList[detach][1] == 'Yes') {
+                DetachTypeArray[DetachIncr] = DetachList[detach][0];
                 DetachIncr++;
               }
             }
@@ -287,8 +291,8 @@ function fcnCreateRegForm_WG() {
             // CREATE UNIT ROLES CHOICES
             // Creates the List of Unit Roles Allowed for League
             for(var unit = 1; unit <= 9; unit++) {
-              if(UnitRoles[unit][1] == 'Yes') {
-                UnitRoleArray[UnitIncr] = UnitRoles[unit][0];
+              if(UnitRolesList[unit][1] == 'Yes') {
+                UnitRoleArray[UnitIncr] = UnitRolesList[unit][0];
                 UnitIncr++;
               }
             }
@@ -494,8 +498,8 @@ function fcnCreateRegForm_WG() {
                 AddUnitEN.setRequired(true);
                 
                 // Create the different choices
-                ChUnitEN = AddUnitEN.createChoice("Add Unit",FormApp.PageNavigationType.CONTINUE);
-                ChEndEN  = AddUnitEN.createChoice("My Army List is Complete",FormApp.PageNavigationType.SUBMIT);
+                ChcUnitEN = AddUnitEN.createChoice("Add Unit",FormApp.PageNavigationType.CONTINUE);
+                ChcEndEN  = AddUnitEN.createChoice("My Army List is Complete",FormApp.PageNavigationType.SUBMIT);
                 
                 // FRENCH
                 var AddUnitFR = formFR.addMultipleChoiceItem();
@@ -503,40 +507,40 @@ function fcnCreateRegForm_WG() {
                 AddUnitFR.setRequired(true);
                 
                 // Create the different choices
-                ChUnitFR = AddUnitFR.createChoice("Ajouter Unité",FormApp.PageNavigationType.CONTINUE);
-                ChEndFR  = AddUnitFR.createChoice("Ma liste d'armée est complète",FormApp.PageNavigationType.SUBMIT);
+                ChcUnitFR = AddUnitFR.createChoice("Ajouter Unité",FormApp.PageNavigationType.CONTINUE);
+                ChcEndFR  = AddUnitFR.createChoice("Ma liste d'armée est complète",FormApp.PageNavigationType.SUBMIT);
                 
                 
                 // If Unit is First Detachment
                 if(DetachNb == 1 && NbDetachMax > 1) {
-                  ChDetachEN = AddUnitEN.createChoice("Add New Detachment",Detach2EN);
-                  ChDetachFR = AddUnitFR.createChoice("Ajouter Nouveau Détachement",Detach2FR);
+                  ChcDetachEN = AddUnitEN.createChoice("Add New Detachment",Detach2EN);
+                  ChcDetachFR = AddUnitFR.createChoice("Ajouter Nouveau Détachement",Detach2FR);
                 }
                 // If Unit is Second Detachment and there are 3 Detachments
                 if(DetachNb == 2 && NbDetachMax > 2) {
-                  ChDetachEN = AddUnitEN.createChoice("Add New Detachment",Detach3EN);
-                  ChDetachFR = AddUnitFR.createChoice("Ajouter Nouveau Détachement",Detach3FR);
+                  ChcDetachEN = AddUnitEN.createChoice("Add New Detachment",Detach3EN);
+                  ChcDetachFR = AddUnitFR.createChoice("Ajouter Nouveau Détachement",Detach3FR);
                 }
                 // Sets the Choices depending on the Unit and Detachment
                 if(DetachNb < NbDetachMax){
                   if(UnitNb < NbUnitMax) {
-                    AddUnitEN.setChoices([ChUnitEN, ChDetachEN, ChEndEN]);
-                    AddUnitFR.setChoices([ChUnitFR, ChDetachFR, ChEndFR]);
+                    AddUnitEN.setChoices([ChcUnitEN, ChcDetachEN, ChcEndEN]);
+                    AddUnitFR.setChoices([ChcUnitFR, ChcDetachFR, ChcEndFR]);
                   }
                   if(UnitNb == NbUnitMax) {
-                    AddUnitEN.setChoices([ChDetachEN, ChEndEN]);
-                    AddUnitFR.setChoices([ChDetachFR, ChEndFR]);
+                    AddUnitEN.setChoices([ChcDetachEN, ChcEndEN]);
+                    AddUnitFR.setChoices([ChcDetachFR, ChcEndFR]);
                   }
                 }
                 
                 if(DetachNb == NbDetachMax){
                   if(UnitNb < NbUnitMax) {
-                    AddUnitEN.setChoices([ChUnitEN, ChEndEN]);
-                    AddUnitFR.setChoices([ChUnitFR, ChEndFR]);
+                    AddUnitEN.setChoices([ChcUnitEN, ChcEndEN]);
+                    AddUnitFR.setChoices([ChcUnitFR, ChcEndFR]);
                   }
                   if(UnitNb == NbUnitMax) {
-                    AddUnitEN.setChoices([ChEndEN]);
-                    AddUnitFR.setChoices([ChEndFR]);
+                    AddUnitEN.setChoices([ChcEndEN]);
+                    AddUnitFR.setChoices([ChcEndFR]);
                   }
                 }
                 
@@ -576,7 +580,7 @@ function fcnCreateRegForm_WG() {
     
     // RESPONSE SHEETS
     // Create Response Sheet in Main File and Rename
-    if(OptGenerateResp == 'Enabled'){
+    if(exeGnrtResp == 'Enabled'){
       // English Form
       formEN.setDestination(FormApp.DestinationType.SPREADSHEET, ssID);
       
@@ -630,16 +634,16 @@ function fcnCreateRegForm_WG() {
       
       // Set Match Report IDs in Config File
       FormIdEN = formEN.getId();
-      shtConfig.getRange(RowFormIdEN, 7).setValue(FormIdEN);
+      shtConfig.getRange(rowFormEN, colFormID).setValue(FormIdEN);
       FormIdFR = formFR.getId();
-      shtConfig.getRange(RowFormIdFR, 7).setValue(FormIdFR);
+      shtConfig.getRange(rowFormFR, colFormID).setValue(FormIdFR);
       
       // Create Links to add to Config File  
       urlFormEN = formEN.getPublishedUrl();
-      shtConfig.getRange(RowFormUrlEN, 2).setValue(urlFormEN); 
+      shtConfig.getRange(rowFormEN, colFormURL).setValue(urlFormEN); 
       
       urlFormFR = formFR.getPublishedUrl();
-      shtConfig.getRange(RowFormUrlFR, 2).setValue(urlFormFR);
+      shtConfig.getRange(rowFormEN, colFormURL).setValue(urlFormFR);
     }
   }
   // Post Log to Log Sheet

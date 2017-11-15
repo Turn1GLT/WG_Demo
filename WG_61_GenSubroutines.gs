@@ -144,7 +144,7 @@ function subUpdateStatus(shtRspn, RspnRow, ColStatus, ColStatusMsg, StatusNum) {
     case  2: StatusMsg = 'Finding Duplicate'; break;
     case  3: StatusMsg = 'Finding Dual Response'; break;
     case  4: StatusMsg = 'Post Results in Round Tab'; break;
-    case  5: StatusMsg = 'Update Card DB and Card List'; break;
+    case  5: StatusMsg = 'Update DB and List'; break;
     case  6: StatusMsg = 'Data Processed'; break;
     case  7: StatusMsg = 'Sending Confirmation Email'; break;
     case  8: StatusMsg = 'Sending Process Error Email'; break;
@@ -168,33 +168,44 @@ function subUpdateStatus(shtRspn, RspnRow, ColStatus, ColStatusMsg, StatusNum) {
 //
 // **********************************************
 
-function fcnPlayerWithMost(PlayerMostData, NbPlayers, shtRound){
+function fcnPlayerWithMost(shtConfig, PlayerMostData, NbPlayers, shtRound){
  
-  var ColParam;
+  
+  var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
+  
+  // Column Values
+  var colPlyr = cfgColRndSht[0][0];
+  var colTeam = cfgColRndSht[1][0];
+  var colWin = cfgColRndSht[3][0];
+  var colLos = cfgColRndSht[4][0];
+  var colTie = cfgColRndSht[5][0];
+  var colPoints = cfgColRndSht[6][0];
+  var colWinPerc = cfgColRndSht[7][0];
+  var colLocation = cfgColRndSht[8][0];
+  var colBalanceBonus = cfgColRndSht[10][0];
+  
+  var colParam;
   var Rank = 0;
   var MostValue = 0;
   var TestValue = 0;
   
   // Get Round Data Array from Sheet
-  // Rows
-  // Players
-  
-  // Columns
-  // 0 = Player Name, 3 = Matches Played, 4 = Wins, 5 = Loss, 6 = Win%, 7 = Penalty Loss, 8 = Matches Played in Store, 9 = Punishment Packs
+  // Rows :    Players  
+  // Columns:  Round Sheet Column Value - 1
   var RoundData = shtRound.getRange(4,1,33,10).getValues();
   
   // Select Appropriate Column according to Param
   switch (PlayerMostData[0][0]){
-    case 'Wins'    : ColParam = 4; break;
-    case 'Loss'    : ColParam = 5; break;
-    case 'Win%'    : ColParam = 6; break;
-    case 'Store'   : ColParam = 8; break;
-    case 'PunPack' : ColParam = 9; break;
+    case 'Wins'    : colParam = colWin-1; break;
+    case 'Loss'    : colParam = colLos-1; break;
+    case 'Points'  : colParam = colPoints-1; break;
+    case 'Win%'    : colParam = colWinPerc-1; break;
+    case 'Store'   : colParam = colLocation-1; break;
   }
   
   // Loop through Selected Column to find the Player with the Most...
   for(var i=1; i<=NbPlayers; i++){
-    TestValue = RoundData[i][ColParam];
+    TestValue = RoundData[i][colParam];
     // If an Equal Value is found
     if(TestValue == MostValue){
       Rank += 1;

@@ -30,8 +30,8 @@ function onSubmitWG_Demo40K(e) {
   }
   
   // If Form Submitted is a Round Bonus Unit, Enter Bonus Unit
-  if(ShtName == 'RoundUnit EN' || ShtName == 'RoundUnit FR'){
-    fcnRoundUnitWG(shtResponse, RowResponse);
+  if(ShtName == 'EscltBonus EN' || ShtName == 'EscltBonus FR'){
+    fcnEscltBonusWG(shtResponse, RowResponse);
   }
 } 
 
@@ -47,7 +47,7 @@ function onSubmitWG_Demo40K(e) {
 function onOpenWG_Demo40K() {
   
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var LgTrEscalation = ss.getSheetByName('Config').getRange(68,2).getValue();
+  var EvntEscalation = ss.getSheetByName('Config').getRange(68,2).getValue();
     
   var AnalyzeDataMenu  = [];
   AnalyzeDataMenu.push({name: 'Analyze New Match Entry', functionName: 'fcnMainWG_Grim40K'});
@@ -55,19 +55,19 @@ function onOpenWG_Demo40K() {
   
   var LeagueMenu = [];
   LeagueMenu.push({name:'Update Config ID & Links', functionName:'fcnUpdateLinksIDs'});
-  LeagueMenu.push({name:'Create Match Report Forms', functionName:'fcnCreateReportForm_WG_S'});
+  LeagueMenu.push({name:'Create Match Report Forms', functionName:'fcnCrtMatchReportForm_WG_S'});
   LeagueMenu.push({name:'Setup Response Sheets',functionName:'fcnSetupResponseSht'});
-  LeagueMenu.push({name:'Create Registration Forms', functionName:'fcnCreateRegForm_WG'});
-  if(LgTrEscalation == 'Enabled') LeagueMenu.push({name:'Create Round Bonus Unit Forms', functionName:'fcnCreateRoundUnitForm_WG_S'});
+  LeagueMenu.push({name:'Create Registration Forms', functionName:'fcnCrtRegstnForm_WG'});
+  if(EvntEscalation == 'Enabled') LeagueMenu.push({name:'Create Escalation Bonus Forms', functionName:'fcnCrtEscltForm_WG'});
   LeagueMenu.push({name:'Initialize Event', functionName:'fcnInitializeEvent'});
   LeagueMenu.push(null);
   LeagueMenu.push({name:'Create Players Army DB', functionName:'fcnCrtPlayerArmyDB'});
   LeagueMenu.push({name:'Create Players Army Lists', functionName:'fcnCrtPlayerArmyList'});
-  if(LgTrEscalation == 'Enabled') LeagueMenu.push({name:'Create Players Round Bonus Units', functionName:'fcnCrtPlayerRoundUnit'});
+  if(EvntEscalation == 'Enabled') LeagueMenu.push({name:'Create Players Escalation Bonus Sheets', functionName:'fcnCrtPlayerEscltBonus'});
   LeagueMenu.push(null);
   LeagueMenu.push({name:'Delete Players Army DB', functionName:'fcnDelPlayerArmyDB'});
   LeagueMenu.push({name:'Delete Players Army Lists', functionName:'fcnDelPlayerArmyList'});
-  if(LgTrEscalation == 'Enabled') LeagueMenu.push({name:'Delete Players Round Bonus Units', functionName:'fcnDelPlayerRoundUnit'});
+  if(EvntEscalation == 'Enabled') LeagueMenu.push({name:'Delete Players Escalation Bonus Sheets', functionName:'fcnDelPlayerEscltBonus'});
   
   ss.addMenu("Manage League", LeagueMenu);
   ss.addMenu("Process Data", AnalyzeDataMenu);
@@ -92,7 +92,7 @@ function onRoundChangeWG_Demo40K(){
   // Configuration Parameters
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
   var cfgUrl = shtConfig.getRange(4,11,20,1).getValues();
-  var cfgLgTrParam = shtConfig.getRange(4,4,32,1).getValues();
+  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
   var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
   var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
   var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
@@ -108,10 +108,10 @@ function onRoundChangeWG_Demo40K(){
   var urlFacebook = shtConfig.getRange(4,15).getValue(); 
   
   // League / Tournament Parameters
-  var LgTrNameEN = cfgLgTrParam[0][0] + ' ' + cfgLgTrParam[7][0];
-  var LgTrNameFR = cfgLgTrParam[8][0] + ' ' + cfgLgTrParam[0][0];
-  var LgTrMinGame = cfgLgTrParam[15][0];
-  var LocationEmail = cfgLgTrParam[1][0];
+  var EvntNameEN = cfgEvntParam[0][0] + ' ' + cfgEvntParam[7][0];
+  var EvntNameFR = cfgEvntParam[8][0] + ' ' + cfgEvntParam[0][0];
+  var EvntMinGame = cfgEvntParam[15][0];
+  var LocationEmail = cfgEvntParam[1][0];
   
   // Email Variables
   // [0][0]= Recipients, [0][1]= Subject, [0][2]= Message, [0][3]= Language 
@@ -214,8 +214,8 @@ function onRoundChangeWG_Demo40K(){
     // Send Round Report Email
     
     // Email Subject
-    EmailDataEN[0][1] = LgTrNameEN +" - Round Report " + LastRound;
-    EmailDataFR[0][1] = LgTrNameFR +" - Rapport du Round " + LastRound;
+    EmailDataEN[0][1] = EvntNameEN +" - Round Report " + LastRound;
+    EmailDataFR[0][1] = EvntNameFR +" - Rapport du Round " + LastRound;
     
 
     // Generate Round Report Messages
@@ -227,7 +227,7 @@ function onRoundChangeWG_Demo40K(){
     
     
     // If there is a minimum games to play per Round, generate the Penalty Losses for players who have played less than the minimum
-    if(LgTrMinGame > 0){
+    if(EvntMinGame > 0){
       
       // Players Array to return Penalty Losses
       var PlayerData = new Array(32); // 0= Player Name, 1= Penalty Losses
@@ -296,7 +296,7 @@ function onRoundChangeWG_Demo40K(){
     fcnUpdateStandings(ss, shtConfig);
     
     // Copy all data to League Spreadsheet
-    fcnCopyStandingsSheets(ss, shtConfig, cfgLgTrParam, LastRound, 0);
+    fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, LastRound, 0);
   }
   
   // If Round Match Data is not Valid

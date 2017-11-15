@@ -12,11 +12,21 @@ function fcnRegistrationWG(shtResponse, RowResponse){
   Logger.log("Routine: fcnRegistrationWG");
   
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  
   var shtConfig = ss.getSheetByName('Config');
   var shtPlayers = ss.getSheetByName('Players');
+  
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
+  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+  var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
+  var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
+  var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
+  var cfgArmyBuild = shtConfig.getRange(4,33,20,1).getValues();
+  
+  // Log Sheet
   var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName('Log');
+  
+  // Event Parameters
+  var evntEscalation = cfgEvntParam[19][0];
   
   var PlayerData = new Array(10);
   PlayerData[0] = 0 ; // Function Status
@@ -33,30 +43,39 @@ function fcnRegistrationWG(shtResponse, RowResponse){
   // Log new Registration
   Logger.log( '------- New Player Registration -------');
 
+  // Get All Values from Response Sheet
+  var shtRespMaxCol = shtResponse.getMaxColumns();
+  var RegRspnVal = shtResponse.getRange(RowResponse,1,1,shtRespMaxCol).getValues();
+  
   // Add Player to Player List
-  PlayerData = fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, shtResponse, RowResponse, PlayerData);
+  PlayerData = fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam, PlayerData);
+  var PlayerStatus = PlayerData[0];
   var NbPlayers  = PlayerData[1];
   var PlayerName = PlayerData[2];
   
   // If Player was succesfully added, Generate Army DB, Generate Army List, Generate Startin Pool, Modify Match Report Form and Add Player to Round Booster
-  if(PlayerData[0] == "New Player" && PlayerData[0] != "New Player" ) {
+  if(PlayerStatus == "New Player") {
     fcnCrtPlayerArmyDB();
     Logger.log('Army Database Generated');
+    fcnProcessArmyList(shtIDs, shtConfig, PlayerName, shtResponse, RowResponse, PlayerData);
+    Logger.log('Army Data Processed to Army DB');
     fcnCrtPlayerArmyList();
     Logger.log('Army Lists Generated');  
-    fcnCrtPlayerRoundUnit();
-    Logger.log('Round Booster Generated');   
-    fcnModifyReportFormTCG(ss, shtConfig, shtPlayers, shtIDs);
+    if(evntEscalation == 'Enabled'){
+      fcnCrtPlayerEscltBonus();
+      Logger.log('Round Unit Sheet Generated');   
+    }
+    fcnModifyReportFormWG(shtIDs, shtPlayers, evntEscalation);
     
     // Execute Ranking function in Standing tab
     fcnUpdateStandings(ss, shtConfig);
     
     // Copy all data to Standing League Spreadsheet
-    fcnCopyStandingsSheets(ss, shtConfig, cfgLgTrParam, 0, 1);
+    fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, 0, 1);
     
     // Send Confirmation to New Player
-    fcnSendNewPlayerConf(shtConfig, PlayerData);
-    Logger.log('Confirmation Email Sent');
+    //fcnSendNewPlayerConf(shtConfig, PlayerData);
+    //Logger.log('Confirmation Email Sent');
     
     // Send Confirmation to Location
     // fcnSendNewPlayerConfLocation(shtConfig, PlayerData)
@@ -77,12 +96,11 @@ function fcnRegistrationWG(shtResponse, RowResponse){
 //
 // **********************************************
 
-function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, shtResponse, RowResponse, PlayerData) {
+function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam, PlayerData) {
 
   // Opens Players List File
-  var ssPlayersListID = shtConfig.getRange(40,2).getValue();
-  var ssPlayersList = SpreadsheetApp.openById(shtIDs[10][0]);
-  var shtPlayersList = ssPlayersList.getSheetByName('Players');
+  var ssExtPlayers = SpreadsheetApp.openById(shtIDs[14][0]);
+  var shtExtPlayers = ssExtPlayers.getSheetByName('Players');
   
   // Current Player List
   var NbPlayers = shtPlayers.getRange(2,1).getValue();
@@ -90,65 +108,72 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, shtResponse, RowResponse,
   var CurrPlayers = shtPlayers.getRange(2, 2, NbPlayers+1, 1).getValues();
   var Status = "New Player";
   
-  var cfgTeamMembers = shtConfig.getRange(69,2).getValue();
+  // League Parameters
+  var EvntFormat = cfgEvntParam[9][0];
+  var EvntNbPlyrTeam = cfgEvntParam[10][0];
   
-  // Response Columns from Configuration File
-  // [x][0] = Response Columns
-  // [x][1] = Players Table Columns in Main Sheet
-  var colRegRespValues = shtConfig.getRange(56,6,12,3).getValues();
+  // Registration Form Construction 
+  // Column 1 = Category Name
+  // Column 2 = Category Order in Form
+  // Column 3 = Column Value in Player/Team Sheet
+  var cfgRegFormCnstrVal = shtConfig.getRange(4,26,16,3).getValues();
   
   // Response Columns
-  var colRespEmail = colRegRespValues[0][1];
-  var colRespName = colRegRespValues[1][1];
-  var colRespPhone = colRegRespValues[2][1];
-  var colRespLanguage = colRegRespValues[3][1];
-  var colRespTeamName = colRegRespValues[4][1];
-  var colRespTeamMembers = colRegRespValues[5][1];
-  var colRespArmyList = colRegRespValues[6][1];
+  var colRspEmail = cfgRegFormCnstrVal[1][1] - 1;
+  var colRspName = cfgRegFormCnstrVal[2][1] - 1;
+  var colRspLanguage = cfgRegFormCnstrVal[3][1] - 1;
+  var colRspPhone = cfgRegFormCnstrVal[4][1] - 1;
+  var colRspTeamName = cfgRegFormCnstrVal[5][1] - 1;
+  var colRspTeamMembers = cfgRegFormCnstrVal[6][1] - 1;
+  var colRspArmyList = cfgRegFormCnstrVal[7][1] - 1;
+  var colRspArmyName = cfgRegFormCnstrVal[8][1] - 1;
+  var colRspArmyFaction1 = cfgRegFormCnstrVal[9][1] - 1;
+  var colRspArmyFaction2 = cfgRegFormCnstrVal[10][1] - 1;
+  var colRspArmyWarlord = cfgRegFormCnstrVal[11][1] - 1;
   
   // Player Table Columns
-  var colTableEmail = colRegRespValues[0][2] + 1;
-  var colTableName = colRegRespValues[1][2] + 1;
-  var colTablePhone = colRegRespValues[2][2] + 1;
-  var colTableLanguage = colRegRespValues[3][2] + 1;
-  var colTableTeamName = colRegRespValues[4][2] + 1;
-  var colTableTeamMembers = colRegRespValues[4][2] + 1;
-  var colTableArmyList = colRegRespValues[6][2] + 1;
-  
-  // Get All Values from Response Sheet
-  var shtRespMaxCol = shtResponse.getMaxColumns();
-  var Responses = shtResponse.getRange(RowResponse,1,1,shtRespMaxCol).getValues();
+  var colTblEmail = cfgRegFormCnstrVal[1][2];
+  var colTblName = cfgRegFormCnstrVal[2][2];
+  var colTblLanguage = cfgRegFormCnstrVal[3][2];
+  var colTblPhone = cfgRegFormCnstrVal[4][2];
+  var colTblTeamName = cfgRegFormCnstrVal[5][2];
+  var colTblTeamMembers = cfgRegFormCnstrVal[6][2];
+  var colTblArmyList = cfgRegFormCnstrVal[7][2];
+  var colTblArmyName = cfgRegFormCnstrVal[8][2];
+  var colTblArmyFaction1 = cfgRegFormCnstrVal[9][2];
+  var colTblArmyFaction2 = cfgRegFormCnstrVal[10][2];
+  var colTblArmyWarlord = cfgRegFormCnstrVal[11][2];
   
   // Email
-  var EmailAddress = Responses[0][colRespEmail];
+  var EmailAddress = RegRspnVal[0][colRspEmail];
   
   // Player Full Name
-  var PlayerName = Responses[0][colRespName];
+  var PlayerName = RegRspnVal[0][colRspName];
   
   // Player Language Preference
-  var Language = Responses[0][colRespLanguage];
+  var Language = RegRspnVal[0][colRspLanguage];
   
   // Player Phone Number
-  if(colRespPhone != '' && colRespPhone != 0) {
-    var Phone = Responses[0][colRespPhone];
+  if(colRspPhone != '' && colRspPhone != -1) {
+    var Phone = RegRspnVal[0][colRspPhone];
   }
   
   // Team Name
-  if(colRespTeamName != '' && colRespTeamName != 0) {
-    var TeamName = Responses[0][colRespTeamName];
+  if(colRspTeamName != '' && colRspTeamName != -1) {
+    var TeamName = RegRspnVal[0][colRspTeamName];
   }
   
   // Team Members
-  if(colRespTeamMembers != '' && colRespTeamMembers != 0) {
-    var TeamMember1 = Responses[0][colRespTeamMembers];
-    if(cfgTeamMembers >= 2) var TeamMember2 = Responses[0][colRespTeamMembers+1];
-    if(cfgTeamMembers >= 3) var TeamMember3 = Responses[0][colRespTeamMembers+2];
-    if(cfgTeamMembers >= 4) var TeamMember4 = Responses[0][colRespTeamMembers+3];
+  if(colRspTeamMembers != '' && colRspTeamMembers != -1) {
+    var TeamMember1 = RegRspnVal[0][colRspTeamMembers];
+    if(cfgTeamMembers >= 2) var TeamMember2 = RegRspnVal[0][colRspTeamMembers+1];
+    if(cfgTeamMembers >= 3) var TeamMember3 = RegRspnVal[0][colRspTeamMembers+2];
+    if(cfgTeamMembers >= 4) var TeamMember4 = RegRspnVal[0][colRspTeamMembers+3];
   }
   
   // Player Army List
-  if(colRespArmyList != '' && colRespArmyList != 0) {
-    var ArmyList = Responses[0][colRespArmyList];
+  if(colRspArmyList != '' && colRspArmyList != -1) {
+    var ArmyList = RegRspnVal[0][colRspArmyList];
   }
   
   // Check if Player exists in List
@@ -163,47 +188,47 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, shtResponse, RowResponse,
   // Copy Values to Players List for Store Access
   if(Status == "New Player"){
 	// Name
-    shtPlayers.getRange(NextPlayerRow, colTableName).setValue(PlayerName);
-    shtPlayersList.getRange(NextPlayerRow, colTableName).setValue(PlayerName);
+    shtPlayers.getRange(NextPlayerRow, colTblName).setValue(PlayerName);
+    shtExtPlayers.getRange(NextPlayerRow, colTblName).setValue(PlayerName);
     Logger.log('Player Name: %s',PlayerName);
     
     // Email Address
-    shtPlayers.getRange(NextPlayerRow, colTableEmail).setValue(EmailAddress);
-    shtPlayersList.getRange(NextPlayerRow, colTableEmail).setValue(EmailAddress);
+    shtPlayers.getRange(NextPlayerRow, colTblEmail).setValue(EmailAddress);
+    shtExtPlayers.getRange(NextPlayerRow, colTblEmail).setValue(EmailAddress);
     Logger.log('Email Address: %s',EmailAddress);
     
     // Language
-    shtPlayers.getRange(NextPlayerRow, colTableLanguage).setValue(Language);
-    shtPlayersList.getRange(NextPlayerRow, colTableLanguage).setValue(Language);
+    shtPlayers.getRange(NextPlayerRow, colTblLanguage).setValue(Language);
+    shtExtPlayers.getRange(NextPlayerRow, colTblLanguage).setValue(Language);
     Logger.log('Language: %s',Language);
     
     // Phone Number
-    if(colTablePhone != '' && colTablePhone != 1){
-      shtPlayers.getRange(NextPlayerRow, colTablePhone).setValue(Phone);
-      shtPlayersList.getRange(NextPlayerRow, colTablePhone).setValue(Phone);
+    if(colTblPhone != '' && colTblPhone != 1){
+      shtPlayers.getRange(NextPlayerRow, colTblPhone).setValue(Phone);
+      shtExtPlayers.getRange(NextPlayerRow, colTblPhone).setValue(Phone);
       Logger.log('Phone: %s',Phone);  
     }
 	
     // Team Name
-    if(colTableTeamName != '' && colTableTeamName != 1){
-      shtPlayers.getRange(NextPlayerRow, colTableTeamName).setValue(TeamName);
-      shtPlayersList.getRange(NextPlayerRow, colTableTeamName).setValue(TeamName);
+    if(colTblTeamName != '' && colTblTeamName != 1){
+      shtPlayers.getRange(NextPlayerRow, colTblTeamName).setValue(TeamName);
+      shtExtPlayers.getRange(NextPlayerRow, colTblTeamName).setValue(TeamName);
       Logger.log('Team Name: %s',TeamName);  Logger.log('-----------------------------');
 	}
     
     // Team Name
-    if(colTableTeamMembers != '' && colTableTeamMembers != 1){
-      shtPlayers.getRange(NextPlayerRow, colTableTeamMembers).setValue(TeamMember1);
-      shtPlayersList.getRange(NextPlayerRow, colTableTeamMembers).setValue(TeamMember1);
+    if(colTblTeamMembers != '' && colTblTeamMembers != 1){
+      shtPlayers.getRange(NextPlayerRow, colTblTeamMembers).setValue(TeamMember1);
+      shtExtPlayers.getRange(NextPlayerRow, colTblTeamMembers).setValue(TeamMember1);
       Logger.log('Team Name: %s',TeamName);  Logger.log('-----------------------------');
 	}    
     
     // Army List
-    if(colTableArmyList != '' && colTableArmyList != 1){
+    if(colTblArmyList != '' && colTblArmyList != 1){
       // INSERT NEW FUNCTION TO PROCESS ARMY LIST INFORMATION
       // fcnProcessArmyList();
-      shtPlayers.getRange(NextPlayerRow, colTableArmyList).setValue(ArmyList);
-      shtPlayersList.getRange(NextPlayerRow, colTableArmyList).setValue(ArmyList);
+      shtPlayers.getRange(NextPlayerRow, colTblArmyList).setValue(ArmyList);
+      shtExtPlayers.getRange(NextPlayerRow, colTblArmyList).setValue(ArmyList);
       Logger.log('Army List: %s',ArmyList);  Logger.log('-----------------------------');
   }
 
@@ -230,7 +255,7 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, shtResponse, RowResponse,
 //
 // **********************************************
 
-function fcnProcessArmyList(shtIDs, shtConfig, shtPlayers, shtResponse, RowResponse, PlayerData){
+function fcnProcessArmyList(shtIDs, shtConfig, shtPlayers, shtResponse, RegRspnVal, PlayerData){
   
   // Get Response Sheet Name
   var RespSheetName = shtResponse.getSheetName();
@@ -238,32 +263,31 @@ function fcnProcessArmyList(shtIDs, shtConfig, shtPlayers, shtResponse, RowRespo
   // Get All Values from Response Sheet
   var shtRespMaxCol = shtResponse.getMaxColumns();
   var RespHeader = shtResponse.getRange(1,1,1,shtRespMaxCol).getValues();
-  var Responses  = shtResponse.getRange(RowResponse,1,1,shtRespMaxCol).getValues();
   
   Logger.log(RespHeader);
 }
 
 // **********************************************
-// function fcnModifyReportFormTCG
+// function fcnModifyReportFormWG
 //
 // This function modifies the Match Report Form
 // to add new added players
 //
 // **********************************************
 
-function fcnModifyReportFormTCG(ss, shtConfig, shtPlayers, shtIDs) {
+function fcnModifyReportFormWG(shtIDs, shtPlayers, evntEscalation) {
 
   var MatchFormEN = FormApp.openById(shtIDs[6][0]);
   var MatchFormItemEN = MatchFormEN.getItems();
   var MatchFormFR = FormApp.openById(shtIDs[7][0]);
   var MatchFormItemFR = MatchFormFR.getItems();
-  var NbMatchFormItem = MatchFormItemFR.length;
+  var MatchFormNbItem = MatchFormItemEN.length;
   
-  var RoundUnitFormEN = FormApp.openById(shtIDs[12][0]);
-  var RoundUnitFormItemEN = RoundUnitFormEN.getItems();
-  var RoundUnitFormFR = FormApp.openById(shtIDs[13][0]);
-  var RoundUnitFormItemFR = RoundUnitFormFR.getItems();
-  var NbRoundUnitFormItem = RoundUnitFormItemFR.length;
+  var EscltBonusFormEN = FormApp.openById(shtIDs[12][0]);
+  var EscltBonusFormItemEN = EscltBonusFormEN.getItems();
+  var EscltBonusFormFR = FormApp.openById(shtIDs[13][0]);
+  var EscltBonusFormItemFR = EscltBonusFormFR.getItems();
+  var EscltBonusFormNbItem = EscltBonusFormItemEN.length;
 
   // Function Variables
   var ItemTitle;
@@ -276,7 +300,7 @@ function fcnModifyReportFormTCG(ss, shtConfig, shtPlayers, shtIDs) {
   var ListPlayers = [];
   
   // Loops in Match Form to Find Players List
-  for(var item = 0; item < NbMatchFormItem; item++){
+  for(var item = 0; item < MatchFormNbItem; item++){
     ItemTitle = MatchFormItemEN[item].getTitle();
     if(ItemTitle == 'Winning Player' || ItemTitle == 'Losing Player'){
       
@@ -294,22 +318,24 @@ function fcnModifyReportFormTCG(ss, shtConfig, shtPlayers, shtIDs) {
     }
   }
   
-  // Loops in Round Unit Form to Find Players List
-  for(var item = 0; item < NbRoundUnitFormItem; item++){
-    ItemTitle = RoundUnitFormItemEN[item].getTitle();
-    if(ItemTitle == 'Player'){
-      
-      // Get the List Item from the Round Booster Report Form
-      ItemPlayerListEN = RoundUnitFormItemEN[item].asListItem();
-      ItemPlayerListFR = RoundUnitFormItemFR[item].asListItem();
-      
-      // Build the Player List from the Players Sheet     
-      for (i = 0; i < NbPlayers; i++){
-        ListPlayers[i] = Players[i][0];
+  if(evntEscalation == 'Enabled'){
+    // Loops in Escalation Bonus Form to Find Players List
+    for(var item = 0; item < EscltBonusFormNbItem; item++){
+      ItemTitle = EscltBonusFormNbItem[item].getTitle();
+      if(ItemTitle == 'Player'){
+        
+        // Get the List Item from the Round Booster Report Form
+        ItemPlayerListEN = EscltBonusFormItemEN[item].asListItem();
+        ItemPlayerListFR = EscltBonusFormItemFR[item].asListItem();
+        
+        // Build the Player List from the Players Sheet     
+        for (i = 0; i < NbPlayers; i++){
+          ListPlayers[i] = Players[i][0];
+        }
+        // Set the Player List to the Round Booster Report Forms
+        ItemPlayerListEN.setChoiceValues(ListPlayers);
+        ItemPlayerListFR.setChoiceValues(ListPlayers);
       }
-      // Set the Player List to the Round Booster Report Forms
-      ItemPlayerListEN.setChoiceValues(ListPlayers);
-      ItemPlayerListFR.setChoiceValues(ListPlayers);
     }
   }
 }

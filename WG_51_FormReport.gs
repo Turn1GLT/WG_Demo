@@ -1,12 +1,12 @@
 // **********************************************
-// function fcnCreateReportForm_WG_S()
+// function fcnCrtMatchReportForm_WG_S()
 //
-// This function creates the Registration Form 
+// This function creates the Match Report Form 
 // based on the parameters in the Config File
 //
 // **********************************************
 
-function fcnCreateReportForm_WG_S() {
+function fcnCrtMatchReportForm_WG_S() {
   
   var ss = SpreadsheetApp.getActive();
   var shtConfig = ss.getSheetByName('Config');
