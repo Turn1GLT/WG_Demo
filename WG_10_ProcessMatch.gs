@@ -33,8 +33,8 @@ function fcnProcessMatchWG() {
   var colNbUnprcsdEntries = cfgColRspSht[8][0];
     
   // League Parameters
-  var EvntRoundDuration = cfgEvntParam[13][0];
-  var EvntPassword = cfgEvntParam[24][0];
+  var evntRoundDuration = cfgEvntParam[13][0];
+  var evntPassword = cfgEvntParam[24][0];
   
   // Get Log Sheet
   var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName('Log');
@@ -94,7 +94,7 @@ function fcnProcessMatchWG() {
       
       // Look if Password is valid
       Logger.log('Password Entered: %s', Password);
-      if(Password == EvntPassword) PasswordValid = 1; 
+      if(Password == evntPassword) PasswordValid = 1; 
       
       // Check if DataCopied Field is null and Email is Valid, we found new data to copy
       if (DataCopiedStatus == '' && PasswordValid == 1){
@@ -138,7 +138,7 @@ function fcnProcessMatchWG() {
         
         // Look if Password is valid
         Logger.log('Password Entered: %s', Password);
-        if(Password == EvntPassword) PasswordValid = 1;
+        if(Password == evntPassword) PasswordValid = 1;
         
         // Check if DataCopied Field is null and Email is Valid, we found new data to copy
         if (DataCopiedStatus == '' && PasswordValid == 1){
@@ -216,7 +216,7 @@ function fcnProcessMatchWG() {
   }
   
   // Post Log to Log Sheet
-  subPostLog(shtLog);
+  subPostLog(shtLog,Logger.getLog());
   
 }
 
@@ -252,9 +252,9 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
   var colNbUnprcsdEntries = cfgColRspSht[8][0];
 
   // League Parameters
-  var EvntGameType = cfgEvntParam[4][0];
-  var EvntRoundDuration = cfgEvntParam[13][0];
-  var EvntNbCardPack = cfgEvntParam[25][0];
+  var evntGameType = cfgEvntParam[4][0];
+  var evntRoundDuration = cfgEvntParam[13][0];
+  var evntNbCardPack = cfgEvntParam[25][0];
     
   // Test Sheet (for Debug)
   var shtTest = ss.getSheetByName('Test') ;  
@@ -318,7 +318,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
   Logger.log('Dual Submission Option: %s',exeDualSubmission);
   Logger.log('Post Results Option: %s',exePostResult);
   Logger.log('Player Match Validation Option: %s',exePlyrMatchValidation);
-  Logger.log('Game Type: %s',EvntGameType);
+  Logger.log('Game Type: %s',evntGameType);
   Logger.log('Send Email Option: %s',exeSendEmail);
   
   // Find a Row that is not processed in the Response Sheet (added data)
@@ -421,7 +421,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
                 // Reserved for TCG
                 
                 // If Game Type is Wargame, Update available amount of Power Level Available
-                if(EvntGameType == 'Wargame'){
+                if(evntGameType == 'Wargame'){
                   // Updates the Status while processing
                   if(Status[0] >= 0){
                     Status[0] = 5; 

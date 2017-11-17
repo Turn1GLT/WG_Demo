@@ -8,14 +8,56 @@
 
 function fcnCrtMatchReportForm_WG_S() {
   
-  var ss = SpreadsheetApp.getActive();
+  Logger.log("Routine: fcnCrtMatchReportForm_WG_S");
+  
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
   var shtConfig = ss.getSheetByName('Config');
   var shtPlayers = ss.getSheetByName('Players');
+    
+  // Configuration Data
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
-  var ssID = shtIDs[0][0]; 
-  var OptGenerateResp = shtConfig.getRange(64,2).getValue();
-  var OptLocation = shtConfig.getRange(67, 2).getValue();
+  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+  var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
+  var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
+  var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
+  var cfgArmyBuild = shtConfig.getRange(4,33,20,1).getValues();
   
+  // Registration Form Construction 
+  // Column 1 = Category Name
+  // Column 2 = Category Order in Form
+  // Column 3 = Column Value in Player/Team Sheet
+  var cfgRegFormCnstrVal = shtConfig.getRange(4,26,16,3).getValues();
+  
+  // Execution Parameters
+  var exeGnrtResp = cfgExecData[3][0];
+  
+  // League Parameters
+  var evntFormat = cfgEvntParam[9][0];
+  var evntNbPlyrTeam = cfgEvntParam[10][0];
+  var evntLocationBonus = cfgEvntParam[23][0];
+    
+  var RoundNum = shtConfig.getRange(7,2).getValue();
+  var RoundArray = new Array(1); RoundArray[0] = RoundNum;
+  
+  var PlayerNum = shtConfig.getRange(13,2).getValue();
+  
+  // Log Sheet
+  var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName('Log');
+
+  // Registration ID from the Config File
+  var ssID = shtIDs[0][0];
+  var FormIdEN = shtIDs[7][0];
+  var FormIdFR = shtIDs[8][0];
+ 
+  // Row Column Values to Write Form IDs and URLs
+  var rowFormEN  = 11;
+  var rowFormFR  = 12;
+  var colFormID  = 7;
+  var colFormURL = 11
+  
+  var ssTexts = SpreadsheetApp.openById('1DkSr5HbGqZ_c38DlHKiBhgcBXw3fr3CK9zDE04187fE');
+  var shtTxtReport = ssTexts.getSheetByName('Match Report WG');
+    
   var ssSheets;
   var NbSheets;
   var SheetName;
@@ -23,9 +65,6 @@ function fcnCrtMatchReportForm_WG_S() {
   var shtRespMaxRow;
   var shtRespMaxCol;
   var FirstCellVal;
-  
-  var ssTexts = SpreadsheetApp.openById('1DkSr5HbGqZ_c38DlHKiBhgcBXw3fr3CK9zDE04187fE');
-  var shtTxtReport = ssTexts.getSheetByName('Match Report WG');
   
   var formEN;
   var FormIdEN;
@@ -37,10 +76,6 @@ function fcnCrtMatchReportForm_WG_S() {
   var FormNameFR;
   var FormItemsFR;
   
-  var RoundNum = shtConfig.getRange(5,7).getValue();
-  var RoundArray = new Array(1); RoundArray[0] = RoundNum;
-  
-  var PlayerNum = shtPlayers.getRange(2,1).getValue();
   var Players;
   var PlayerList;
   
@@ -50,16 +85,7 @@ function fcnCrtMatchReportForm_WG_S() {
   var ConfirmMsgEN;
   var ConfirmMsgFR;
   
-  var RowFormUrlEN = 19;
-  var RowFormUrlFR = 22;
-  var RowFormIdEN = 23;
-  var RowFormIdFR = 24;
-  
   var ErrorVal = '';
-  
-  // Gets the Subscription ID from the Config File
-  FormIdEN = shtConfig.getRange(RowFormIdEN, 7).getValue();
-  FormIdFR = shtConfig.getRange(RowFormIdFR, 7).getValue();
 
   // If Form Exists, Log Error Message
   if(FormIdEN != ''){
@@ -111,7 +137,7 @@ function fcnCrtMatchReportForm_WG_S() {
     //---------------------------------------------
     // LOCATION SECTION
     // If Location Bonus is Enabled, add Location Section
-    if (OptLocation == 'Enabled'){
+    if (evntLocationBonus == 'Enabled'){
       
       // English
       formEN.addPageBreakItem().setTitle("Location")
@@ -211,7 +237,7 @@ function fcnCrtMatchReportForm_WG_S() {
     
     // RESPONSE SHEETS
     // Create Response Sheet in Main File and Rename
-    if(OptGenerateResp == 'Enabled'){
+    if(exeGnrtResp == 'Enabled'){
       // English Form
       formEN.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
       
@@ -266,13 +292,13 @@ function fcnCrtMatchReportForm_WG_S() {
       
       // Set Match Report IDs in Config File
       FormIdEN = formEN.getId();
-      shtConfig.getRange(RowFormIdEN, 7).setValue(FormIdEN);
+      shtConfig.getRange(rowFormEN, colFormID).setValue(FormIdEN);
       FormIdFR = formFR.getId();
-      shtConfig.getRange(RowFormIdFR, 7).setValue(FormIdFR);
+      shtConfig.getRange(rowFormFR, colFormID).setValue(FormIdFR);
       
       // Create Links to add to Config File  
-      shtConfig.getRange(RowFormUrlEN, 2).setValue(formEN.getPublishedUrl()); 
-      shtConfig.getRange(RowFormUrlFR, 2).setValue(formFR.getPublishedUrl());
+      shtConfig.getRange(rowFormEN, colFormURL).setValue(formEN.getPublishedUrl()); 
+      shtConfig.getRange(rowFormFR, colFormURL).setValue(formFR.getPublishedUrl());
     }
   }
 }

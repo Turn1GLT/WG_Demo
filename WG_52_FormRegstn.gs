@@ -32,8 +32,8 @@ function fcnCrtRegstnForm_WG() {
   var exeGnrtResp = cfgExecData[3][0];
   
   // League Parameters
-  var EvntFormat = cfgEvntParam[9][0];
-  var EvntNbPlyrTeam = cfgEvntParam[10][0];
+  var evntFormat = cfgEvntParam[9][0];
+  var evntNbPlyrTeam = cfgEvntParam[10][0];
     
   // Log Sheet
   var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName('Log');
@@ -186,7 +186,7 @@ function fcnCrtRegstnForm_WG() {
 
           case 'Team Name': {
             Logger.log('%s - %s',QuestionOrder,cfgRegFormCnstrVal[i][0]); 
-            if(EvntFormat == 'Team'){
+            if(evntFormat == 'Team'){
               // TEAM NAME
               formEN.addPageBreakItem().setTitle("Team");
               formEN.addTextItem()
@@ -199,7 +199,7 @@ function fcnCrtRegstnForm_WG() {
               .setRequired(true);
               
               // TEAM MEMBERS
-              for(var member = 1; member <= EvntNbPlyrTeam; member++){
+              for(var member = 1; member <= evntNbPlyrTeam; member++){
                 formEN.addTextItem()
                 .setTitle("Teammate " + member)
                 .setRequired(true);
@@ -647,5 +647,5 @@ function fcnCrtRegstnForm_WG() {
     }
   }
   // Post Log to Log Sheet
-  subPostLog(shtLog);
+  subPostLog(shtLog, Logger.getLog());
 }

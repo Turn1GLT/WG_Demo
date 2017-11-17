@@ -82,7 +82,7 @@ function fcnRegistrationWG(shtResponse, RowResponse){
   }
 
   // Post Log to Log Sheet
-  subPostLog(shtLog);
+  subPostLog(shtLog, Logger.getLog());
 }
 
 
@@ -109,8 +109,8 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
   var Status = "New Player";
   
   // League Parameters
-  var EvntFormat = cfgEvntParam[9][0];
-  var EvntNbPlyrTeam = cfgEvntParam[10][0];
+  var evntFormat = cfgEvntParam[9][0];
+  var evntNbPlyrTeam = cfgEvntParam[10][0];
   
   // Registration Form Construction 
   // Column 1 = Category Name

@@ -47,7 +47,7 @@ function onSubmitWG_Demo40K(e) {
 function onOpenWG_Demo40K() {
   
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var EvntEscalation = ss.getSheetByName('Config').getRange(68,2).getValue();
+  var evntEscalation = ss.getSheetByName('Config').getRange(68,2).getValue();
     
   var AnalyzeDataMenu  = [];
   AnalyzeDataMenu.push({name: 'Analyze New Match Entry', functionName: 'fcnMainWG_Grim40K'});
@@ -58,16 +58,16 @@ function onOpenWG_Demo40K() {
   LeagueMenu.push({name:'Create Match Report Forms', functionName:'fcnCrtMatchReportForm_WG_S'});
   LeagueMenu.push({name:'Setup Response Sheets',functionName:'fcnSetupResponseSht'});
   LeagueMenu.push({name:'Create Registration Forms', functionName:'fcnCrtRegstnForm_WG'});
-  if(EvntEscalation == 'Enabled') LeagueMenu.push({name:'Create Escalation Bonus Forms', functionName:'fcnCrtEscltForm_WG'});
+  if(evntEscalation == 'Enabled') LeagueMenu.push({name:'Create Escalation Bonus Forms', functionName:'fcnCrtEscltForm_WG'});
   LeagueMenu.push({name:'Initialize Event', functionName:'fcnInitializeEvent'});
   LeagueMenu.push(null);
   LeagueMenu.push({name:'Create Players Army DB', functionName:'fcnCrtPlayerArmyDB'});
   LeagueMenu.push({name:'Create Players Army Lists', functionName:'fcnCrtPlayerArmyList'});
-  if(EvntEscalation == 'Enabled') LeagueMenu.push({name:'Create Players Escalation Bonus Sheets', functionName:'fcnCrtPlayerEscltBonus'});
+  if(evntEscalation == 'Enabled') LeagueMenu.push({name:'Create Players Escalation Bonus Sheets', functionName:'fcnCrtPlayerEscltBonus'});
   LeagueMenu.push(null);
   LeagueMenu.push({name:'Delete Players Army DB', functionName:'fcnDelPlayerArmyDB'});
   LeagueMenu.push({name:'Delete Players Army Lists', functionName:'fcnDelPlayerArmyList'});
-  if(EvntEscalation == 'Enabled') LeagueMenu.push({name:'Delete Players Escalation Bonus Sheets', functionName:'fcnDelPlayerEscltBonus'});
+  if(evntEscalation == 'Enabled') LeagueMenu.push({name:'Delete Players Escalation Bonus Sheets', functionName:'fcnDelPlayerEscltBonus'});
   
   ss.addMenu("Manage League", LeagueMenu);
   ss.addMenu("Process Data", AnalyzeDataMenu);
@@ -76,8 +76,8 @@ function onOpenWG_Demo40K() {
 // **********************************************
 // function fcnRoundChangeWG()
 //
-// When the Round number changes, this function analyzes all
-// generates a Round report 
+// When the Round number changes, this function 
+// executes different functions 
 //
 // **********************************************
 
@@ -100,7 +100,7 @@ function onRoundChangeWG_Demo40K(){
   // Get Log Sheet
   var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName('Log');
   
-   // Get Document URLs
+  // Get Document URLs
   var urlStandingsEN = cfgUrl[5][0];
   var urlStandingsFR = cfgUrl[6][0];
   
@@ -108,10 +108,10 @@ function onRoundChangeWG_Demo40K(){
   var urlFacebook = shtConfig.getRange(4,15).getValue(); 
   
   // League / Tournament Parameters
-  var EvntNameEN = cfgEvntParam[0][0] + ' ' + cfgEvntParam[7][0];
-  var EvntNameFR = cfgEvntParam[8][0] + ' ' + cfgEvntParam[0][0];
-  var EvntMinGame = cfgEvntParam[15][0];
-  var LocationEmail = cfgEvntParam[1][0];
+  var evntNameEN = cfgEvntParam[0][0] + ' ' + cfgEvntParam[7][0];
+  var evntNameFR = cfgEvntParam[8][0] + ' ' + cfgEvntParam[0][0];
+  var evntMinGame = cfgEvntParam[15][0];
+  var evntLocationEmail = cfgEvntParam[1][0];
   
   // Email Variables
   // [0][0]= Recipients, [0][1]= Subject, [0][2]= Message, [0][3]= Language 
@@ -148,6 +148,9 @@ function onRoundChangeWG_Demo40K(){
   // [0][3]= 
   // [x][0]= Player Name, [x][1]= Value
   
+  // Generate the Round Report
+  fcnGenerateRoundReport();
+  
   // RoundPrize Data
   var RoundPrizeData = shtConfig.getRange(4,39,10,4).getValues();
   
@@ -169,9 +172,7 @@ function onRoundChangeWG_Demo40K(){
   // Modify the Round Number in the Match Report Sheet
   fcnModifyRoundMatchReport(ss, shtConfig);
   
-  
-  
- // Verify Round Matches Data Integrity
+  // Verify Round Matches Data Integrity
   RoundData = shtRound.getRange(5,4,NbPlayers,7).getValues(); //[0]= Matches Played [1]= Wins [2]= Losses [3]= Ties [6]= Matches in Store
   var RoundTotals = shtRound.getRange(2, 4, 1, 6).getValues();
   // Get Total Matches Played
@@ -214,10 +215,9 @@ function onRoundChangeWG_Demo40K(){
     // Send Round Report Email
     
     // Email Subject
-    EmailDataEN[0][1] = EvntNameEN +" - Round Report " + LastRound;
-    EmailDataFR[0][1] = EvntNameFR +" - Rapport du Round " + LastRound;
+    EmailDataEN[0][1] = evntNameEN +" - Round Report " + LastRound;
+    EmailDataFR[0][1] = evntNameFR +" - Rapport du Round " + LastRound;
     
-
     // Generate Round Report Messages
     // Email Message
     EmailDataEN = fcnGenRoundReportMsg(ss, shtConfig, EmailDataEN, RoundStats, RoundPrizeData, PlayerMost1, PlayerMost2, PlayerMost3);
@@ -227,7 +227,7 @@ function onRoundChangeWG_Demo40K(){
     
     
     // If there is a minimum games to play per Round, generate the Penalty Losses for players who have played less than the minimum
-    if(EvntMinGame > 0){
+    if(evntMinGame > 0){
       
       // Players Array to return Penalty Losses
       var PlayerData = new Array(32); // 0= Player Name, 1= Penalty Losses
@@ -281,10 +281,10 @@ function onRoundChangeWG_Demo40K(){
     //Recipients = Session.getActiveUser().getEmail();
     
     // Get English Players Email
-    EmailDataEN[0][0] = subGetEmailRecipients(shtPlayers, NbPlayers, EmailDataEN[0][3]);
+    EmailDataEN[0][0] = subGetEmailRecipients(shtPlayers, EmailDataEN[0][3]);
     
     // Get French Players Email
-    EmailDataFR[0][0] = subGetEmailRecipients(shtPlayers, NbPlayers, EmailDataFR[0][3]);
+    EmailDataFR[0][0] = subGetEmailRecipients(shtPlayers, EmailDataFR[0][3]);
     
     // Send English Email
     MailApp.sendEmail(GenRecipients, EmailDataEN[0][1],"",{bcc:EmailDataEN[0][0],name:'Turn 1 Gaming League Manager',htmlBody:EmailDataEN[0][2]});
@@ -314,6 +314,6 @@ function onRoundChangeWG_Demo40K(){
   }
   
   // Post Log to Log Sheet
-  subPostLog(shtLog);
+  subPostLog(shtLog, Logger.getLog());
   
 }

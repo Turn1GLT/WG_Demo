@@ -5,13 +5,11 @@
 //
 // **********************************************
 
-function subPostLog(shtLog) {
+function subPostLog(shtLog, Log) {
   
-  shtLog.insertRowAfter(2);
-  shtLog.getRange(3,1).setValue('=if(INDIRECT("R[0]C[1]",FALSE)<>"",1,"")');
-  shtLog.getRange(3,2).setValue(new Date()).setNumberFormat('yyyy-MM-dd / HH:mm:ss');
-  shtLog.getRange(3,3).setValue(Logger.getLog());
-//  Logger.clear();
+  shtLog.insertRowBefore(3);
+  shtLog.getRange(3,1).setValue(new Date()).setNumberFormat('yyyy-MM-dd / HH:mm:ss');
+  shtLog.getRange(3,2).setValue(Log);
 }
 
 // **********************************************
