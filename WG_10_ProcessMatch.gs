@@ -13,7 +13,7 @@ function fcnProcessMatchWG() {
   Logger.log("Routine: fcnProcessMatchWG");
   // Opens Spreadsheet
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-//  var shtTest = ss.getSheetByName('Test');
+  //  var shtTest = ss.getSheetByName('Test');
   
   // Config Sheet to get options
   var shtConfig = ss.getSheetByName('Config');

@@ -56,7 +56,7 @@ function onOpenWG_Demo40K() {
   var LeagueMenu = [];
   LeagueMenu.push({name:'Update Config ID & Links', functionName:'fcnUpdateLinksIDs'});
   LeagueMenu.push({name:'Create Match Report Forms', functionName:'fcnCrtMatchReportForm_WG_S'});
-  LeagueMenu.push({name:'Setup Response Sheets',functionName:'fcnSetupResponseSht'});
+  LeagueMenu.push({name:'Setup Match Response Sheets',functionName:'fcnSetupMatchResponseSht'});
   LeagueMenu.push({name:'Create Registration Forms', functionName:'fcnCrtRegstnForm_WG'});
   if(evntEscalation == 'Enabled') LeagueMenu.push({name:'Create Escalation Bonus Forms', functionName:'fcnCrtEscltForm_WG'});
   LeagueMenu.push({name:'Initialize Event', functionName:'fcnInitializeEvent'});
@@ -69,9 +69,15 @@ function onOpenWG_Demo40K() {
   LeagueMenu.push({name:'Delete Players Army Lists', functionName:'fcnDelPlayerArmyList'});
   if(evntEscalation == 'Enabled') LeagueMenu.push({name:'Delete Players Escalation Bonus Sheets', functionName:'fcnDelPlayerEscltBonus'});
   
+  var TestMenu  = [];
+  TestMenu.push({name: 'Test Email Log', functionName: 'fcnTestEmail'});
+  
   ss.addMenu("Manage League", LeagueMenu);
   ss.addMenu("Process Data", AnalyzeDataMenu);
+  //ss.addMenu("Test Menu", TestMenu);  
 }
+
+
 
 // **********************************************
 // function fcnRoundChangeWG()

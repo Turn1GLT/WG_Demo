@@ -1,97 +1,3 @@
-// **********************************************
-// function subGetEmailAddressSngl()
-//
-// This function gets the email addresses for a
-// single player from the configuration file
-//
-// **********************************************
-
-function subGetEmailAddressSngl(Player, shtPlayers, EmailAddresses){
-  
-  // Players Sheets for Email addresses
-  var colEmail = 3;
-  var NbPlayers = shtPlayers.getRange(2,1).getValue();
-  var rowPlayer = 0;
-  var PlyrRowStart = 3;
-  
-  var PlayerNames = shtPlayers.getRange(PlyrRowStart,2,NbPlayers,1).getValues();
-  
-  // Find Players rows
-  for (var row = 0; row < NbPlayers; row++){
-    if (PlayerNames[row] == Player) rowPlayer = row + PlyrRowStart;
-    if (rowPlayer > 0) row = NbPlayers + 1;
-  }
-  
-  // Get Email addresses using the players rows
-  EmailAddresses[0] = shtPlayers.getRange(rowPlayer,colEmail+1).getValue();
-  EmailAddresses[1] = shtPlayers.getRange(rowPlayer,colEmail).getValue();
-    
-  return EmailAddresses;
-}
-
-// **********************************************
-// function subGetEmailAddressDbl()
-//
-// This function gets the email addresses for both
-// players from the configuration file
-//
-// **********************************************
-
-function subGetEmailAddressDbl(ss, Addresses, WinPlyr, LosPlyr){
-  
-  // Players Sheets for Email addresses
-  var shtPlayers = ss.getSheetByName('Players');
-  var colEmail = 3;
-  var NbPlayers = shtPlayers.getRange(2,1).getValue();
-  var rowWinr = 0;
-  var rowLosr = 0;
-  var PlyrRowStart = 3;
-  
-  var PlayerNames = shtPlayers.getRange(PlyrRowStart,2,NbPlayers,1).getValues();
-  
-  // Find Players rows
-  for (var row = 0; row < NbPlayers; row++){
-    if (PlayerNames[row] == WinPlyr) rowWinr = row + PlyrRowStart;
-    if (PlayerNames[row] == LosPlyr) rowLosr = row + PlyrRowStart;
-    if (rowWinr > 0 && rowLosr > 0) row = NbPlayers + 1;
-  }
-   
-  // Get Email addresses using the players rows
-  Addresses[1][0] = shtPlayers.getRange(rowWinr,colEmail+1).getValue(); // Language
-  Addresses[1][1] = shtPlayers.getRange(rowWinr,colEmail).getValue();   // Email Address
-  Addresses[2][0] = shtPlayers.getRange(rowLosr,colEmail+1).getValue(); // Language
-  Addresses[2][1] = shtPlayers.getRange(rowLosr,colEmail).getValue();   // Email Address
-    
-  return Addresses;
-}
-
-// **********************************************
-// function subGetEmailRecipients()
-//
-// This function searches for all players in the  
-// list with the selected language
-//
-// **********************************************
-
-function subGetEmailRecipients(shtPlayers, Language){
-  
-  // Function Variables
-  var EmailRecipients = '';
-  var NbPlayers = shtPlayers.getRange(2,1).getValue();
-  var PlayersData = shtPlayers.getRange(3,3,NbPlayers,2).getValues(); // ..[0]= Email Address  ..[1]=  
-  
-  // Loop through all players selected languages and concatenate their email addresses 
-  // if it matches the Language sent in parameter 
-  for(var i = 0; i < NbPlayers; i++){
-    if(PlayersData[i][1] == Language) {
-      if(EmailRecipients !='') EmailRecipients += ', '
-      EmailRecipients += PlayersData[i][0];
-    }
-  }
-  
-  return EmailRecipients;
-}
-
 // MATCH REPORT CONFIRMATION ----------------------------------------------------------------------------------------------------------
 
 // **********************************************
@@ -243,30 +149,26 @@ function fcnSendConfirmEmail(shtConfig, Address, MatchData) {
   if(Language1 == 'English' && Language2 == 'English'){
     AddressBCC = Address1 + ', ' + Address2;
     MailApp.sendEmail("", EmailSubjectEN, "",{bcc:AddressBCC, name:'Turn 1 Gaming League Manager',htmlBody:EmailMessageEN});
-    // Post Quota to Log Sheet
-    subPostLog(shtLog, MailApp.getRemainingDailyQuota());
   }
   // Both Players French
   if(Language1 == 'Français' && Language2 == 'Français'){
     AddressBCC = Address1 + ', ' + Address2;
     MailApp.sendEmail("", EmailSubjectFR, "",{bcc:AddressBCC, name:'Turn 1 Gaming League Manager',htmlBody:EmailMessageFR});
-    // Post Quota to Log Sheet
-    subPostLog(shtLog, MailApp.getRemainingDailyQuota());
   }
   // Player 1 English, Player 2 French
   if(Language1 == 'English' && Language2 == 'Français'){
     MailApp.sendEmail(Address1, EmailSubjectEN, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessageEN});
     MailApp.sendEmail(Address2, EmailSubjectFR, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessageFR});
-    // Post Quota to Log Sheet
-    subPostLog(shtLog, MailApp.getRemainingDailyQuota());
   }
   // Player 1 French, Player 2 English
   if(Language1 == 'Français' && Language2 == 'English'){
     MailApp.sendEmail(Address1, EmailSubjectFR, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessageFR});
     MailApp.sendEmail(Address2, EmailSubjectEN, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessageEN});
-    // Post Quota to Log Sheet
-    subPostLog(shtLog, MailApp.getRemainingDailyQuota());
   }
+
+  // Post Quota to Log Sheet
+  var MailQuota = "Remaining Emails to send: " + MailApp.getRemainingDailyQuota();
+  subPostLog(shtLog, MailQuota);
 }
 
 
@@ -514,6 +416,9 @@ function fcnSendErrorEmail(shtConfig, Address, MatchData, MatchID, Status) {
       MailApp.sendEmail(Address2, EmailSubjectEN, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessageEN});
     }
   }
+  // Post Quota to Log Sheet
+  var MailQuota = "Remaining Emails to send: " + MailApp.getRemainingDailyQuota();
+  subPostLog(shtLog, MailQuota);
 }
 
 
@@ -654,6 +559,9 @@ function fcnMatchReportPwdError(shtConfig, Address){
     MailApp.sendEmail(Address1, EmailSubjectFR, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessageFR});
     MailApp.sendEmail(Address2, EmailSubjectEN, "",{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessageEN});
   }
+  // Post Quota to Log Sheet
+  var MailQuota = "Remaining Emails to send: " + MailApp.getRemainingDailyQuota();
+  subPostLog(shtLog, MailQuota);
 }
 
 // NEW PLAYER CONFIRMATION  ----------------------------------------------------------------------------------------------------------
@@ -787,6 +695,10 @@ function fcnSendNewPlayerConf(shtConfig, PlayerData){
   
   // Send Email Confirmation
   MailApp.sendEmail(PlayerEmail, EmailSubject,'',{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
+
+  // Post Quota to Log Sheet
+  var MailQuota = "Remaining Emails to send: " + MailApp.getRemainingDailyQuota();
+  subPostLog(shtLog, MailQuota);
 }
 
 // NEW PLAYER CONFIRMATION FOR LOCATION ----------------------------------------------------------------------------------------------------------
@@ -920,6 +832,10 @@ function fcnSendNewPlayerConfLoc(shtConfig, PlayerData){
   
   // Send Email Confirmation
   MailApp.sendEmail(PlayerEmail, EmailSubject,'',{name:'Turn 1 Gaming League Manager',htmlBody:EmailMessage});
+  
+  // Post Quota to Log Sheet
+  var MailQuota = "Remaining Emails to send: " + MailApp.getRemainingDailyQuota();
+  subPostLog(shtLog, MailQuota);
 }
 
 

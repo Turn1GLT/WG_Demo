@@ -6,10 +6,226 @@
 // **********************************************
 
 function subPostLog(shtLog, Log) {
+  shtLog.insertRowBefore(2);
+  shtLog.getRange(2,1).setValue(new Date()).setNumberFormat('yyyy-MM-dd / HH:mm:ss');
+  shtLog.getRange(2,2).setValue(Log);
+}
+
+
+// **********************************************
+// function subCreateArray(X,Y)
+//
+// This function creates and array of two dimensions X-Y
+// First
+//
+// **********************************************
+
+function subCreateArray(X,Y){
   
-  shtLog.insertRowBefore(3);
-  shtLog.getRange(3,1).setValue(new Date()).setNumberFormat('yyyy-MM-dd / HH:mm:ss');
-  shtLog.getRange(3,2).setValue(Log);
+  var newArray;
+  
+  // If dimension X is greater than zero
+  if(X > 0){
+    // Create Array of dimension X
+    newArray = new Array(X)
+    // Loops in dimension X to create dimension Y
+    for(var x = 0; x < X; x++){
+      // If a dimension Y is greater than zero, dimension Y exists
+      if(Y > 0){
+        newArray[x] = new Array(Y);
+        for (var y = 0; y < Y; y++) newArray[x][y] = '';
+      }
+      // If not, Array is one dimension X
+      else{
+        newArray[x] = '';
+      }
+    }
+  }
+  else{
+    newArray = '';
+  }
+  return newArray;
+} 
+
+// **********************************************
+// function subGetEmailAddressSngl()
+//
+// This function gets the email addresses for a
+// single player from the configuration file
+//
+// **********************************************
+
+function subGetEmailAddressSngl(Player, shtPlayers, EmailAddresses){
+  
+  // Players Sheets for Email addresses
+  var colEmail = 3;
+  var NbPlayers = shtPlayers.getRange(2,1).getValue();
+  var rowPlayer = 0;
+  var PlyrRowStart = 3;
+  
+  var PlayerNames = shtPlayers.getRange(PlyrRowStart,2,NbPlayers,1).getValues();
+  
+  // Find Players rows
+  for (var row = 0; row < NbPlayers; row++){
+    if (PlayerNames[row] == Player) rowPlayer = row + PlyrRowStart;
+    if (rowPlayer > 0) row = NbPlayers + 1;
+  }
+  
+  // Get Email addresses using the players rows
+  EmailAddresses[0] = shtPlayers.getRange(rowPlayer,colEmail+1).getValue();
+  EmailAddresses[1] = shtPlayers.getRange(rowPlayer,colEmail).getValue();
+    
+  return EmailAddresses;
+}
+
+// **********************************************
+// function subGetEmailAddressDbl()
+//
+// This function gets the email addresses for both
+// players from the configuration file
+//
+// **********************************************
+
+function subGetEmailAddressDbl(ss, Addresses, WinPlyr, LosPlyr){
+  
+  // Players Sheets for Email addresses
+  var shtPlayers = ss.getSheetByName('Players');
+  var colEmail = 3;
+  var NbPlayers = shtPlayers.getRange(2,1).getValue();
+  var rowWinr = 0;
+  var rowLosr = 0;
+  var PlyrRowStart = 3;
+  
+  var PlayerNames = shtPlayers.getRange(PlyrRowStart,2,NbPlayers,1).getValues();
+  
+  // Find Players rows
+  for (var row = 0; row < NbPlayers; row++){
+    if (PlayerNames[row] == WinPlyr) rowWinr = row + PlyrRowStart;
+    if (PlayerNames[row] == LosPlyr) rowLosr = row + PlyrRowStart;
+    if (rowWinr > 0 && rowLosr > 0) row = NbPlayers + 1;
+  }
+   
+  // Get Email addresses using the players rows
+  Addresses[1][0] = shtPlayers.getRange(rowWinr,colEmail+1).getValue(); // Language
+  Addresses[1][1] = shtPlayers.getRange(rowWinr,colEmail).getValue();   // Email Address
+  Addresses[2][0] = shtPlayers.getRange(rowLosr,colEmail+1).getValue(); // Language
+  Addresses[2][1] = shtPlayers.getRange(rowLosr,colEmail).getValue();   // Email Address
+    
+  return Addresses;
+}
+
+// **********************************************
+// function subGetEmailRecipients()
+//
+// This function searches for all players in the  
+// list with the selected language
+//
+// **********************************************
+
+function subGetEmailRecipients(shtPlayers, Language){
+  
+  // Function Variables
+  var EmailRecipients = '';
+  var NbPlayers = shtPlayers.getRange(2,1).getValue();
+  var PlayersData = shtPlayers.getRange(3,2,NbPlayers,2).getValues(); // ..[0]= Email Address  ..[1]= Language 
+  
+  // Loop through all players selected languages and concatenate their email addresses 
+  // if it matches the Language sent in parameter 
+  for(var i = 0; i < NbPlayers; i++){
+    if(PlayersData[i][1] == Language) {
+      if(EmailRecipients !='') EmailRecipients += ', '
+      EmailRecipients += PlayersData[i][0];
+    }
+  }
+  
+  return EmailRecipients;
+}
+
+
+
+
+// **********************************************
+// function subCrtPlayerContact()
+//
+// This function creates the Player Contact in Gmail Account
+//
+// **********************************************
+
+function subCrtPlayerContact(shtConfig, PlayerData){
+
+
+}
+    
+
+// **********************************************
+// function subAddPlayerContactGroup()
+//
+// This function adds a player to the Contact Group   
+//
+// **********************************************
+
+function subAddPlayerContactGroup(shtConfig, PlayerData, ContactGroup){
+
+
+
+}
+
+// **********************************************
+// function subCreateEventContactGroup()
+//
+// This function creates a Contact Group   
+// with Players using the same language
+//
+// **********************************************
+
+function subCreateEventContactGroup(){
+  
+  Logger.log("Routine: subCreateEventMailGroup");
+  
+  // Opens Spreadsheet
+  var ss = SpreadsheetApp.getActiveSpreadsheet();  
+  
+  // Config Sheet to get options
+  var shtConfig = ss.getSheetByName('Config');
+  var shtPlayers = ss.getSheetByName('Players');
+  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+  
+  // Get Players Info
+  // [x][0]= Player Name
+  // [x][1]= Team (Not Used)
+  // [x][2]= Email
+  // [x][3]= Language
+  // [x][4]= Phone Number
+  var NbPlayers = shtPlayers.getRange(2,1).getValue();
+  var PlayersData = shtPlayers.getRange(3,2,NbPlayers,5).getValues(); 
+  
+  // Event Properties
+  var evntLocation = cfgEvntParam[0][0];
+  var evntNameEN = cfgEvntParam[7][0];
+  var evntFullNameEN = evntLocation + ' ' + evntNameEN;
+  var evntNameFR = cfgEvntParam[8][0];
+  var evntFullNameFR = evntLocation + ' ' + evntNameFR;
+  
+  // Routine Variables
+  var ContactGroupEN = ContactsApp.createContactGroup(evntFullNameEN);
+  var ContactGroupFR = ContactsApp.createContactGroup(evntFullNameFR);
+  
+  var PlayerContact;
+  
+  // Loop through all players and add them in the appropriate Group 
+  for(var i = 0; i < NbPlayers; i++){
+    
+    // Check if player is already a contact
+    PlayerContact = ContactsApp.getContact(PlayersData[i][2]);
+    
+    // If player is not a contact, create contact
+    if(PlayerContact.getFullName() == '') PlayerContact = ContactsApp.createContact(PlayersData[i][0], "", PlayersData[i][2]);
+        
+    // Add Player to Mail Group according to their Language Preference
+    if(PlayersData[i][3] == "English")  ContactGroupEN.addContact(PlayerContact)
+    if(PlayersData[i][3] == "Français") ContactGroupFR.addContact(PlayerContact)
+    
+  }
 }
 
 // **********************************************
@@ -227,40 +443,7 @@ function fcnPlayerWithMost(shtConfig, PlayerMostData, NbPlayers, shtRound){
   return PlayerMostData; 
 }
 
-// **********************************************
-// function subCreateArray(X,Y)
-//
-// This function creates and array of two dimensions X-Y
-// First
-//
-// **********************************************
 
-function subCreateArray(X,Y){
-  
-  var newArray;
-  
-  // If dimension X is greater than zero
-  if(X > 0){
-    // Create Array of dimension X
-    newArray = new Array(X)
-    // Loops in dimension X to create dimension Y
-    for(var x = 0; x < X; x++){
-      // If a dimension Y is greater than zero, dimension Y exists
-      if(Y > 0){
-        newArray[x] = new Array(Y);
-        for (var y = 0; y < Y; y++) newArray[x][y] = '';
-      }
-      // If not, Array is one dimension X
-      else{
-        newArray[x] = '';
-      }
-    }
-  }
-  else{
-    newArray = '';
-  }
-  return newArray;
-} 
       
       
    

@@ -55,16 +55,26 @@ function fcnRegistrationWG(shtResponse, RowResponse){
   
   // If Player was succesfully added, Generate Army DB, Generate Army List, Generate Startin Pool, Modify Match Report Form and Add Player to Round Booster
   if(PlayerStatus == "New Player") {
+    // Add Player Info to Contact List and Contact Group
+    subCrtPlayerContact(shtConfig, PlayerData);
+    subAddPlayerContactGroup(shtConfig, PlayerData);
+    Logger.log('Player Contact Generated');
+    // Create Player Army DB
     fcnCrtPlayerArmyDB();
     Logger.log('Army Database Generated');
+    // Process Player Army List to Army DB 
     fcnProcessArmyList(shtIDs, shtConfig, PlayerName, shtResponse, RowResponse, PlayerData);
     Logger.log('Army Data Processed to Army DB');
+    // Create Player Army Lists (Player Access)
     fcnCrtPlayerArmyList();
     Logger.log('Army Lists Generated');  
+    
+    // If Escalation is Enabled, Create Player Escalation Bonus sheet 
     if(evntEscalation == 'Enabled'){
       fcnCrtPlayerEscltBonus();
       Logger.log('Round Unit Sheet Generated');   
     }
+    // Add Player to Match Report Forms
     fcnModifyReportFormWG(shtIDs, shtPlayers, evntEscalation);
     
     // Execute Ranking function in Standing tab
@@ -125,7 +135,7 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
   var colRspPhone = cfgRegFormCnstrVal[4][1] - 1;
   var colRspTeamName = cfgRegFormCnstrVal[5][1] - 1;
   var colRspTeamMembers = cfgRegFormCnstrVal[6][1] - 1;
-  var colRspArmyList = cfgRegFormCnstrVal[7][1] - 1;
+  var colRspArmyDef = cfgRegFormCnstrVal[7][1] - 1;
   var colRspArmyName = cfgRegFormCnstrVal[8][1] - 1;
   var colRspArmyFaction1 = cfgRegFormCnstrVal[9][1] - 1;
   var colRspArmyFaction2 = cfgRegFormCnstrVal[10][1] - 1;
@@ -138,7 +148,7 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
   var colTblPhone = cfgRegFormCnstrVal[4][2];
   var colTblTeamName = cfgRegFormCnstrVal[5][2];
   var colTblTeamMembers = cfgRegFormCnstrVal[6][2];
-  var colTblArmyList = cfgRegFormCnstrVal[7][2];
+  var colTblArmyDef = cfgRegFormCnstrVal[7][2];
   var colTblArmyName = cfgRegFormCnstrVal[8][2];
   var colTblArmyFaction1 = cfgRegFormCnstrVal[9][2];
   var colTblArmyFaction2 = cfgRegFormCnstrVal[10][2];
@@ -172,8 +182,8 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
   }
   
   // Player Army List
-  if(colRspArmyList != '' && colRspArmyList != -1) {
-    var ArmyList = RegRspnVal[0][colRspArmyList];
+  if(colRspArmyDef != '' && colRspArmyDef != -1) {
+    var ArmyDef = RegRspnVal[0][colRspArmyDef];
   }
   
   // Check if Player exists in List
@@ -224,13 +234,13 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
 	}    
     
     // Army List
-    if(colTblArmyList != '' && colTblArmyList != 1){
+    if(colTblArmyDef != '' && colTblArmyDef != 1){
       // INSERT NEW FUNCTION TO PROCESS ARMY LIST INFORMATION
       // fcnProcessArmyList();
-      shtPlayers.getRange(NextPlayerRow, colTblArmyList).setValue(ArmyList);
-      shtExtPlayers.getRange(NextPlayerRow, colTblArmyList).setValue(ArmyList);
-      Logger.log('Army List: %s',ArmyList);  Logger.log('-----------------------------');
-  }
+      shtPlayers.getRange(NextPlayerRow, colTblArmyDef).setValue(ArmyDef);
+      shtExtPlayers.getRange(NextPlayerRow, colTblArmyDef.setValue(ArmyDef));
+      Logger.log('Army List: %s',ArmyDef);  Logger.log('-----------------------------');
+    }
 
   }
   PlayerData[0] = Status;
@@ -240,7 +250,7 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
   PlayerData[4] = Language;
   PlayerData[5] = Phone;
   PlayerData[6] = TeamName;
-  PlayerData[7] = ArmyList;
+  PlayerData[7] = ArmyDef;
   
   return PlayerData;
 }

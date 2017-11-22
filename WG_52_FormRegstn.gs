@@ -26,12 +26,14 @@ function fcnCrtRegstnForm_WG() {
   // Column 1 = Category Name
   // Column 2 = Category Order in Form
   // Column 3 = Column Value in Player/Team Sheet
-  var cfgRegFormCnstrVal = shtConfig.getRange(4,26,16,3).getValues();
+  var cfgRegFormCnstrVal = shtConfig.getRange(4,26,20,3).getValues();
   
   // Execution Parameters
   var exeGnrtResp = cfgExecData[3][0];
   
-  // League Parameters
+  // Event Properties
+  var evntLocation = cfgEvntParam[0][0];
+  var evntName = cfgEvntParam[7][0];
   var evntFormat = cfgEvntParam[9][0];
   var evntNbPlyrTeam = cfgEvntParam[10][0];
     
@@ -64,11 +66,11 @@ function fcnCrtRegstnForm_WG() {
   var UnitRatingMin = 1;
   var UnitRatingMax = cfgArmyBuild[12][0];
   
-  var DetachList = shtConfig.getRange(2,12,13,2).getValues();
+  var DetachList = shtConfig.getRange(4,34,20,2).getValues();
   var DetachIncr = 0;
   var DetachTypeArray = new Array(12);
   
-  var UnitRolesList = shtConfig.getRange(2,15,10,2).getValues();
+  var UnitRolesList = shtConfig.getRange(4,37,10,2).getValues();
   var UnitIncr = 0;
   var UnitRoleArray = new Array(9);
   
@@ -98,7 +100,7 @@ function fcnCrtRegstnForm_WG() {
   var ChcUnitFR;
   var ChcDetachFR;
   var ChcEndFR;
-  
+
   var ArmyRatingText;
   var NbUnitMax;
   var UnitPageEN = new Array(325);
@@ -107,63 +109,67 @@ function fcnCrtRegstnForm_WG() {
   var UnitTitle;
   var UnitRole;
   var TestCol = 1;
+
+  var ChcNbDetachArray;
+  // Number of Detachment in Army
+  if(NbDetachMax == 1) ChcNbDetachArray = ["1"];
+  if(NbDetachMax == 2) ChcNbDetachArray = ["1","2"];
+  if(NbDetachMax == 3) ChcNbDetachArray = ["1","2","3"];
   
   // If Form Exists, Log Error Message
-  if(FormIdEN != ''){
+  if(FormIdEN != '' || FormIdFR != ''){
     ErrorVal = 1;
-    Logger.log('Error! FormIdEN already exists. Unlink Response and Delete Form');
-  }
-  // If Form Exists, Log Error Message
-  if(FormIdFR != ''){
-    ErrorVal = 1;
-    Logger.log('Error! FormIdFR already exists. Unlink Response and Delete Form');
+    title = "Registration Forms Error";
+    msg = "The Registration Forms already exist. Unlink and delete their response sheets then delete the forms and their ID in the configuration file.";
+    var uiResponse = ui.alert(title, msg, ui.ButtonSet.OK);
   }
   
   // If Form does not exist, create it
   if(FormIdEN == '' && FormIdFR == ''){
     // Create Forms
-    FormNameEN = shtConfig.getRange(3,2).getValue() + " Registration EN";
+    FormNameEN = evntLocation + " " + evntName + " Registration EN";
     formEN = FormApp.create(FormNameEN).setTitle(FormNameEN);
     
-    FormNameFR = shtConfig.getRange(3,2).getValue() + " Registration FR";
+    FormNameFR = evntLocation + " " + evntName + " Registration FR";
     formFR = FormApp.create(FormNameFR).setTitle(FormNameFR);
     
     // Loops in Response Columns Values and Create Appropriate Question
     for(var i = 1; i < cfgRegFormCnstrVal.length; i++){
-      // Look for Col Equal to Question Order
+      // Check for Question Order in Response Column Value in Configuration File
       if(QuestionOrder == cfgRegFormCnstrVal[i][1]){
         switch(cfgRegFormCnstrVal[i][0]){
-          case 'Email': {
-            Logger.log('%s - %s',QuestionOrder,cfgRegFormCnstrVal[i][0]);
             // EMAIL
+          case 'Email': {
             // Set Registration Email collection
             formEN.setCollectEmail(true);
             formFR.setCollectEmail(true);
             break;
           }
+            // FULL NAME
           case 'Name': {
-            Logger.log('%s - %s',QuestionOrder,cfgRegFormCnstrVal[i][0]); 
-            // FULL NAME   
+            // ENGLISH
             formEN.addTextItem()
             .setTitle("Name")
             .setHelpText("Please, Remove any space at the end of the name")
             .setRequired(true);
             
+            // FRENCH
             formFR.addTextItem()
             .setTitle("Nom")
             .setHelpText("SVP, enlevez les espaces à la fin du nom")
             .setRequired(true);
             break;
           }
-          case 'Language': {
-            Logger.log('%s - %s',QuestionOrder,cfgRegFormCnstrVal[i][0]); 
             // LANGUAGE
+          case 'Language': {
+            // ENGLISH
             formEN.addMultipleChoiceItem()
             .setTitle("Language Preference")
             .setHelpText("Which Language do you prefer to use? The application is available in English and French")
             .setRequired(true)
             .setChoiceValues(["English","Français"]);
             
+            // FRENCH
             formFR.addMultipleChoiceItem()
             .setTitle("Préférence de Langue")
             .setHelpText("Quelle langue préférez-vous utiliser? L'application est disponible en anglais et en français.")
@@ -171,116 +177,155 @@ function fcnCrtRegstnForm_WG() {
             .setChoiceValues(["English","Français"]);
             break;
           }
+          // PHONE NUMBER
           case 'Phone Number': {
-            Logger.log('%s - %s',QuestionOrder,cfgRegFormCnstrVal[i][0]); 
-            // PHONE NUMBER    
+            // ENGLISH
             formEN.addTextItem()
             .setTitle("Phone Number")
             .setRequired(true);
             
+            // FRENCH
             formFR.addTextItem()
             .setTitle("Numéro de téléphone")
             .setRequired(true);
             break;
           }
-
+            // TEAM NAME & MEMBERS
           case 'Team Name': {
-            Logger.log('%s - %s',QuestionOrder,cfgRegFormCnstrVal[i][0]); 
             if(evntFormat == 'Team'){
-              // TEAM NAME
+              // ENGLISH
               formEN.addPageBreakItem().setTitle("Team");
               formEN.addTextItem()
               .setTitle("Team Name")
               .setRequired(true);
               
+              // FRENCH
               formFR.addPageBreakItem().setTitle("Équipe");
               formFR.addTextItem()
               .setTitle("Nom d'équipe")
               .setRequired(true);
               
-              // TEAM MEMBERS
               for(var member = 1; member <= evntNbPlyrTeam; member++){
+                // ENGLISH
                 formEN.addTextItem()
                 .setTitle("Teammate " + member)
                 .setRequired(true);
                 
+                // FRENCH
                 formFR.addTextItem()
                 .setTitle("Équipier " + member)
                 .setRequired(true);
               }
             }
             break;
-          }          
-          case 'Army List': {
-            Logger.log('%s - %s',QuestionOrder,cfgRegFormCnstrVal[i][0]); 
-            // English
-            // Army List
+          }   
+            // ARMY DEFINITION
+          case 'Army Definition': {
+            // ENGLISH
             formEN.addPageBreakItem()
-            .setTitle("Army List");
+            .setTitle("Army Definition")
+            .setHelpText("Enter Army's General Information");
+            
             // Faction
             if (NbFaction == 1){
               // Faction Keyword 1
               formEN.addTextItem()
               .setTitle("Faction")
+              .setHelpText("Enter your Main Faction Keyword")
               .setRequired(true);  
             }
             if (NbFaction == 2){
               // Faction Keyword 1
               formEN.addTextItem()
               .setTitle("Faction 1")
+              .setHelpText("Enter your First Faction Keyword")
               .setRequired(true);  
               
               // Faction Keyword 2
               formEN.addTextItem()
               .setTitle("Faction 2")
+              .setHelpText("Enter your Second Faction Keyword")
               .setRequired(true);
             }
+            
             // Warlord name
             formEN.addTextItem()
-            .setTitle("Warlord Name")
+            .setTitle("Army Warlord")
+            .setHelpText("Enter your Army's Warlord name (or Unit Entry)")
             .setRequired(true); 
             
             // Army name
             formEN.addTextItem()
             .setTitle("Army Name")
+            .setHelpText("Enter your Army's Name (optional)")
             .setRequired(false); 
             
-            // French
-            // Army List
+            // FRENCH
             formFR.addPageBreakItem()
-            .setTitle("Liste d'Armée");
+            .setTitle("Définition d'Armée")
+            .setHelpText("Entrez les informations générales de votre armée");
+            
             // Faction
             if (NbFaction == 1){
               // Faction Keyword 1
               formFR.addTextItem()
               .setTitle("Faction")
+              .setHelpText("Entrez le mot-clé Faction principal de votre armée")
               .setRequired(true);  
             }
             if (NbFaction == 2){
               // Faction Keyword 1
               formFR.addTextItem()
               .setTitle("Faction 1")
+              .setHelpText("Entrez le premier mot-clé Faction de votre armée")
               .setRequired(true);  
               
               // Faction Keyword 2
               formFR.addTextItem()
               .setTitle("Faction 2")
+              .setHelpText("Entrez le deuxième mot-clé Faction de votre armée")
               .setRequired(true);
             }
             
             // Warlord name
             formFR.addTextItem()
-            .setTitle("Nom du Seigneur de Guerre")
+            .setTitle("Seigneur de Guerre de l'armée")
+            .setHelpText("Entrez le nom (ou type d'unité) du Seigneur de Guerre de votre armée")
             .setRequired(true); 
             
             // Army name
             formFR.addTextItem()
             .setTitle("Nom d'Armée")
+            .setHelpText("Entrez le nom de votre Armée (optionel)")
             .setRequired(false);
+            break;
+          }
+          case 'Army List': {
+            Logger.log('%s - %s',QuestionOrder,cfgRegFormCnstrVal[i][0]);  
+            // Army List
+            // ENGLISH
+            formEN.addPageBreakItem()
+            .setTitle("Army List")
+            .setHelpText("Please, enter your Army List");
+            // Number of Detachment in Army
+            formEN.addMultipleChoiceItem()
+            .setTitle("Number of Detachments in your Army")
+            .setRequired(true)
+            .setChoiceValues(ChcNbDetachArray);
+
+            // FRENCH
+            formFR.addPageBreakItem()
+            .setTitle("Liste d'Armée")
+            .setHelpText("SVP, entrez votre liste d'armée");
+            // Number of Detachment in Army
+            formFR.addMultipleChoiceItem()
+            .setTitle("Nombre de Détachements dans votre armée")
+            .setRequired(true)
+            .setChoiceValues(ChcNbDetachArray);
             
             // CREATE DETACHMENT CHOICES
             // Creates the List of Detachments Allowed for League
-            for(var detach = 1; detach <= 12; detach++) {
+            for(var detach = 0; detach < 20; detach++) {
               if(DetachList[detach][1] == 'Yes') {
                 DetachTypeArray[DetachIncr] = DetachList[detach][0];
                 DetachIncr++;
@@ -322,83 +367,87 @@ function fcnCrtRegstnForm_WG() {
             .build();            
             
             // DETACHMENT 1
-            // ENGLISH
-            var Detach1EN = formEN.addPageBreakItem().setTitle("Detachment 1");
-            // Detachment Name
-            formEN.addTextItem()
-            .setTitle("Detachment 1 Name")
-            .setRequired(true);
-            // Detachment Type
-            formEN.addListItem()
-            .setTitle("Detachment 1 Type")
-            .setRequired(true)
-            .setChoiceValues(DetachTypeArray);
-            
-            // FRENCH
-            var Detach1FR = formFR.addPageBreakItem().setTitle("Détachement 1")
-            // Detachment Name
-            formFR.addTextItem()
-            .setTitle("Nom du Détachement 1")
-            .setRequired(true);
-            // Detachment Type
-            formFR.addListItem()
-            .setTitle("Type du Détachment 1")
-            .setRequired(true)
-            .setChoiceValues(DetachTypeArray);
-            
-            // DETACHMENT 2
-            if(NbDetachMax >= 2){
+            if(DetachTypeArray.length > 0){
               
               // ENGLISH
-              var Detach2EN = formEN.addPageBreakItem().setTitle("Detachment 2");
+              var Detach1EN = formEN.addPageBreakItem().setTitle("Detachment 1");
               // Detachment Name
               formEN.addTextItem()
-              .setTitle("Detachment 2 Name")
+              .setTitle("Detachment 1 Name")
               .setRequired(true);
               // Detachment Type
               formEN.addListItem()
-              .setTitle("Detachment 2 Type")
+              .setTitle("Detachment 1 Type")
               .setRequired(true)
               .setChoiceValues(DetachTypeArray);
               
               // FRENCH
-              var Detach2FR = formFR.addPageBreakItem().setTitle("Détachement 2")
+              var Detach1FR = formFR.addPageBreakItem().setTitle("Détachement 1")
               // Detachment Name
               formFR.addTextItem()
-              .setTitle("Nom du Détachement 2")
+              .setTitle("Nom du Détachement 1")
               .setRequired(true);
               // Detachment Type
               formFR.addListItem()
-              .setTitle("Type du Détachment 2")
+              .setTitle("Type du Détachment 1")
               .setRequired(true)
               .setChoiceValues(DetachTypeArray);
-            }
-            
-            // DETACHMENT 3
-            if(NbDetachMax >= 3){
-              // ENGLISH
-              var Detach3EN = formEN.addPageBreakItem().setTitle("Detachment 3");
-              // Detachment Name
-              formEN.addTextItem()
-              .setTitle("Detachment 3 Name")
-              .setRequired(true);
-              // Detachment Type
-              formEN.addListItem()
-              .setTitle("Detachment 3 Type")
-              .setRequired(true)
-              .setChoiceValues(DetachTypeArray);
-                            
-              // FRENCH
-              var Detach3FR = formFR.addPageBreakItem().setTitle("Détachement 3")
-              // Detachment Name
-              formFR.addTextItem()
-              .setTitle("Nom du Détachement 3")
-              .setRequired(true);
-              // Detachment Type
-              formFR.addListItem()
-              .setTitle("Type du Détachment 3")
-              .setRequired(true)
-              .setChoiceValues(DetachTypeArray);
+              
+              // DETACHMENT 2
+              if(NbDetachMax >= 2){
+                
+                // ENGLISH
+                var Detach2EN = formEN.addPageBreakItem().setTitle("Detachment 2");
+                // Detachment Name
+                formEN.addTextItem()
+                .setTitle("Detachment 2 Name")
+                .setRequired(true);
+                // Detachment Type
+                formEN.addListItem()
+                .setTitle("Detachment 2 Type")
+                .setRequired(true)
+                .setChoiceValues(DetachTypeArray);
+                
+                // FRENCH
+                var Detach2FR = formFR.addPageBreakItem().setTitle("Détachement 2")
+                // Detachment Name
+                formFR.addTextItem()
+                .setTitle("Nom du Détachement 2")
+                .setRequired(true);
+                // Detachment Type
+                formFR.addListItem()
+                .setTitle("Type du Détachment 2")
+                .setRequired(true)
+                .setChoiceValues(DetachTypeArray);
+              }
+              
+              // DETACHMENT 3
+              if(NbDetachMax >= 3){
+                
+                // ENGLISH
+                var Detach3EN = formEN.addPageBreakItem().setTitle("Detachment 3");
+                // Detachment Name
+                formEN.addTextItem()
+                .setTitle("Detachment 3 Name")
+                .setRequired(true);
+                // Detachment Type
+                formEN.addListItem()
+                .setTitle("Detachment 3 Type")
+                .setRequired(true)
+                .setChoiceValues(DetachTypeArray);
+                
+                // FRENCH
+                var Detach3FR = formFR.addPageBreakItem().setTitle("Détachement 3")
+                // Detachment Name
+                formFR.addTextItem()
+                .setTitle("Nom du Détachement 3")
+                .setRequired(true);
+                // Detachment Type
+                formFR.addListItem()
+                .setTitle("Type du Détachment 3")
+                .setRequired(true)
+                .setChoiceValues(DetachTypeArray);
+              }
             }
             
             // Loop through each potential unit of each detachment
@@ -581,6 +630,7 @@ function fcnCrtRegstnForm_WG() {
     // RESPONSE SHEETS
     // Create Response Sheet in Main File and Rename
     if(exeGnrtResp == 'Enabled'){
+      Logger.log("Generating Response Sheets and Form Links");
       // English Form
       formEN.setDestination(FormApp.DestinationType.SPREADSHEET, ssID);
       
@@ -643,7 +693,9 @@ function fcnCrtRegstnForm_WG() {
       shtConfig.getRange(rowFormEN, colFormURL).setValue(urlFormEN); 
       
       urlFormFR = formFR.getPublishedUrl();
-      shtConfig.getRange(rowFormEN, colFormURL).setValue(urlFormFR);
+      shtConfig.getRange(rowFormFR, colFormURL).setValue(urlFormFR);
+      
+      Logger.log("Response Sheets and Form Links Generated");
     }
   }
   // Post Log to Log Sheet

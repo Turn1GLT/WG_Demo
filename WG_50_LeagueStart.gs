@@ -24,25 +24,23 @@ function fcnUpdateLinksIDs(){
     var shtCopyLog = SpreadsheetApp.openById(shtCopyLogID).getSheets()[0];
   
     var CopyLogNbFiles = shtCopyLog.getRange(2, 6).getValue();
-    var rowCopyLogStart = 5;
-    var rowShtIdStart = 4;
+    var rowStartCopyLog = 5;
+    var rowStartConfig = 4;
     var colShtId = 7;
-    var rowShtUrlStart = 4;
     var colShtUrl = 11;
     
-    var CopyLogVal = shtCopyLog.getRange(rowCopyLogStart, 2, CopyLogNbFiles, 3).getValues();
+    var CopyLogVal = shtCopyLog.getRange(rowStartCopyLog, 2, CopyLogNbFiles, 3).getValues();
     // [0]= Sheet Name, [1]= Sheet URL, [2]= Sheet ID
     
     var FileName;
     var Link;
     var Formula;
-    var rowID = 'Not Found';
-    var rowUrl = 'Not Found';
+    var rowCfg = 'Not Found';
     
     // Clear Sheet IDs
-    shtConfig.getRange(rowShtIdStart, colShtId,20,1).clearContent();
+    shtConfig.getRange(rowStartConfig, colShtId,20,1).clearContent();
     // Clear Sheet URLs
-    shtConfig.getRange(rowShtUrlStart,colShtUrl,20,1).clearContent();
+    shtConfig.getRange(rowStartConfig,colShtUrl,20,1).clearContent();
     
     // Loop through all Copied Sheets and get their Link and ID
     for (var row = 0; row < CopyLogNbFiles; row++){
@@ -50,41 +48,36 @@ function fcnUpdateLinksIDs(){
       FileName = CopyLogVal[row][0];
       
       switch(FileName){
-        case 'Master WG League' :
-          rowID = rowShtIdStart + 0;
-          rowUrl = rowShtUrlStart + 0; break;
+        case 'Master WG Event' :
+          rowCfg = rowStartConfig + 0; break;
         case 'Master WG Log' :
-          rowID = rowShtIdStart + 1;
-          rowUrl = rowShtUrlStart + 1; break;
-        case 'Master WG League Army DB' :
-          rowID = rowShtIdStart + 2; 
-          rowUrl = rowShtUrlStart + 2; break;
-        case 'Master WG League Army Lists EN' :
-          rowID = rowShtIdStart + 3; 
-          rowUrl = rowShtUrlStart + 3; break;
-        case 'Master WG League Army Lists FR' :
-          rowID = rowShtIdStart + 4; 
-          rowUrl = rowShtUrlStart + 4; break;
-        case 'Master WG League Standings EN' :
-          rowID = rowShtIdStart + 5; 
-          rowUrl = rowShtUrlStart + 5; break;
-        case 'Master WG League Standings FR' :
-          rowID = rowShtIdStart + 6; 
-          rowUrl = rowShtUrlStart + 6; break;	
+          rowCfg = rowStartConfig + 1; break;
+        case 'Master WG Army DB' :
+          rowCfg = rowStartConfig + 2; break;
+        case 'Master WG Army Lists EN' :
+          rowCfg = rowStartConfig + 3; break;
+        case 'Master WG Army Lists FR' :
+          rowCfg = rowStartConfig + 4; break;
+        case 'Master WG Standings EN' :
+          rowCfg = rowStartConfig + 5; break;
+        case 'Master WG Standings FR' :
+          rowCfg = rowStartConfig + 6; break;	
+        case 'Master WG Player Records' :
+          rowCfg = rowStartConfig + 13; break;
+        case 'Master WG Player List & Round Bonus' :
+          rowCfg = rowStartConfig + 14; break;
+        case 'Master WG Starting Pool' :
+          rowCfg = rowStartConfig + 15; break;        
         default : 
-          rowID = 'Not Found'; 
-          rowUrl = 'Not Found'; break;
+          rowStartConfig = 'Not Found'; break;
       }
       
-      // Set the Appropriate Sheet ID Value in the Config File
-      if (rowID != 'Not Found') {
-        shtConfig.getRange(rowID, colShtId).setValue(CopyLogVal[row][2]);
-      }
-      // Set tthe Appropriate Sheet ID Value in the Config File
-      if (rowUrl != 'Not Found') {
-        // Opens Spreadsheet by ID
+      // Set the Appropriate Sheet ID Value and URL in the Config File
+      if (rowCfg != 'Not Found') {
+        shtConfig.getRange(rowCfg, colShtId).setValue(CopyLogVal[row][2]);
+        // Opens Spreadsheet by ID to get URL
         Link = SpreadsheetApp.openById(CopyLogVal[row][2]).getUrl();        
-        shtConfig.getRange(rowUrl, colShtUrl).setValue(Link);
+        shtConfig.getRange(rowCfg, colShtUrl).setValue(Link);
       }
     }
   }
@@ -661,7 +654,7 @@ function fcnDelPlayerArmyList(){
 //
 // **********************************************
 
-function fcnSetupResponseSht(){
+function fcnSetupMatchResponseSht(){
   
   Logger.log("Routine: fcnSetupResponseSht");
 
@@ -708,17 +701,17 @@ function fcnSetupResponseSht(){
   }
   
   // Hides Columns 
-  shtNewRespEN.hideColumn(colMatchID);
-  shtNewRespEN.hideColumn(colDataConflict);
-  shtNewRespEN.hideColumn(colStatus);
-  shtNewRespEN.hideColumn(colStatusMsg);
-  shtNewRespEN.hideColumn(colMatchIDLastVal);
+  shtNewRespEN.hideColumns(colMatchID);
+  shtNewRespEN.hideColumns(colDataConflict);
+  shtNewRespEN.hideColumns(colStatus);
+  shtNewRespEN.hideColumns(colStatusMsg);
+  shtNewRespEN.hideColumns(colMatchIDLastVal);
   
-  shtNewRespFR.hideColumn(colMatchID);
-  shtNewRespFR.hideColumn(colDataConflict);
-  shtNewRespFR.hideColumn(colStatus);
-  shtNewRespFR.hideColumn(colStatusMsg);
-  shtNewRespFR.hideColumn(colMatchIDLastVal);
+  shtNewRespFR.hideColumns(colMatchID);
+  shtNewRespFR.hideColumns(colDataConflict);
+  shtNewRespFR.hideColumns(colStatus);
+  shtNewRespFR.hideColumns(colStatusMsg);
+  shtNewRespFR.hideColumns(colMatchIDLastVal);
   
   // Delete Old Sheets
   ss.deleteSheet(shtOldRespEN);
