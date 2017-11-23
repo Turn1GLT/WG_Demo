@@ -113,6 +113,16 @@ function fcnInitializeEvent(){
     var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
     var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
     var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
+    var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+    
+    // Event Parameters
+    var evntLocation = cfgEvntParam[0][0];
+    var evntNameEN = cfgEvntParam[7][0];
+    var evntNameFR = cfgEvntParam[8][0];
+    var evntCntctGrpNameEN = evntLocation + " " + evntNameEN;
+    var evntCntctGrpNameFR = evntLocation + " " + evntNameFR;
+    var ContactGroupEN;
+    var ContactGroupFR;
     
     // Columns from Config File
     var colRspMatchIDLastVal = cfgColRspSht[6][0];
@@ -120,12 +130,15 @@ function fcnInitializeEvent(){
     var colRndMatchLoc = cfgColRndSht[8][0];
     
     // Sheets
-    var shtStandings = ss.getSheetByName('Standings');
+    var shtStandings =   ss.getSheetByName('Standings');
     var shtMatchRslt   = ss.getSheetByName('Match Results');
-    var shtRound;
     var shtResponses   = ss.getSheetByName('Responses');
     var shtResponsesEN = ss.getSheetByName('Responses EN');
     var shtResponsesFR = ss.getSheetByName('Responses FR');
+    var shtPlayers =     ss.getSheetByName('Players');
+    var ssExtPlayers = SpreadsheetApp.openById(shtIDs[14][0]); // External Player List Spreadsheet
+    var shtExtPlayers = ssExtPlayers.getSheetByName('Players');// External Player List Sheet
+    var shtRound;
     
     // Max Rows / Columns
     var MaxRowStdg = shtStandings.getMaxRows();
@@ -138,7 +151,9 @@ function fcnInitializeEvent(){
     var MaxColRspnEN = shtResponsesEN.getMaxColumns();
     var MaxRowRspnFR = shtResponsesFR.getMaxRows();
     var MaxColRspnFR = shtResponsesFR.getMaxColumns();
-    
+    var MaxRowPlayers = shtPlayers.getMaxRows();
+    var MaxColPlayers = shtPlayers.getMaxColumns();
+        
     // Clear Data
     // Standings
     shtStandings.getRange(6,2,MaxRowStdg-5,MaxColStdg-1).clearContent();
@@ -156,23 +171,30 @@ function fcnInitializeEvent(){
       shtRound.getRange(5,colRndWin,32,4).clearContent();
       shtRound.getRange(5,colRndMatchLoc,32,4).clearContent();
     }
+    Logger.log('Event Data Cleared');
     
-    Logger.log('League Data Cleared');
+    // Clear Player List
+    shtPlayers.getRange(3, 2, MaxRowPlayers-2, MaxColPlayers-1).clearContent();
+    shtExtPlayers.getRange(3, 2, MaxRowPlayers-2, MaxColPlayers-1).clearContent();
+    Logger.log('Player List Cleared');
+    
+    // Delete Contact Groups
+    // Get Contact Group
+    ContactGroupEN = ContactsApp.getContactGroup(evntCntctGrpNameEN);
+    ContactGroupFR = ContactsApp.getContactGroup(evntCntctGrpNameFR);
+    // If Contact Group exists, Delete it
+    if(ContactGroupEN != null) ContactsApp.deleteContactGroup(ContactGroupEN);
+    if(ContactGroupFR != null) ContactsApp.deleteContactGroup(ContactGroupFR);
+    Logger.log('Contact Groups Deleted');
     
     // Update Standings Copies
-    fcnCopyStandingsResults(ss, shtConfig)
+    fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, 0, 1);
     Logger.log('Standings Updated');
     
     // Clear Players DB and Card Pools
     fcnDelPlayerArmyDB();
     fcnDelPlayerArmyList();
     Logger.log('Army DB and Army Lists Cleared');
-    
-    // Generate Players DB and Card Pools
-    fcnGenPlayerArmyDB();
-    fcnGenPlayerArmyList();
-    Logger.log('Army DB and Army Lists Generated');
-  
   }
 }
 
@@ -206,6 +228,7 @@ function fcnClearMatchResults(){
     var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
     var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
     var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
+    var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
     
     // Columns from Config File
     var colRspMatchID = cfgColRspSht[1][0];
@@ -251,7 +274,7 @@ function fcnClearMatchResults(){
     Logger.log('League Data Cleared');
     
     // Update Standings Copies
-    fcnCopyStandingsResults(ss, shtConfig)
+    fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, 0, 1);
     Logger.log('Standings Updated');
   }
 }

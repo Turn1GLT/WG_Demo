@@ -146,17 +146,47 @@ function fcnCrtRegstnForm_WG() {
             break;
           }
             // FULL NAME
-          case 'Name': {
+          case 'Full Name': {
             // ENGLISH
             formEN.addTextItem()
             .setTitle("Name")
-            .setHelpText("Please, Remove any space at the end of the name")
+            .setHelpText("Please, Remove any space at the beginning or end of the name")
             .setRequired(true);
             
             // FRENCH
             formFR.addTextItem()
             .setTitle("Nom")
-            .setHelpText("SVP, enlevez les espaces à la fin du nom")
+            .setHelpText("SVP, enlevez les espaces au début ou à la fin du nom")
+            .setRequired(true);
+            break;
+          }
+            // FIRST NAME
+          case 'First Name': {
+            // ENGLISH
+            formEN.addTextItem()
+            .setTitle("First Name")
+            .setHelpText("Please, Remove any space at the beginning or end of the name")
+            .setRequired(true);
+            
+            // FRENCH
+            formFR.addTextItem()
+            .setTitle("Prénom")
+            .setHelpText("SVP, enlevez les espaces au début ou à la fin du nom")
+            .setRequired(true);
+            break;
+          }
+            // LAST NAME
+          case 'Last Name': {
+            // ENGLISH
+            formEN.addTextItem()
+            .setTitle("Last Name")
+            .setHelpText("Please, Remove any space at the beginning or end of the name")
+            .setRequired(true);
+            
+            // FRENCH
+            formFR.addTextItem()
+            .setTitle("Nom de Famille")
+            .setHelpText("SVP, enlevez les espaces au début ou à la fin du nom")
             .setRequired(true);
             break;
           }

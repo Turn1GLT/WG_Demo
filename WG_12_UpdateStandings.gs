@@ -124,6 +124,7 @@ function fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, RspnRoundNum, AllSh
   var evntNbPlayers = cfgEvntParam[31][0];
   var evntRoundLimit = cfgEvntParam[13][0];
   var RoundSheet = RspnRoundNum + 1;
+  var RoundNum;
   
   // Sheet Initialization
   var rngSheetInitEN = shtConfig.getRange(9,9);
@@ -169,17 +170,21 @@ function fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, RspnRoundNum, AllSh
         ssMstrShtNbCol = 7;
       }
       
-      // If sheet is Cumulative Results or Round Results
+      // If sheet is Cumulative Results
       if (sht == 1) {
         ssMstrShtStartRow = 5;
         ssMstrShtNbCol = 13;
       }
             
-      // If sheet is Cumulative Results or Round Results
+      // If sheet is Round Results
       if (sht > 1 && sht <= 9) {
         ssMstrShtStartRow = 5;
         ssMstrShtNbCol = 11;
+        RoundNum = sht-1
+        ssLgShtEn.setName('Round'+RoundNum);
+        ssLgShtFr.setName('Round'+RoundNum);
       }
+      
       
       // Set the number of values to fetch
       NumValues = ssMstrShtMaxRows - ssMstrShtStartRow + 1;
@@ -192,15 +197,15 @@ function fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, RspnRoundNum, AllSh
       ssLgShtFr.getRange(ssMstrShtStartRow,1,NumValues,ssMstrShtNbCol).setValues(ssMstrShtData);
       
       // Hide Unused Rows
-      if(EvntNbPlayers > 0){
+      if(evntNbPlayers > 0){
         ssLgShtEn.hideRows(ssMstrShtStartRow, ssMstrShtMaxRows - ssMstrShtStartRow + 1);
-        ssLgShtEn.showRows(ssMstrShtStartRow, EvntNbPlayers);
+        ssLgShtEn.showRows(ssMstrShtStartRow, evntNbPlayers);
         ssLgShtFr.hideRows(ssMstrShtStartRow, ssMstrShtMaxRows - ssMstrShtStartRow + 1);
-        ssLgShtFr.showRows(ssMstrShtStartRow, EvntNbPlayers);
+        ssLgShtFr.showRows(ssMstrShtStartRow, evntNbPlayers);
       }
        
       // Round Sheet 
-      if (sht == RoundSheet){
+      if(sht == RoundSheet){
         Logger.log('Round %s Sheet Updated',sht-1);
         ssMstrStartDate = ssMstrSht.getRange(3,2).getValue();
         ssMstrEndDate   = ssMstrSht.getRange(4,2).getValue();
@@ -211,9 +216,14 @@ function fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, RspnRoundNum, AllSh
       }
       
       // If the current sheet is greater than League Round Limit, hide sheet
-      if(sht > EvntRoundLimit + 1){
+      if(sht > evntRoundLimit + 1){
         ssLgShtEn.hideSheet();
         ssLgShtFr.hideSheet();
+      }
+      // If the current sheet is less than League Round Limit, show sheet
+      if(sht <= evntRoundLimit + 1){
+        ssLgShtEn.showSheet();
+        ssLgShtFr.showSheet();
       }
     }
     
@@ -223,8 +233,8 @@ function fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, RspnRoundNum, AllSh
       if (sht == 0){
         Logger.log('Standings Sheet Updated');
         // Update League Name
-        ssLgShtEn.getRange(4,2).setValue(EvntNameEN + ' Standings')
-        ssLgShtFr.getRange(4,2).setValue('Classement ' + EvntNameFR)
+        ssLgShtEn.getRange(4,2).setValue(evntNameEN + ' Standings')
+        ssLgShtFr.getRange(4,2).setValue('Classement ' + evntNameFR)
         // Update Form Link
         ssLgShtEn.getRange(2,5).setValue('=HYPERLINK("' + FormUrlEN + '","Send Match Results")');      
         ssLgShtFr.getRange(2,5).setValue('=HYPERLINK("' + FormUrlFR + '","Envoyer Résultats de Match")'); 

@@ -151,9 +151,40 @@ function subGetEmailRecipients(shtPlayers, Language){
 //
 // **********************************************
 
-function subCrtPlayerContact(shtConfig, PlayerData){
+function subCrtPlayerContact(PlyrContactInfo){
+  
+  //  PlyrContactInfo[0]= First Name
+  //  PlyrContactInfo[1]= Last Name
+  //  PlyrContactInfo[2]= Email
+  //  PlyrContactInfo[3]= Language
 
-
+  Logger.log("Routine: subCrtPlayerContact");
+  Logger.log("Player: %s, %s",PlyrContactInfo[1], PlyrContactInfo[0]);
+    
+  var Status = 'Player Contact Not Created';
+      
+  // Check if player is already a contact
+  var PlayerContact = ContactsApp.getContact(PlyrContactInfo[2]);
+  
+  // If Player is a contact, update First and Last Name
+  if(PlayerContact != null){
+    PlayerContact.setGivenName(PlyrContactInfo[0]);
+    PlayerContact.setFamilyName(PlyrContactInfo[1]);
+    Logger.log('Contact Updated: %s',PlayerContact.getFullName())
+    Status = 'Player Contact Updated';
+  }
+  
+  // If Player is not a contact, create it
+  else { 
+    PlayerContact = ContactsApp.createContact(PlyrContactInfo[0], PlyrContactInfo[1], PlyrContactInfo[2]);
+    // Get Player Contact
+    PlayerContact = ContactsApp.getContact(PlyrContactInfo[2]);
+    if(PlayerContact != null) Status = 'Player Contact Created';
+  }
+  
+  Logger.log(Status);
+  
+  return Status;
 }
     
 
@@ -164,69 +195,60 @@ function subCrtPlayerContact(shtConfig, PlayerData){
 //
 // **********************************************
 
-function subAddPlayerContactGroup(shtConfig, PlayerData, ContactGroup){
+function subAddPlayerContactGroup(shtConfig, PlyrContactInfo){
 
-
-
-}
-
-// **********************************************
-// function subCreateEventContactGroup()
-//
-// This function creates a Contact Group   
-// with Players using the same language
-//
-// **********************************************
-
-function subCreateEventContactGroup(){
+  //  PlyrContactInfo[0]= First Name
+  //  PlyrContactInfo[1]= Last Name
+  //  PlyrContactInfo[2]= Email
+  //  PlyrContactInfo[3]= Language
   
-  Logger.log("Routine: subCreateEventMailGroup");
-  
-  // Opens Spreadsheet
-  var ss = SpreadsheetApp.getActiveSpreadsheet();  
-  
-  // Config Sheet to get options
-  var shtConfig = ss.getSheetByName('Config');
-  var shtPlayers = ss.getSheetByName('Players');
+  // Event Parameters
   var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
   
-  // Get Players Info
-  // [x][0]= Player Name
-  // [x][1]= Team (Not Used)
-  // [x][2]= Email
-  // [x][3]= Language
-  // [x][4]= Phone Number
-  var NbPlayers = shtPlayers.getRange(2,1).getValue();
-  var PlayersData = shtPlayers.getRange(3,2,NbPlayers,5).getValues(); 
-  
-  // Event Properties
   var evntLocation = cfgEvntParam[0][0];
   var evntNameEN = cfgEvntParam[7][0];
-  var evntFullNameEN = evntLocation + ' ' + evntNameEN;
   var evntNameFR = cfgEvntParam[8][0];
-  var evntFullNameFR = evntLocation + ' ' + evntNameFR;
-  
-  // Routine Variables
-  var ContactGroupEN = ContactsApp.createContactGroup(evntFullNameEN);
-  var ContactGroupFR = ContactsApp.createContactGroup(evntFullNameFR);
-  
-  var PlayerContact;
-  
-  // Loop through all players and add them in the appropriate Group 
-  for(var i = 0; i < NbPlayers; i++){
+  var evntCntctGrpNameEN = evntLocation + " " + evntNameEN;
+  var evntCntctGrpNameFR = evntLocation + " " + evntNameFR;
+
+  var Status;
+  var ContactGroupEN;
+  var ContactGroupFR;
     
-    // Check if player is already a contact
-    PlayerContact = ContactsApp.getContact(PlayersData[i][2]);
+  Logger.log("Routine: subAddPlayerContactGroup");
+  Logger.log("Player: %s, %s",PlyrContactInfo[1],PlyrContactInfo[0]);
     
-    // If player is not a contact, create contact
-    if(PlayerContact.getFullName() == '') PlayerContact = ContactsApp.createContact(PlayersData[i][0], "", PlayersData[i][2]);
-        
-    // Add Player to Mail Group according to their Language Preference
-    if(PlayersData[i][3] == "English")  ContactGroupEN.addContact(PlayerContact)
-    if(PlayersData[i][3] == "Français") ContactGroupFR.addContact(PlayerContact)
-    
+  // Get Player Contact
+  var PlayerContact = ContactsApp.getContact(PlyrContactInfo[2]);
+  
+  if(PlayerContact != null){
+    if(PlyrContactInfo[3] == "English"){
+      // Get Contact Group
+      ContactGroupEN = ContactsApp.getContactGroup(evntCntctGrpNameEN);
+      // If Contact Group does not exist, create it
+      if(ContactGroupEN == null) ContactGroupEN = ContactsApp.createContactGroup(evntCntctGrpNameEN);
+      // Add Contact to Contact Group
+      ContactGroupEN.addContact(PlayerContact);
+      Status = 'Player added to Contact Group';
+    }
+    if(PlyrContactInfo[3] == "Français"){
+      // Get Contact Group
+      ContactGroupFR = ContactsApp.getContactGroup(evntCntctGrpNameFR);
+      // If Contact Group does not exist, create it
+      if(ContactGroupFR == null) ContactGroupFR = ContactsApp.createContactGroup(evntCntctGrpNameFR);
+      // Add Contact to Contact Group
+      ContactGroupFR.addContact(PlayerContact);
+      Status = 'Player added to Contact Group';
+    }
   }
+  
+  if(Status != 'Player added to Contact Group') Status = 'Contact Group Error'
+  
+  Logger.log(Status);
+  
+  return Status;  
 }
+
 
 // **********************************************
 // function subCheckDataConflict()
@@ -443,10 +465,4 @@ function fcnPlayerWithMost(shtConfig, PlayerMostData, NbPlayers, shtRound){
   return PlayerMostData; 
 }
 
-
-      
-      
-   
-      
-      
-      
+  

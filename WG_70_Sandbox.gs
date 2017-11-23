@@ -41,3 +41,50 @@ function fcnTestEmail(){
   subPostLog(shtLog, MailQuota);
 
 }
+
+// **********************************************
+// function subTestContactGroup()
+//
+//
+// **********************************************
+
+function subTestContactGroup(){
+
+  var PlyrContactInfo = new Array(4);
+  
+  PlyrContactInfo[0]= 'Eric';
+  PlyrContactInfo[1]= 'Bouchard';
+  PlyrContactInfo[2]= 'ericbouchard9@gmail.com';
+//  PlyrContactInfo[3]= 'English';
+  PlyrContactInfo[3]= 'Français';
+  
+  var shtConfig = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Config');
+  
+  //  PlyrContactInfo[0]= First Name
+  //  PlyrContactInfo[1]= Last Name
+  //  PlyrContactInfo[2]= Email
+  //  PlyrContactInfo[3]= Language
+  
+  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+  
+  // Event Parameters
+  var evntLocation = cfgEvntParam[0][0];
+  var evntNameEN = cfgEvntParam[7][0];
+  var evntNameFR = cfgEvntParam[8][0];
+  var evntCntctGrpNameEN = evntLocation + " " + evntNameEN;
+  var evntCntctGrpNameFR = evntLocation + " " + evntNameFR;
+  var ContactGroupEN;
+  var ContactGroupFR;
+  
+  var Status;
+    
+  // Delete Contact Groups
+  // Get Contact Group
+  ContactGroupEN = ContactsApp.getContactGroup(evntCntctGrpNameEN);
+  ContactGroupFR = ContactsApp.getContactGroup(evntCntctGrpNameFR);
+  // If Contact Group exists, Delete it
+  if(ContactGroupEN != null) ContactsApp.deleteContactGroup(ContactGroupEN);
+  if(ContactGroupFR != null) ContactsApp.deleteContactGroup(ContactGroupFR);
+  
+  
+}
