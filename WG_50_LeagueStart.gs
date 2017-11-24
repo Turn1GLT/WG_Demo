@@ -188,7 +188,7 @@ function fcnInitializeEvent(){
     Logger.log('Contact Groups Deleted');
     
     // Update Standings Copies
-    fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, 0, 1);
+    fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, cfgColRndSht, 0, 1);
     Logger.log('Standings Updated');
     
     // Clear Players DB and Card Pools
@@ -274,7 +274,7 @@ function fcnClearMatchResults(){
     Logger.log('League Data Cleared');
     
     // Update Standings Copies
-    fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, 0, 1);
+    fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, cfgColRndSht, 0, 1);
     Logger.log('Standings Updated');
   }
 }
@@ -301,7 +301,7 @@ function fcnCrtPlayerArmyDB(){
   
   // Configuration Data
   var cfgArmyBuild = shtConfig.getRange(4,33,20,1).getValues();
-  var cfgColShtPlyr = shtConfig.getRange(5,28,16,1).getValues();
+  var cfgColShtPlyr = shtConfig.getRange(4,28,20,1).getValues();
   
   // Column Values
   var colShtPlyrName = cfgColShtPlyr[2][0];
@@ -326,7 +326,7 @@ function fcnCrtPlayerArmyDB(){
   // Players 
   var shtPlayers = ss.getSheetByName('Players'); 
   var NbPlayers = shtPlayers.getRange(2,1).getValue();
-  var PlayerNames = shtPlayers.getRange(3,colShtPlyrName, NbPlayers, 1).getValues();
+  var PlayerNames = shtPlayers.getRange(2,colShtPlyrName, NbPlayers+1, 1).getValues();
     
   var shtPlyrArmyDB;
   var PlyrName;
@@ -342,8 +342,8 @@ function fcnCrtPlayerArmyDB(){
     // Resets the Player Found flag before searching
     PlayerFound = 0;            
     // Look if player exists, if yes, skip, if not, create player
-    for(var sheet = NbSheet - 1; sheet >= 0; sheet --){
-      SheetName = SheetsArmyDB[sheet].getSheetName();
+    for(var sheet = NbSheet; sheet > 0; sheet --){
+      SheetName = SheetsArmyDB[sheet-1].getSheetName();
       Logger.log(SheetName);
       if (SheetName == PlyrName) PlayerFound = 1;
     }
@@ -355,7 +355,7 @@ function fcnCrtPlayerArmyDB(){
       // Get the Template sheet index
       NbSheet = ssArmyDB.getNumSheets();
       // Inserts Sheet before Template (Last Sheet in Spreadsheet)
-      ssArmyDB.insertSheet(PlyrName, NbSheet-2, {template: shtTemplate});
+      ssArmyDB.insertSheet(PlyrName, NbSheet-1, {template: shtTemplate});
       shtPlyrArmyDB = ssArmyDB.getSheetByName(PlyrName);
       
       // Opens the new sheet and modify appropriate data (Player Name, Header)
@@ -405,7 +405,7 @@ function fcnCrtPlayerArmyList(){
   
   // Configuration Data
   var cfgArmyBuild = shtConfig.getRange(4,33,20,1).getValues();
-  var cfgColShtPlyr = shtConfig.getRange(5,28,16,1).getValues();
+  var cfgColShtPlyr = shtConfig.getRange(4,28,30,1).getValues();
   
   // Column Values
   var colShtPlyrName = cfgColShtPlyr[2][0];
@@ -420,8 +420,8 @@ function fcnCrtPlayerArmyList(){
   // Army Lists Spreadsheet
   var ssArmyListEN = SpreadsheetApp.openById(shtIDs[3][0]);
   var ssArmyListFR = SpreadsheetApp.openById(shtIDs[4][0]);
-  var shtTemplateEN = ssArmyListEn.getSheetByName('Template');
-  var shtTemplateFR = ssArmyListFr.getSheetByName('Template');
+  var shtTemplateEN = ssArmyListEN.getSheetByName('Template');
+  var shtTemplateFR = ssArmyListFR.getSheetByName('Template');
   var shtArmyListNum;
   
   var NbSheet = ssArmyListEN.getNumSheets();
@@ -432,7 +432,7 @@ function fcnCrtPlayerArmyList(){
   // Players 
   var shtPlayers = ss.getSheetByName('Players'); 
   var NbPlayers = shtPlayers.getRange(2,1).getValue();
-  var PlayerNames = shtPlayers.getRange(3,colShtPlyrName, NbPlayers, 1).getValues();
+  var PlayerNames = shtPlayers.getRange(2,colShtPlyrName, NbPlayers+1, 1).getValues();
     
   var shtPlyrArmyListEN;
   var shtPlyrArmyListFR;
@@ -445,8 +445,9 @@ function fcnCrtPlayerArmyList(){
     // Resets the Player Found flag before searching
     PlayerFound = 0;
     // Look if player exists, if yes, skip, if not, create player
-    for(var sheet = NbSheet - 1; sheet >= 0; sheet --){
-      SheetName = SheetsArmyDB[sheet].getSheetName();
+    for(var sheet = NbSheet; sheet > 0; sheet --){
+      SheetName = SheetsArmyDB[sheet-1].getSheetName();
+      Logger.log(SheetName);
       if (SheetName == PlyrName) PlayerFound = 1;
     }
           
@@ -457,13 +458,15 @@ function fcnCrtPlayerArmyList(){
 
       // Inserts Sheet before Template (Last Sheet in Spreadsheet)
       // English Version
-      ssArmyListEN.insertSheet(PlyrName, NbSheet-2, {template: shtTemplateEN});
+      ssArmyListEN.insertSheet(PlyrName, NbSheet-1, {template: shtTemplateEN});
       shtPlyrArmyListEN = ssArmyListEN.getSheetByName(PlyrName);
+      shtPlyrArmyListEN.showSheet();
       
       // French Version
-      ssArmyListFR.insertSheet(PlyrName, NbSheet-2, {template: shtTemplateFR});
+      ssArmyListFR.insertSheet(PlyrName, NbSheet-1, {template: shtTemplateFR});
       shtPlyrArmyListFR = ssArmyListFR.getSheetByName(PlyrName);
-            
+      shtPlyrArmyListFR.showSheet();
+      
       // Get Player Army DB Values
       fcnCopyArmyDBtoArmyList(shtConfig,PlyrName);
       

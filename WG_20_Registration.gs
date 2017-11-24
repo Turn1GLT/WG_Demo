@@ -54,7 +54,7 @@ function fcnRegistrationWG(shtResponse, RowResponse){
   var PlayerName = PlayerData[2];
   
   // If Player was succesfully added, Generate Army DB, Generate Army List, Generate Startin Pool, Modify Match Report Form and Add Player to Round Booster
-  if(PlayerStatus == "New Player" && PlayerStatus != "New Player") {
+  if(PlayerStatus == "New Player") {
     // Create Player Army DB
     fcnCrtPlayerArmyDB();
     Logger.log('Army Database Generated');
@@ -76,10 +76,10 @@ function fcnRegistrationWG(shtResponse, RowResponse){
     fcnModifyReportFormWG(shtIDs, shtPlayers, evntEscalation);
     
     // Execute Ranking function in Standing tab
-    fcnUpdateStandings(ss, shtConfig);
+    fcnUpdateStandings(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExecData);
     
     // Copy all data to Standing League Spreadsheet
-    fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, 0, 1);
+    fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, cfgColRndSht, 0, 1);
     
     // Send Confirmation to New Player
     //fcnSendNewPlayerConf(shtConfig, PlayerData);
@@ -333,18 +333,12 @@ function fcnProcessArmyList(shtIDs, shtConfig, shtPlayers, shtResponse, RegRspnV
 
 function fcnModifyReportFormWG(shtIDs, shtPlayers, evntEscalation) {
 
-  var MatchFormEN = FormApp.openById(shtIDs[6][0]);
+  var MatchFormEN = FormApp.openById(shtIDs[7][0]);
   var MatchFormItemEN = MatchFormEN.getItems();
-  var MatchFormFR = FormApp.openById(shtIDs[7][0]);
+  var MatchFormFR = FormApp.openById(shtIDs[8][0]);
   var MatchFormItemFR = MatchFormFR.getItems();
   var MatchFormNbItem = MatchFormItemEN.length;
-  
-  var EscltBonusFormEN = FormApp.openById(shtIDs[12][0]);
-  var EscltBonusFormItemEN = EscltBonusFormEN.getItems();
-  var EscltBonusFormFR = FormApp.openById(shtIDs[13][0]);
-  var EscltBonusFormItemFR = EscltBonusFormFR.getItems();
-  var EscltBonusFormNbItem = EscltBonusFormItemEN.length;
-
+ 
   // Function Variables
   var ItemTitle;
   var ItemPlayerListEN;
@@ -375,6 +369,13 @@ function fcnModifyReportFormWG(shtIDs, shtPlayers, evntEscalation) {
   }
   
   if(evntEscalation == 'Enabled'){
+    
+    var EscltBonusFormEN = FormApp.openById(shtIDs[11][0]);
+    var EscltBonusFormItemEN = EscltBonusFormEN.getItems();
+    var EscltBonusFormFR = FormApp.openById(shtIDs[12][0]);
+    var EscltBonusFormItemFR = EscltBonusFormFR.getItems();
+    var EscltBonusFormNbItem = EscltBonusFormItemEN.length;
+    
     // Loops in Escalation Bonus Form to Find Players List
     for(var item = 0; item < EscltBonusFormNbItem; item++){
       ItemTitle = EscltBonusFormNbItem[item].getTitle();

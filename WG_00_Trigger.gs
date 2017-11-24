@@ -302,7 +302,7 @@ function onRoundChangeWG_Demo40K(){
     fcnUpdateStandings(ss, shtConfig);
     
     // Copy all data to League Spreadsheet
-    fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, LastRound, 0);
+    fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, cfgColRndSht, LastRound, 0);
   }
   
   // If Round Match Data is not Valid

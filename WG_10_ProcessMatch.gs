@@ -201,7 +201,7 @@ function fcnProcessMatchWG() {
         fcnUpdateStandings(ss, shtConfig);
         Logger.log('Copy to League Spreadsheets');
         // Copy all data to League Spreadsheet
-        fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, Status[2], 0);
+        fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, cfgColRndSht, Status[2], 0);
         Logger.log('------------ Standings Updated ------------');
       }
     }

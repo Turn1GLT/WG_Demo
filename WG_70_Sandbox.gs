@@ -1,3 +1,22 @@
+function testFunctionCall(){
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // Config Sheet to get options
+  var shtConfig = ss.getSheetByName('Config');
+  var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
+  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+  var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
+  var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
+  var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
+  
+  fcnUpdateStandings(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExecData);
+
+  fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, cfgColRndSht, 0, 1);
+  
+}
+
+
 function fcnTestEmail(){
 
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -85,6 +104,5 @@ function subTestContactGroup(){
   // If Contact Group exists, Delete it
   if(ContactGroupEN != null) ContactsApp.deleteContactGroup(ContactGroupEN);
   if(ContactGroupFR != null) ContactsApp.deleteContactGroup(ContactGroupFR);
-  
-  
+   
 }

@@ -348,7 +348,7 @@ function fcnPostResultRoundWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, Resu
   var colPoints = cfgColRndSht[6][0];
   var colWinPerc = cfgColRndSht[7][0];
   var colLocation = cfgColRndSht[8][0];
-  var colBalanceBonus = cfgColRndSht[10][0];
+  var colBalanceBonus = cfgColRndSht[9][0];
   
   // League Parameters
   var evntGameType = cfgEvntParam[4][0];
