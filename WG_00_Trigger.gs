@@ -50,7 +50,7 @@ function onOpenWG_Demo40K() {
   var evntEscalation = ss.getSheetByName('Config').getRange(68,2).getValue();
     
   var AnalyzeDataMenu  = [];
-  AnalyzeDataMenu.push({name: 'Analyze New Match Entry', functionName: 'fcnMainWG_Grim40K'});
+  AnalyzeDataMenu.push({name: 'Analyze New Match Entry', functionName: 'fcnProcessMatchWG'});
   AnalyzeDataMenu.push({name: 'Clear Match Results and Entries', functionName:'fcnClearMatchResults'});
   
   var LeagueMenu = [];

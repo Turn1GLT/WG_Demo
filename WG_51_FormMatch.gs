@@ -39,7 +39,8 @@ function fcnCrtMatchReportForm_WG_S() {
   var evntNbPlyrTeam = cfgEvntParam[10][0];
   var evntLocationBonus = cfgEvntParam[23][0];
   var evntMatchPtsMin = 0;
-  var evntMatchPtsMax = cfgEvntParam[29][0];
+  var evntMatchPtsMax = cfgEvntParam[28][0];
+  var evntPtsGainedMatch = cfgEvntParam[32][0];
   
   var RoundNum = shtConfig.getRange(7,2).getValue();
   var RoundArray = new Array(1); RoundArray[0] = RoundNum;
@@ -311,40 +312,42 @@ function fcnCrtMatchReportForm_WG_S() {
             //---------------------------------------------
             // WINNING POINTS
           case 'Winning Points':{ 
-            // English
-            formEN.addTextItem()
-            .setTitle("Points: Winner")
-            .setHelpText("Enter the points scored by the Winner")
-            .setValidation(PointsValidationEN)
-            .setRequired(true);
-            
-            // French
-            formFR.addTextItem()
-            .setTitle("Points: Gagnant")
-            .setHelpText("Entrez les points accumulés par le Gagnant")
-            .setValidation(PointsValidationFR)
-            .setRequired(true);
-            
+            if(evntPtsGainedMatch == 'Enabled'){
+              // English
+              formEN.addTextItem()
+              .setTitle("Points: Winner")
+              .setHelpText("Enter the points scored by the Winner")
+              .setValidation(PointsValidationEN)
+              .setRequired(true);
+              
+              // French
+              formFR.addTextItem()
+              .setTitle("Points: Gagnant")
+              .setHelpText("Entrez les points accumulés par le Gagnant")
+              .setValidation(PointsValidationFR)
+              .setRequired(true);
+            }
             break;
           }
             
             //---------------------------------------------
             // LOSING POINTS
           case 'Losing Points':{ 
-            // English
-            formEN.addTextItem()
-            .setTitle("Points: Loser")
-            .setHelpText("Enter the points scored by the Loser")
-            .setValidation(PointsValidationEN)
-            .setRequired(true);
-            
-            // French
-            formFR.addTextItem()
-            .setTitle("Points: Perdant")
-            .setHelpText("Entrez les points accumulés par le Perdant")
-            .setValidation(PointsValidationFR)
-            .setRequired(true);
-            
+            if(evntPtsGainedMatch == 'Enabled'){
+              // English
+              formEN.addTextItem()
+              .setTitle("Points: Loser")
+              .setHelpText("Enter the points scored by the Loser")
+              .setValidation(PointsValidationEN)
+              .setRequired(true);
+              
+              // French
+              formFR.addTextItem()
+              .setTitle("Points: Perdant")
+              .setHelpText("Entrez les points accumulés par le Perdant")
+              .setValidation(PointsValidationFR)
+              .setRequired(true);
+            }
             break;
           }
           default : break;

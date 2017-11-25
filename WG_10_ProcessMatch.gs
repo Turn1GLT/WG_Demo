@@ -22,26 +22,32 @@ function fcnProcessMatchWG() {
   var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
   var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
   var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
+  var cfgColMatchRep = shtConfig.getRange(4, 31, 20, 1).getValues();
   
   var exeSendEmail = cfgExecData[5][0];
   var exeTrigReport = cfgExecData[4][0];
   
-  // Columns Values and Parameters
+  // Column Values and Parameters
   var RspnDataInputs = cfgColRspSht[0][0]; // from Time Stamp to Data Processed
+  var colMatchID = cfgColRspSht[1][0];
   var colDataCopied = cfgColRspSht[2][0];
   var colNextEmptyRow = cfgColRspSht[7][0];
   var colNbUnprcsdEntries = cfgColRspSht[8][0];
-    
+  
+  var colPassword  = cfgColMatchRep[1][0]-1;
+  var colRoundNum  = cfgColMatchRep[3][0]-1;
+  var colDataPrcsd = colDataCopied-1;
+  
   // League Parameters
   var evntRoundDuration = cfgEvntParam[13][0];
-  var evntPassword = cfgEvntParam[24][0];
+  var evntPassword = cfgEvntParam[27][0];
   
   // Get Log Sheet
   var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName('Log');
 
   // Get Number of Players and Players Email
   var shtPlayers = ss.getSheetByName('Players');
-  var NbPlayers = shtPlayers.getRange('F2').getValue();
+  var NbPlayers = shtPlayers.getRange(2,1).getValue();
   var PlayersEmail = shtPlayers.getRange(3,3,NbPlayers,1).getValues();
   
   // Open Responses sheets
@@ -88,21 +94,23 @@ function fcnProcessMatchWG() {
       // Copy the new response data (from Time Stamp to Data Copied Field)
       ResponseData = shtRspnEN.getRange(RspnRow, 1, 1, RspnDataInputs).getValues();
       TimeStamp = ResponseData[0][0];
-      Password = ResponseData[0][1];
-      RoundNum = ResponseData[0][3];
-      DataCopiedStatus = ResponseData[0][9];
+      Password = ResponseData[0][colPassword];
+      RoundNum = ResponseData[0][colRoundNum];
+      DataCopiedStatus = ResponseData[0][colDataPrcsd];
       
       // Look if Password is valid
       Logger.log('Password Entered: %s', Password);
+      Logger.log('Event Password: %s', evntPassword);
       if(Password == evntPassword) PasswordValid = 1; 
-      
+            
       // Check if DataCopied Field is null and Email is Valid, we found new data to copy
       if (DataCopiedStatus == '' && PasswordValid == 1){
         Logger.log('Password Valid, Data Copied to Responses');
         DataCopiedStatus = 'Data Copied';
         shtRspnEN.getRange(RspnRow, colDataCopied).setValue(DataCopiedStatus);
         // Creates formula to update Last Entry Processed
-        shtRspnEN.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-30]",FALSE)<>"",1,"")');
+        
+        shtRspnEN.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchID +']",FALSE)<>"",1,"")');
       }
       // If TimeStamp is null, Delete Row and start over
       if (TimeStamp == '' && RspnRow < RspnMaxRowsEN) {
