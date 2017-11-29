@@ -14,7 +14,7 @@ function fcnUpdateStandings(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExe
 //  // Config Sheet to get options
 //  var shtConfig = ss.getSheetByName('Config');
 //  var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
-//  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+//  var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
 //  var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
 //  var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
 //  var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
@@ -64,13 +64,13 @@ function fcnUpdateStandings(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExe
     // If player has played enough matches, put it in InLimit Array
     if(ValCumul[i][2] >= evntRankMatchLimit){
       PlyrInLimArray[InLimit] = ValCumul[i];
-      Logger.log('In Limit - Player: %s - MP: %s',PlyrInLimArray[InLimit][0], PlyrInLimArray[InLimit][2]);
+      //Logger.log('In Limit - Player: %s - MP: %s',PlyrInLimArray[InLimit][0], PlyrInLimArray[InLimit][2]);
       InLimit++;
     }
     // If player has not played enough matches, put it in OutLimit Array
     if(ValCumul[i][2] < evntRankMatchLimit){
       PlyrOutLimArray[OutLimit] = ValCumul[i];
-      Logger.log('Out Limit - Player: %s - MP: %s',PlyrOutLimArray[OutLimit][0], PlyrOutLimArray[OutLimit][2]);
+      //Logger.log('Out Limit - Player: %s - MP: %s',PlyrOutLimArray[OutLimit][0], PlyrOutLimArray[OutLimit][2]);
       OutLimit++;
     }
   }
@@ -132,7 +132,7 @@ function fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, cfgColRndSht, RspnR
 //  // Config Sheet to get options
 //  var shtConfig = ss.getSheetByName('Config');
 //  var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
-//  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+//  var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
 //  var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
 //  var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
 //  var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();

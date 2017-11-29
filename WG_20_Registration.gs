@@ -16,7 +16,7 @@ function fcnRegistrationWG(shtResponse, RowResponse){
   var shtPlayers = ss.getSheetByName('Players');
   
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
-  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+  var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
   var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
   var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
   var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
@@ -36,7 +36,7 @@ function fcnRegistrationWG(shtResponse, RowResponse){
   PlayerData[4] = ''; // New Player Language
   PlayerData[5] = ''; // New Player Phone Number
   PlayerData[6] = ''; // New Player Team Name
-  PlayerData[7] = ''; // New Player Army List
+  PlayerData[7] = ''; // New Player Spare
   PlayerData[8] = ''; // New Player Spare
   PlayerData[9] = ''; // New Player Spare
   
@@ -73,13 +73,16 @@ function fcnRegistrationWG(shtResponse, RowResponse){
       Logger.log('Round Unit Sheet Generated');   
     }
     // Add Player to Match Report Forms
-    fcnModifyReportFormWG(shtIDs, shtPlayers, evntEscalation);
+    fcnModifyReportFormWG(shtConfig, shtIDs, shtPlayers, cfgEvntParam, evntEscalation);
+      Logger.log('Match Report Form Updated');  
     
     // Execute Ranking function in Standing tab
     fcnUpdateStandings(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExecData);
+      Logger.log('Overall Standings Updated');  
     
     // Copy all data to Standing League Spreadsheet
     fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, cfgColRndSht, 0, 1);
+      Logger.log('Standing Sheets Updated');  
     
     // Send Confirmation to New Player
     //fcnSendNewPlayerConf(shtConfig, PlayerData);
@@ -135,11 +138,11 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
   var colRspPhone =        cfgRegFormCnstrVal[ 6][1];
   var colRspTeamName =     cfgRegFormCnstrVal[ 7][1];
   var colRspTeamMembers =  cfgRegFormCnstrVal[ 8][1];
-  var colRspArmyDef =      cfgRegFormCnstrVal[ 9][1];
   var colRspArmyName =     cfgRegFormCnstrVal[10][1];
   var colRspArmyFaction1 = cfgRegFormCnstrVal[11][1];
   var colRspArmyFaction2 = cfgRegFormCnstrVal[12][1];
   var colRspArmyWarlord =  cfgRegFormCnstrVal[13][1];
+  var colRspArmyList =     cfgRegFormCnstrVal[14][1];
   
   // Player Table Columns
   var colTblEmail =        cfgRegFormCnstrVal[ 1][2];
@@ -150,11 +153,11 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
   var colTblPhone =        cfgRegFormCnstrVal[ 6][2];
   var colTblTeamName =     cfgRegFormCnstrVal[ 7][2];
   var colTblTeamMembers =  cfgRegFormCnstrVal[ 8][2];
-  var colTblArmyDef =      cfgRegFormCnstrVal[ 9][2];
   var colTblArmyName =     cfgRegFormCnstrVal[10][2];
   var colTblArmyFaction1 = cfgRegFormCnstrVal[11][2];
   var colTblArmyFaction2 = cfgRegFormCnstrVal[12][2];
   var colTblArmyWarlord =  cfgRegFormCnstrVal[13][2];
+  var colTblArmyList =     cfgRegFormCnstrVal[14][2];
   
   var colTblContact = cfgRegFormCnstrVal[18][2];
   var colTblContactGrp = cfgRegFormCnstrVal[19][2];
@@ -167,11 +170,18 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
   var PlyrLanguage = '';
   var PlyrPhone = '';
   var PlyrTeamName = '';
-  var PlyrArmyDef = '';
+  var PlyrArmyName = '';
+  var PlyrArmyFaction1 = '';
+  var PlyrArmyFaction2 = '';
+  var PlyrArmyWarlord = '';
+  var PlyrArmyList = '';
   var PlyrTeamMember1 = '';
   var PlyrTeamMember2 = '';
   var PlyrTeamMember3 = '';
   var PlyrTeamMember4 = '';
+  
+  var ArmyDefOffset = 2;
+  
   var PlyrContactInfo = new Array(4); // [0]= First Name, [1]= Last Name, [2]= Email Address, [3]= Language Preference
   
   // Email
@@ -202,11 +212,30 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
   }
   
   // Player Army Definition
-  if(colRspArmyDef != '') {
-    PlyrArmyDef = RegRspnVal[0][colRspArmyDef-1];
-    Logger.log("PlyrArmyDef: %s",PlyrArmyDef);
+  // Army Name
+  if(colRspArmyName != '') {
+    PlyrArmyName = RegRspnVal[0][colRspArmyName-ArmyDefOffset];
+    Logger.log("PlyrArmyName: %s",PlyrArmyName);
   }
   
+  // Faction Keyword 1
+  if(colRspArmyFaction1 != '') {
+    PlyrArmyFaction1 = RegRspnVal[0][colRspArmyFaction1-ArmyDefOffset];
+    Logger.log("PlyrArmyFaction1: %s",PlyrArmyFaction1);
+  }
+  
+  // Faction Keyword 2
+  if(colRspArmyFaction2 != '') {
+    PlyrArmyFaction2 = RegRspnVal[0][colRspArmyFaction2-ArmyDefOffset];
+    Logger.log("PlyrArmyFaction2: %s",PlyrArmyFaction2);
+  }
+  
+  // Player Army List Definition
+  if(colRspArmyWarlord != '') {
+    PlyrArmyWarlord = RegRspnVal[0][colRspArmyWarlord-ArmyDefOffset];
+    Logger.log("PlyrArmyWarlord: %s",PlyrArmyWarlord);
+  }
+    
   // Check if Player exists in List
   for(var i = 1; i <= NbPlayers; i++){
     if(PlyrFullName == CurrPlayers[i][0]){
@@ -248,13 +277,41 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
       Logger.log('Team Name: %s',PlyrTeamName);  Logger.log('-----------------------------');
 	}
     
-    // Army Definition
-    if(PlyrArmyDef != ""){
+    // Army Name
+    if(PlyrArmyName != ""){
+      shtPlayers.getRange(NextPlayerRow, colTblArmyName).setValue(PlyrArmyName);
+      shtExtPlayers.getRange(NextPlayerRow, colTblArmyName).setValue(PlyrArmyName);
+      Logger.log('Army Name: %s',PlyrArmyName);  Logger.log('-----------------------------');
+    }
+            
+    // Army Faction 1
+    if(PlyrArmyFaction1 != ""){
+      shtPlayers.getRange(NextPlayerRow, colTblArmyFaction1).setValue(PlyrArmyFaction1);
+      shtExtPlayers.getRange(NextPlayerRow, colTblArmyFaction1).setValue(PlyrArmyFaction1);
+      Logger.log('Army Faction 1: %s',PlyrArmyFaction1);  Logger.log('-----------------------------');
+    }
+                
+    // Army Faction 2
+    if(PlyrArmyFaction2 != ""){
+      shtPlayers.getRange(NextPlayerRow, colTblArmyFaction2).setValue(PlyrArmyFaction2);
+      shtExtPlayers.getRange(NextPlayerRow, colTblArmyFaction2).setValue(PlyrArmyFaction2);
+      Logger.log('Army Faction 2: %s',PlyrArmyFaction2);  Logger.log('-----------------------------');
+    }
+               
+    // Army Warlord
+    if(PlyrArmyWarlord != ""){
+      shtPlayers.getRange(NextPlayerRow, colTblArmyWarlord).setValue(PlyrArmyWarlord);
+      shtExtPlayers.getRange(NextPlayerRow, colTblArmyWarlord).setValue(PlyrArmyWarlord);
+      Logger.log('Army Warlord: %s',PlyrArmyWarlord);  Logger.log('-----------------------------');
+    }
+   
+    // Army List
+    if(PlyrArmyList != ""){
       // INSERT NEW FUNCTION TO PROCESS ARMY LIST INFORMATION
       // fcnProcessArmyList();
-      shtPlayers.getRange(NextPlayerRow, colTblArmyDef).setValue(PlyrArmyDef);
-      shtExtPlayers.getRange(NextPlayerRow, colTblArmyDef.setValue(PlyrArmyDef));
-      Logger.log('Army List: %s',PlyrArmyDef);  Logger.log('-----------------------------');
+      shtPlayers.getRange(NextPlayerRow, colTblArmyList).setValue(PlyrArmyList);
+      shtExtPlayers.getRange(NextPlayerRow, colTblArmyList).setValue(PlyrArmyList);
+      Logger.log('Army List: %s',PlyrArmyList);  Logger.log('-----------------------------');
     }
 
     // Team Members
@@ -289,6 +346,7 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
  
   }
   
+  // Update Player Data
   PlayerData[0] = Status;
   PlayerData[1] = NbPlayers + 1;
   PlayerData[2] = PlyrFullName;
@@ -296,7 +354,9 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
   PlayerData[4] = PlyrLanguage;
   PlayerData[5] = PlyrPhone;
   PlayerData[6] = PlyrTeamName;
-  PlayerData[7] = PlyrArmyDef;
+  PlayerData[7] = ''; // New Player Spare
+  PlayerData[8] = ''; // New Player Spare
+  PlayerData[9] = ''; // New Player Spare
   
   return PlayerData;
 }
@@ -331,7 +391,7 @@ function fcnProcessArmyList(shtIDs, shtConfig, shtPlayers, shtResponse, RegRspnV
 //
 // **********************************************
 
-function fcnModifyReportFormWG(shtIDs, shtPlayers, evntEscalation) {
+function fcnModifyReportFormWG(shtConfig, shtIDs, shtPlayers, cfgEvntParam, evntEscalation) {
 
   var MatchFormEN = FormApp.openById(shtIDs[7][0]);
   var MatchFormItemEN = MatchFormEN.getItems();
@@ -345,9 +405,7 @@ function fcnModifyReportFormWG(shtIDs, shtPlayers, evntEscalation) {
   var ItemPlayerListFR;
   var ItemPlayerChoice;
   
-  var NbPlayers = shtPlayers.getRange(2, 1).getValue();
-  var Players = shtPlayers.getRange(3, 2, NbPlayers, 1).getValues();
-  var ListPlayers = [];
+  var PlayerList = subCrtMatchRepPlyrList(shtConfig, shtPlayers, cfgEvntParam);
   
   // Loops in Match Form to Find Players List
   for(var item = 0; item < MatchFormNbItem; item++){
@@ -358,13 +416,9 @@ function fcnModifyReportFormWG(shtIDs, shtPlayers, evntEscalation) {
       ItemPlayerListEN = MatchFormItemEN[item].asListItem();
       ItemPlayerListFR = MatchFormItemFR[item].asListItem();
       
-      // Build the Player List from the Players Sheet     
-      for (i = 0; i < NbPlayers; i++){
-        ListPlayers[i] = Players[i][0];
-      }
       // Set the Player List to the Match Report Forms
-      ItemPlayerListEN.setChoiceValues(ListPlayers);
-      ItemPlayerListFR.setChoiceValues(ListPlayers);
+      ItemPlayerListEN.setChoiceValues(PlayerList);
+      ItemPlayerListFR.setChoiceValues(PlayerList);
     }
   }
   
@@ -384,14 +438,10 @@ function fcnModifyReportFormWG(shtIDs, shtPlayers, evntEscalation) {
         // Get the List Item from the Round Booster Report Form
         ItemPlayerListEN = EscltBonusFormItemEN[item].asListItem();
         ItemPlayerListFR = EscltBonusFormItemFR[item].asListItem();
-        
-        // Build the Player List from the Players Sheet     
-        for (i = 0; i < NbPlayers; i++){
-          ListPlayers[i] = Players[i][0];
-        }
+
         // Set the Player List to the Round Booster Report Forms
-        ItemPlayerListEN.setChoiceValues(ListPlayers);
-        ItemPlayerListFR.setChoiceValues(ListPlayers);
+        ItemPlayerListEN.setChoiceValues(PlayerList);
+        ItemPlayerListFR.setChoiceValues(PlayerList);
       }
     }
   }

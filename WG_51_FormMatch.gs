@@ -11,12 +11,13 @@ function fcnCrtMatchReportForm_WG_S() {
   Logger.log("Routine: fcnCrtMatchReportForm_WG_S");
   
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var shtConfig = ss.getSheetByName('Config');
+  var shtConfig =  ss.getSheetByName('Config');
   var shtPlayers = ss.getSheetByName('Players');
+  var shtTeams =   ss.getSheetByName('Teams');
     
   // Configuration Data
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
-  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+  var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
   var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
   var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
   var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
@@ -34,9 +35,9 @@ function fcnCrtMatchReportForm_WG_S() {
   // Event Properties
   var evntLocation = cfgEvntParam[0][0];
   var evntName = cfgEvntParam[7][0];
-  
   var evntFormat = cfgEvntParam[9][0];
-  var evntNbPlyrTeam = cfgEvntParam[10][0];
+  var evntTeamNbPlyr = cfgEvntParam[10][0];
+  var evntTeamMatch = cfgEvntParam[11][0];
   var evntLocationBonus = cfgEvntParam[23][0];
   var evntMatchPtsMin = 0;
   var evntMatchPtsMax = cfgEvntParam[28][0];
@@ -45,7 +46,8 @@ function fcnCrtMatchReportForm_WG_S() {
   var RoundNum = shtConfig.getRange(7,2).getValue();
   var RoundArray = new Array(1); RoundArray[0] = RoundNum;
   
-  var PlayerNum = shtConfig.getRange(13,2).getValue();
+  var NbPlyr = shtConfig.getRange(13,2).getValue();
+  var NbTeam = shtConfig.getRange(14,2).getValue();
   
   // Log Sheet
   var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName('Log');
@@ -88,9 +90,13 @@ function fcnCrtMatchReportForm_WG_S() {
   
   var Players;
   var PlayerList;
-  
   var PlayerWinList;
   var PlayerLosList;
+  var Teams;
+  var TeamList;
+  var TeamListLength;
+  var TeamWinList;
+  var TeamLosList;
   
   var ErrorVal = '';
   
@@ -134,14 +140,14 @@ function fcnCrtMatchReportForm_WG_S() {
     formFR = FormApp.create(FormNameFR).setTitle(FormNameFR)
     .setDescription("SVP, entrez les informations suivantes pour soumettre votre rapport de match");
     
-    // Transfers Players Double Array to Single Array
-    if (PlayerNum > 0){
-      Players = shtPlayers.getRange(3,2,PlayerNum,1).getValues();
-      PlayerList = new Array(PlayerNum);
-      for(var i = 0; i < PlayerNum; i++){
-        PlayerList[i] = Players[i][0];
-      }
-    }
+    // Create Player List for Match Report
+    if(NbPlyr > 0) PlayerList = subCrtMatchRepPlyrList(shtConfig, shtPlayers, cfgEvntParam);
+    
+    // Create Team List for Match Report
+    if (NbTeam > 0) TeamList = subCrtMatchRepTeamList(shtConfig, shtTeams, cfgEvntParam);
+
+      
+    
     
     // Loops in Response Columns Values and Create Appropriate Question
     for(var i = 1; i < cfgReportFormCnstrVal.length; i++){
@@ -223,14 +229,14 @@ function fcnCrtMatchReportForm_WG_S() {
             .setTitle("Winning Player")
             .setHelpText("If Game is a Tie, select your name")
             .setRequired(true);
-            if (PlayerNum > 0) PlayerWinList.setChoiceValues(PlayerList);
+            if (NbPlyr > 0) PlayerWinList.setChoiceValues(PlayerList);
             
             // French
             PlayerWinList = formFR.addListItem()
             .setTitle("Joueur Gagnant")
             .setHelpText("Si la partie est nulle, sélectionnez votre nom")
             .setRequired(true);
-            if (PlayerNum > 0) PlayerWinList.setChoiceValues(PlayerList);
+            if (NbPlyr > 0) PlayerWinList.setChoiceValues(PlayerList);
             
             break;
           }
@@ -241,14 +247,14 @@ function fcnCrtMatchReportForm_WG_S() {
             .setTitle("Losing Player")
             .setHelpText("If Game is a Tie, select your opponent")
             .setRequired(true);
-            if (PlayerNum > 0) PlayerLosList.setChoiceValues(PlayerList); 
+            if (NbPlyr > 0) PlayerLosList.setChoiceValues(PlayerList); 
             
             // French
             PlayerLosList = formFR.addListItem()
             .setTitle("Joueur Perdant")
             .setHelpText("Si la partie est nulle, sélectionnez votre adversaire")
             .setRequired(true);
-            if (PlayerNum > 0) PlayerLosList.setChoiceValues(PlayerList);
+            if (NbPlyr > 0) PlayerLosList.setChoiceValues(PlayerList);
             
             break;
           }
@@ -258,36 +264,36 @@ function fcnCrtMatchReportForm_WG_S() {
             // Winning Player List
           case 'Winning Team':{ 
             // English
-            PlayerWinList = formEN.addListItem()
+            TeamWinList = formEN.addListItem()
             .setTitle("Winning Team")
             .setHelpText("If Game is a Tie, select your team")
             .setRequired(true);
-            if (PlayerNum > 0) PlayerWinList.setChoiceValues(PlayerList);
+            if (NbTeam > 0) TeamWinList.setChoiceValues(TeamList);
             
             // French
-            PlayerWinList = formFR.addListItem()
+            TeamWinList = formFR.addListItem()
             .setTitle("Équipe Gagnante")
             .setHelpText("Si la partie est nulle, sélectionnez votre équipe")
             .setRequired(true);
-            if (PlayerNum > 0) PlayerWinList.setChoiceValues(PlayerList);
+            if (NbTeam > 0) TeamWinList.setChoiceValues(TeamList);
             
             break;
           }
             // Losing Player List
           case 'Losing Team':{ 
             // English
-            PlayerLosList = formEN.addListItem()
+            TeamLosList = formEN.addListItem()
             .setTitle("Losing Team")
             .setHelpText("If Game is a Tie, select the opposing team")
             .setRequired(true);
-            if (PlayerNum > 0) PlayerLosList.setChoiceValues(PlayerList); 
+            if (NbTeam > 0) TeamLosList.setChoiceValues(TeamList); 
             
             // French
-            PlayerLosList = formFR.addListItem()
+            TeamLosList = formFR.addListItem()
             .setTitle("Équipe Perdante")
             .setHelpText("Si la partie est nulle, sélectionnez l'équipe adverse")
             .setRequired(true);
-            if (PlayerNum > 0) PlayerLosList.setChoiceValues(PlayerList);
+            if (NbTeam > 0) TeamLosList.setChoiceValues(TeamList);
             
             break;
           }
@@ -298,13 +304,13 @@ function fcnCrtMatchReportForm_WG_S() {
             // English
             formEN.addMultipleChoiceItem()
             .setTitle("Game is a Tie?")
-            .setRequired(true)
+            .setHelpText("OPTIONAL")
             .setChoiceValues(["No","Yes"]);
             
             // French
             formFR.addMultipleChoiceItem()
             .setTitle("Partie est Nulle?")
-            .setRequired(true)
+            .setHelpText("OPTIONNEL")
             .setChoiceValues(["Non","Oui"]);
             break;
           }

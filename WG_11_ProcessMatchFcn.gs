@@ -11,14 +11,34 @@
 //
 // **********************************************
 
-function fcnFindDuplicateData(ss, shtRspn, RspnDataInputs, ResponseData, RspnRow, RspnMaxRows, shtTest) {
+function fcnFindDuplicateData(ss, shtRspn, cfgColRspSht, cfgColMatchRep, RspnDataInputs, ResponseData, RspnRow, RspnMaxRows) {
   
   Logger.log("Routine: fcnFindDuplicateData");
+    
+  // Column Values for Data in Response Sheet
   
-  // Response Data
-  var RspnRound = ResponseData[0][3];
-  var RspnWinr = ResponseData[0][4];
-  var RspnLosr = ResponseData[0][5];
+  var colArrayMatchID = cfgColRspSht[1][0]-1;
+  var colArrayPrcsd = cfgColRspSht[2][0]-1;
+  
+  var colArrayPwd =     cfgColMatchRep[ 1][0]-1;
+  var colArrayLoc =     cfgColMatchRep[ 2][0]-1;
+  var colArrayRnd =     cfgColMatchRep[ 3][0]-1;
+  var colArrayWinPlyr = cfgColMatchRep[ 4][0]-1;
+  var colArrayLosPlyr = cfgColMatchRep[ 5][0]-1;
+  var colArrayTie =     cfgColMatchRep[ 6][0]-1;
+  var colArrayWinPts =  cfgColMatchRep[ 7][0]-1;
+  var colArrayLosPts =  cfgColMatchRep[ 8][0]-1;
+  var colArrayWinTeam = cfgColMatchRep[ 9][0]-1;
+  var colArrayLosTeam = cfgColMatchRep[10][0]-1;
+  var colArrayPlyrSub = cfgColMatchRep[19][0]-1;
+  
+  // Values from Response Data
+  var RspnDataPwd        = ResponseData[0][colArrayPwd]; // Password
+  var RspnDataLocation   = ResponseData[0][colArrayLoc]; // Match Location (Store Yes or No)
+  var RspnDataRoundNum   = ResponseData[0][colArrayRnd]; // Round Number
+  var RspnDataWinPlyr    = ResponseData[0][colArrayWinPlyr]; // Winning Player
+  var RspnDataLosPlyr    = ResponseData[0][colArrayLosPlyr]; // Losing Player
+  var RspnDataTie        = ResponseData[0][colArrayTie]; // Tie
 
   // Entry Data
   var EntryRound;
@@ -36,21 +56,21 @@ function fcnFindDuplicateData(ss, shtRspn, RspnDataInputs, ResponseData, RspnRow
   for (var EntryRow = 1; EntryRow <= RspnMaxRows; EntryRow++){
     
     // Filters only entries of the same Round the response was posted
-    if (EntryRoundData[EntryRow][0] == RspnRound){
+    if (EntryRoundData[EntryRow][0] == RspnDataRoundNum){
       
       // Gets Entry Data to analyze
       EntryData = shtRspn.getRange(EntryRow+1, 1, 1, RspnDataInputs).getValues();
       
-      EntryRound = EntryData[0][3];
-      EntryWinr = EntryData[0][4];
-      EntryLosr = EntryData[0][5];
-      EntryMatchID = EntryData[0][8];
-      EntryPrcssd = EntryData[0][9];
+      EntryRound = EntryData[0][colArrayRnd];
+      EntryWinr = EntryData[0][colArrayWinPlyr];
+      EntryLosr = EntryData[0][colArrayLosPlyr];
+      EntryMatchID = EntryData[0][colArrayMatchID];
+      EntryPrcssd = EntryData[0][colArrayPrcsd];
             
       // If both rows are different, the Data Entry was processed and was compiled in the Match Results (Match as a Match ID), Look for player entry combination
       if (EntryRow != RspnRow && EntryPrcssd == 1 && EntryMatchID != ''){
         // If combination of players are the same between the entry data and the new response data, duplicate entry was found. Save Row index
-        if ((RspnWinr == EntryWinr && RspnLosr == EntryLosr) || (RspnWinr == EntryLosr && RspnLosr == EntryWinr)){
+        if ((RspnDataWinPlyr == EntryWinr && RspnDataLosPlyr == EntryLosr) || (RspnDataWinPlyr == EntryLosr && RspnDataLosPlyr == EntryWinr)){
           DuplicateRow = EntryRow + 1;
           EntryRow = RspnMaxRows + 1;
         }
@@ -349,10 +369,11 @@ function fcnPostResultRoundWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, Resu
   var colWinPerc = cfgColRndSht[7][0];
   var colLocation = cfgColRndSht[8][0];
   var colBalanceBonus = cfgColRndSht[9][0];
+  var colMatchup = cfgColRndSht[11][0];
   
   // League Parameters
   var evntGameType = cfgEvntParam[4][0];
-  var evntBalance = cfgEvntParam[21][0];
+  var evntBalanceOpt   = cfgEvntParam[21][0];
   var evntBalanceBonus = cfgEvntParam[22][0];
   
   // function variables
@@ -440,15 +461,27 @@ function fcnPostResultRoundWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, Resu
     RoundLosrLoc = RoundLosrLoc + 1;
   }
   
+  // Update Round Matchups
+  // Winning Player
+  RoundWinrMatchup = shtRoundRslt.getRange(RoundWinrRow,colMatchup).getValue();
+  if(RoundWinrMatchup == '') RoundWinrMatchup = MatchDataLosr;
+  else RoundWinrMatchup += ', ' + MatchDataLosr;
+  
+  // Losing Player
+  RoundLosrMatchup = shtRoundRslt.getRange(RoundLosrRow,colMatchup).getValue();
+  if(RoundLosrMatchup == '') RoundLosrMatchup = MatchDataWinr;
+  else RoundLosrMatchup += ', ' + MatchDataWinr;
+  
   // Update the Round Results Sheet
   shtRoundRslt.getRange(RoundWinrRow,colWin,1,3).setValues(RoundWinrRec);
   shtRoundRslt.getRange(RoundWinrRow,colLocation).setValue(RoundWinrLoc);
+  shtRoundRslt.getRange(RoundWinrRow,colMatchup).setValue(RoundWinrMatchup);
   shtRoundRslt.getRange(RoundLosrRow,colWin,1,3).setValues(RoundLosrRec);
   shtRoundRslt.getRange(RoundLosrRow,colLocation).setValue(RoundLosrLoc);
-  
+  shtRoundRslt.getRange(RoundLosrRow,colMatchup).setValue(RoundLosrMatchup);
 
   // If Game Type is Wargame
-  if (RoundMatchTie == 0 && evntBalance == 'Enabled'){
+  if (RoundMatchTie == 0 && evntBalanceOpt == 'Enabled'){
     // Get Loser Amount of Power Level Bonus and Increase by value from Config file
     LosrPowerLevel = shtRoundRslt.getRange(RoundLosrRow,colBalanceBonus).getValue() + evntBalanceBonus;
     shtRoundRslt.getRange(RoundLosrRow,colBalanceBonus).setValue(LosrPowerLevel);

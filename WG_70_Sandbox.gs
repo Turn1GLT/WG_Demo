@@ -5,7 +5,7 @@ function testFunctionCall(){
   // Config Sheet to get options
   var shtConfig = ss.getSheetByName('Config');
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
-  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+  var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
   var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
   var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
   var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
@@ -84,7 +84,7 @@ function subTestContactGroup(){
   //  PlyrContactInfo[2]= Email
   //  PlyrContactInfo[3]= Language
   
-  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+  var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
   
   // Event Parameters
   var evntLocation = cfgEvntParam[0][0];

@@ -18,11 +18,11 @@ function fcnProcessMatchWG() {
   // Config Sheet to get options
   var shtConfig = ss.getSheetByName('Config');
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
-  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+  var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
   var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
   var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
   var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
-  var cfgColMatchRep = shtConfig.getRange(4, 31, 20, 1).getValues();
+  var cfgColMatchRep = shtConfig.getRange(4,31,20,1).getValues();
   
   var exeSendEmail = cfgExecData[5][0];
   var exeTrigReport = cfgExecData[4][0];
@@ -34,9 +34,9 @@ function fcnProcessMatchWG() {
   var colNextEmptyRow = cfgColRspSht[7][0];
   var colNbUnprcsdEntries = cfgColRspSht[8][0];
   
-  var colPassword  = cfgColMatchRep[1][0]-1;
-  var colRoundNum  = cfgColMatchRep[3][0]-1;
-  var colDataPrcsd = colDataCopied-1;
+  var colArrayPassword  = cfgColMatchRep[1][0]-1;
+  var colArrayRoundNum  = cfgColMatchRep[3][0]-1;
+  var colArrayDataPrcsd = colDataCopied-1;
   
   // League Parameters
   var evntRoundDuration = cfgEvntParam[13][0];
@@ -82,7 +82,7 @@ function fcnProcessMatchWG() {
   if(exeTrigReport == 'Enabled'){
 
     Logger.log('------- New Match Report Received -------');
-    var MatchProcessLog = 'TCG Match Process Log - ' + shtConfig.getRange(11,2).getValue() + ' ' + shtConfig.getRange(13,2).getValue() + '- Entry Row ' + RspnRow;
+    var MatchProcessLog = 'TCG Match Process Log - ' + shtConfig.getRange(4,2).getValue() + ' - Entry Row EN: ' + RspnNextRowEN + ' - Entry Row FR: ' + RspnNextRowFR;
     Logger.log(MatchProcessLog);
     
     EntriesProcessing = shtRspn.getRange(1, colNbUnprcsdEntries).getValue();
@@ -91,43 +91,50 @@ function fcnProcessMatchWG() {
     // Look for Unprocessed Data in Responses EN
     for (RspnRow = RspnNextRowEN; RspnRow <= RspnMaxRowsEN; RspnRow++){
       
+      Logger.log('Row: %s',RspnRow)
       // Copy the new response data (from Time Stamp to Data Copied Field)
       ResponseData = shtRspnEN.getRange(RspnRow, 1, 1, RspnDataInputs).getValues();
       TimeStamp = ResponseData[0][0];
-      Password = ResponseData[0][colPassword];
-      RoundNum = ResponseData[0][colRoundNum];
-      DataCopiedStatus = ResponseData[0][colDataPrcsd];
+      Password = ResponseData[0][colArrayPassword];
+      RoundNum = ResponseData[0][colArrayRoundNum];
+      DataCopiedStatus = ResponseData[0][colArrayDataPrcsd];
       
-      // Look if Password is valid
-      Logger.log('Password Entered: %s', Password);
-      Logger.log('Event Password: %s', evntPassword);
-      if(Password == evntPassword) PasswordValid = 1; 
-            
-      // Check if DataCopied Field is null and Email is Valid, we found new data to copy
-      if (DataCopiedStatus == '' && PasswordValid == 1){
-        Logger.log('Password Valid, Data Copied to Responses');
-        DataCopiedStatus = 'Data Copied';
-        shtRspnEN.getRange(RspnRow, colDataCopied).setValue(DataCopiedStatus);
-        // Creates formula to update Last Entry Processed
-        
-        shtRspnEN.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchID +']",FALSE)<>"",1,"")');
-      }
       // If TimeStamp is null, Delete Row and start over
-      if (TimeStamp == '' && RspnRow < RspnMaxRowsEN) {
+      if(TimeStamp == '' && RspnRow < RspnMaxRowsEN) {
         shtRspnEN.deleteRow(RspnRow);
         RspnRow = RspnNextRowEN - 1;
+        RspnMaxRowsEN = shtRspnEN.getMaxRows();
       }
-      // If Email is not Valid, update Data Copied and Next Empty Row Cells
-      if (PasswordValid == 0){
-        Logger.log('Password Not Valid');
-        DataCopiedStatus = 'Password Not Valid';
-        shtRspnEN.getRange(RspnRow, colDataCopied).setValue(DataCopiedStatus);
-        // Creates formula to update Last Entry Processed
-        shtRspnEN.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-30]",FALSE)<>"",1,"")');
-      }
-      // If Data is copied or Email is not Valid or TimeStamp is null, Exit loop Responses EN to process data
-      if (DataCopiedStatus == 'Data Copied' || DataCopiedStatus == 'Password Not Valid' || (TimeStamp == '' && RspnRow >= RspnMaxRowsEN)) {
-        RspnRow = RspnMaxRowsEN + 1;
+
+      // If Timestamp is not null, analyze response data
+      if(TimeStamp != ''){
+        // Look if Password is valid
+        Logger.log('Password Entered: %s', Password);
+        Logger.log('Event Password: %s', evntPassword);
+        if(Password == evntPassword) PasswordValid = 1; 
+        
+        // Check if DataCopied Field is null and Password is Valid, we found new data to copy
+        if (DataCopiedStatus == '' && PasswordValid == 1){
+          Logger.log('Password Valid, Data Copied to Responses');
+          DataCopiedStatus = 'Data Copied';
+          shtRspnEN.getRange(RspnRow, colDataCopied).setValue(DataCopiedStatus);
+          // Creates formula to update Last Entry Processed
+          shtRspnEN.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchID +']",FALSE)<>"",1,"")');
+        }
+        
+        // If Password is not Valid, update Data Copied and Next Empty Row Cells
+        if (TimeStamp != '' && PasswordValid == 0){
+          Logger.log('Password Not Valid');
+          DataCopiedStatus = 'Password Not Valid';
+          shtRspnEN.getRange(RspnRow, colDataCopied).setValue(DataCopiedStatus);
+          // Creates formula to update Last Entry Processed
+          shtRspnEN.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchID +']",FALSE)<>"",1,"")');
+        }
+        // If Data is copied or Password is not Valid or TimeStamp is null, Exit loop Responses EN and Loop through Responses FR
+        if (DataCopiedStatus == 'Data Copied' || DataCopiedStatus == 'Password Not Valid' || (TimeStamp == '' && RspnRow >= RspnMaxRowsEN)) {
+          RspnRow = RspnMaxRowsEN + 1;
+          if(TimeStamp == '' && RspnRow >= RspnMaxRowsEN) DataCopiedStatus = 0;
+        }
       }
     }
     
@@ -137,41 +144,47 @@ function fcnProcessMatchWG() {
       // Look for Unprocessed Data in Responses FR
       for (RspnRow = RspnNextRowFR; RspnRow <= RspnMaxRowsFR; RspnRow++){
         
-        // Copy the new response data (from Time Stamp to Data Copied Field)
+      // Copy the new response data (from Time Stamp to Data Copied Field)
         ResponseData = shtRspnFR.getRange(RspnRow, 1, 1, RspnDataInputs).getValues();
         TimeStamp = ResponseData[0][0];
-        Password = ResponseData[0][1];
-        RoundNum = ResponseData[0][3];
-        DataCopiedStatus = ResponseData[0][9];
-        
-        // Look if Password is valid
-        Logger.log('Password Entered: %s', Password);
-        if(Password == evntPassword) PasswordValid = 1;
-        
-        // Check if DataCopied Field is null and Email is Valid, we found new data to copy
-        if (DataCopiedStatus == '' && PasswordValid == 1){
-          Logger.log('Password Valid, Data Copied to Responses');
-          DataCopiedStatus = 'Data Copied';
-          shtRspnFR.getRange(RspnRow, colDataCopied).setValue(DataCopiedStatus);
-          // Creates formula to update Last Entry Processed
-          shtRspnFR.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-30]",FALSE)<>"",1,"")');
-        }
+        Password = ResponseData[0][colArrayPassword];
+        RoundNum = ResponseData[0][colArrayRoundNum];
+        DataCopiedStatus = ResponseData[0][colArrayDataPrcsd];
+
         // If TimeStamp is null, Delete Row and start over
         if (TimeStamp == '' && RspnRow < RspnMaxRowsFR) {
           shtRspnFR.deleteRow(RspnRow);
           RspnRow = RspnNextRowFR - 1;
+          RspnMaxRowsFR = shtRspnFR.getMaxRows();
         }
-        // If Email is not Valid, update Data Copied and Next Empty Row Cells
-        if (PasswordValid == 0){
-          Logger.log('Password Not Valid');
-          DataCopiedStatus = 'Password Not Valid';
-          shtRspnFR.getRange(RspnRow, colDataCopied).setValue(DataCopiedStatus);
-          // Creates formula to update Last Entry Processed
-          shtRspnFR.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-30]",FALSE)<>"",1,"")');
-        }
-        // If Data is copied, Exit loop Responses FR to process data
-        if (DataCopiedStatus == 'Data Copied' || DataCopiedStatus == 'Password Not Valid' || (TimeStamp == '' && RspnRow >= RspnMaxRowsFR)) {
-          RspnRow = RspnMaxRowsFR + 1;
+        
+        // If Timestamp is not null, analyze response data
+        if(TimeStamp != ''){
+          // Look if Password is valid
+          Logger.log('Password Entered: %s', Password);
+          if(Password == evntPassword) PasswordValid = 1;
+          
+          // Check if DataCopied Field is null and Password is Valid, we found new data to copy
+          if (TimeStamp != '' && DataCopiedStatus == '' && PasswordValid == 1){
+            Logger.log('Password Valid, Data Copied to Responses');
+            DataCopiedStatus = 'Data Copied';
+            shtRspnFR.getRange(RspnRow, colDataCopied).setValue(DataCopiedStatus);
+            // Creates formula to update Last Entry Processed
+            shtRspnFR.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchID +']",FALSE)<>"",1,"")');
+          }
+          
+          // If Password is not Valid, update Data Copied and Next Empty Row Cells
+          if (TimeStamp != '' && PasswordValid == 0){
+            Logger.log('Password Not Valid');
+            DataCopiedStatus = 'Password Not Valid';
+            shtRspnFR.getRange(RspnRow, colDataCopied).setValue(DataCopiedStatus);
+            // Creates formula to update Last Entry Processed
+            shtRspnFR.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchID +']",FALSE)<>"",1,"")');
+          }
+          // If Data is copied or Password is not Valid or TimeStamp is null, Exit loop Responses FR to process data
+          if (DataCopiedStatus == 'Data Copied' || DataCopiedStatus == 'Password Not Valid' || (TimeStamp == '' && RspnRow >= RspnMaxRowsFR)) {
+            RspnRow = RspnMaxRowsFR + 1;
+          }
         }
       }
     }
@@ -185,8 +198,8 @@ function fcnProcessMatchWG() {
       Logger.log('Match Data Copied for Players: %s, %s',ResponseData[0][4],ResponseData[0][5]);
       
       // Copy Formula to detect if an entry is currently processing
-      shtRspn.getRange(RspnNextRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-30]",FALSE)<>"",1,"")');
-      shtRspn.getRange(RspnNextRow, colNbUnprcsdEntries).setValue('=IF(AND(INDIRECT("R[0]C[-31]",FALSE)<>"",INDIRECT("R[0]C[-4]",FALSE)<>2),1,"")');
+      shtRspn.getRange(RspnNextRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchID +']",FALSE)<>"",1,"")');
+      shtRspn.getRange(RspnNextRow, colNbUnprcsdEntries).setValue('=IF(AND(INDIRECT("R[0]C[-'+ colNextEmptyRow +']",FALSE)<>"",INDIRECT("R[0]C[-4]",FALSE)<>2),1,"")');
       
       // Troubleshoot
       EntriesProcessing = shtRspn.getRange(1, colNbUnprcsdEntries).getValue();
@@ -196,7 +209,7 @@ function fcnProcessMatchWG() {
       if (EntriesProcessing == 1){
         // Execute Game Results Analysis for as long as there are unprocessed entries
         while (EntriesProcessing >= 1) {
-          Status = fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExecData, shtRspn);
+          Status = fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgColMatchRep, cfgExecData, shtRspn);
           EntriesProcessing = shtRspn.getRange(1, colNbUnprcsdEntries).getValue();
           Logger.log('Nb of Entries Pending After Processing: %s',EntriesProcessing)
         }
@@ -206,7 +219,7 @@ function fcnProcessMatchWG() {
         Logger.log('--------- Updating Standings ---------');
         Logger.log('Update Standings');
         // Execute Ranking function in Standing tab
-        fcnUpdateStandings(ss, shtConfig);
+        fcnUpdateStandings(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExecData);
         Logger.log('Copy to League Spreadsheets');
         // Copy all data to League Spreadsheet
         fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, cfgColRndSht, Status[2], 0);
@@ -216,12 +229,12 @@ function fcnProcessMatchWG() {
   }
   
   // Send Error Email to sender if Email is not valid
-  if(PasswordValid == 0){
-    Logger.log('Submission Email Not Valid : %s',Email);
-    // Get Emails from both players
-    EmailAddresses = subGetEmailAddressDbl(ss, EmailAddresses, ResponseData[0][4], ResponseData[0][5]);
-    fcnMatchReportPwdError(shtConfig, EmailAddresses);
-  }
+//  if(PasswordValid == 0){
+//    Logger.log('Password Not Valid : %s', Password);
+//    // Get Emails from both players
+//    EmailAddresses = subGetEmailAddressDbl(ss, EmailAddresses, ResponseData[0][4], ResponseData[0][5]);
+//    fcnMatchReportPwdError(shtConfig, EmailAddresses);
+//  }
   
   // Post Log to Log Sheet
   subPostLog(shtLog,Logger.getLog());
@@ -237,16 +250,18 @@ function fcnProcessMatchWG() {
 //
 // **********************************************
 
-function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExecData, shtRspn) {
+function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgColMatchRep, cfgExecData, shtRspn) {
   
   Logger.log("Routine: fcnAnalyzeResultsWG");
   
   // Data from Configuration File
+    
   // Code Execution Options
   var exeDualSubmission = cfgExecData[0][0]; // If Dual Submission is disabled, look for duplicate instead
   var exePostResult = cfgExecData[1][0];
   var exePlyrMatchValidation = cfgExecData[2][0];
-  var exeSendEmail = cfgExecData[6][0];
+  var exeSendEmail = cfgExecData[5][0];
+  var exeUpdatePlyrDB = cfgExecData[6][0];
   
   // Columns Values and Parameters
   var RspnDataInputs = cfgColRspSht[0][0]; // from Time Stamp to Data Processed
@@ -258,7 +273,21 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
   var colMatchIDLastVal = cfgColRspSht[6][0];
   var colNextEmptyRow = cfgColRspSht[7][0];
   var colNbUnprcsdEntries = cfgColRspSht[8][0];
-
+  
+  // Column Values for Data in Response Sheet
+  var colArrayDataPrcsd = colPrcsd-1;
+  var colArrayPwd =     cfgColMatchRep[ 1][0]-1;
+  var colArrayLoc =     cfgColMatchRep[ 2][0]-1;
+  var colArrayRnd =     cfgColMatchRep[ 3][0]-1;
+  var colArrayWinPlyr = cfgColMatchRep[ 4][0]-1;
+  var colArrayLosPlyr = cfgColMatchRep[ 5][0]-1;
+  var colArrayTie =     cfgColMatchRep[ 6][0]-1;
+  var colArrayWinPts =  cfgColMatchRep[ 7][0]-1;
+  var colArrayLosPts =  cfgColMatchRep[ 8][0]-1;
+  var colArrayWinTeam = cfgColMatchRep[ 9][0]-1;
+  var colArrayLosTeam = cfgColMatchRep[10][0]-1;
+  var colArrayPlyrSub = cfgColMatchRep[19][0]-1;
+  
   // League Parameters
   var evntGameType = cfgEvntParam[4][0];
   var evntRoundDuration = cfgEvntParam[13][0];
@@ -271,13 +300,18 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
   var RspnMaxRows = shtRspn.getMaxRows();
   var RspnMaxCols = shtRspn.getMaxColumns();
   var RspnNextRowPrcss = shtRspn.getRange(1, colNextEmptyRow).getValue() - shtRspn.getRange(1, colNbUnprcsdEntries).getValue();
-  var RspnPlyrSubmit;
-  var RspnLocation;
-  var RspnRoundNum;
+  var RspnDataPlyrSubmit;
+  var RspnDataPwd
+  var RspnDataLocation;
+  var RspnDataRoundNum;
   var RspnDataRound;
-  var RspnDataWinr;
-  var RspnDataLosr;
+  var RspnDataWinPlyr;
+  var RspnDataLosPlyr;
+  var RspnDataWinT;
+  var RspnDataLosT;
   var RspnDataTie;
+  var RspnDataWinPts;
+  var RspnDataLosPts;
   var RspnDataPrcssd = 0;
   var ResponseData;
   var MatchingRspnData;
@@ -336,21 +370,22 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
     ResponseData = shtRspn.getRange(RspnRow, 1, 1, RspnDataInputs).getValues();
     
     // Values from Response Data
-    RspnDataPrcssd = ResponseData[0][9];
-    RspnPlyrSubmit = ResponseData[0][1]; // Player Submitting
-    RspnLocation   = ResponseData[0][2]; // Match Location (Store Yes or No)
-    RspnRoundNum    = ResponseData[0][3]; // Round Number
-    RspnDataWinr   = ResponseData[0][4]; // Winning Player
-    RspnDataLosr   = ResponseData[0][5]; // Losing Player
-    RspnDataTie    = ResponseData[0][6]; // Tie
+    RspnDataPwd        = ResponseData[0][colArrayPwd]; // Password
+    RspnDataLocation   = ResponseData[0][colArrayLoc]; // Match Location (Store Yes or No)
+    RspnDataRoundNum   = ResponseData[0][colArrayRnd]; // Round Number
+    RspnDataWinPlyr    = ResponseData[0][colArrayWinPlyr]; // Winning Player
+    RspnDataLosPlyr    = ResponseData[0][colArrayLosPlyr]; // Losing Player
+    RspnDataTie        = ResponseData[0][colArrayTie]; // Tie
+    RspnDataPrcssd     = ResponseData[0][colArrayDataPrcsd];
+    RspnDataPlyrSubmit = ResponseData[0][colArrayPlyrSub];
     
-    Logger.log('Players: %s, %s',ResponseData[0][4],ResponseData[0][5]);
+    Logger.log('Players: %s, %s',ResponseData[0][colArrayWinPlyr],ResponseData[0][colArrayLosPlyr]);
     
     // If Round number is not empty and Processed is empty, Response Data needs to be processed
-    if (RspnRoundNum != '' && RspnDataPrcssd == ''){
+    if (RspnDataRoundNum != '' && RspnDataPrcssd == ''){
       
       // If both Players in the response are different, continue
-      if (RspnDataWinr != RspnDataLosr){
+      if (RspnDataWinPlyr != RspnDataLosPlyr){
         
         // Updates the Status while processing
         if(Status[0] >= 0){
@@ -371,10 +406,11 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
         
         // Look for Duplicate Entry (looks in all entries with MatchID and combination of Round Number, Winner and Loser) 
         // Real code will look at Player Posting Data as well
-        DuplicateRspn = fcnFindDuplicateData(ss, shtRspn, RspnDataInputs, ResponseData, RspnRow, RspnMaxRows, shtTest);  
-        
+        DuplicateRspn = fcnFindDuplicateData(ss, shtRspn, cfgColRspSht, cfgColMatchRep, RspnDataInputs, ResponseData, RspnRow, RspnMaxRows);  
         if(DuplicateRspn == 0) Logger.log('No Duplicate Found');
         if(DuplicateRspn > 0 ) Logger.log('Duplicate Found at Row: %s', DuplicateRspn);
+        
+        Logger.log("Routine: fcnAnalyzeResultsWG");
         
         // FindDuplicateEntry function was executed properly and didn't find any Duplicate entry, continue analyzing the response data
         if (DuplicateRspn == 0){
@@ -389,6 +425,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
             }
             // function returns row where the matching data was found
             MatchingRspn = fcnFindMatchingData(ss, cfgColRspSht, cfgExecData, shtRspn, ResponseData, RspnRow, RspnMaxRows, shtTest);
+            Logger.log("Routine: fcnAnalyzeResultsWG");
             if (MatchingRspn < 0) DuplicateRspn = 0 - MatchingRspn;
           }
           
@@ -415,6 +452,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
               // Execute function to populate Match Result Sheet from Response Sheet
               MatchData = fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExecData, shtRspn, ResponseData, MatchingRspnData, MatchID, MatchData, shtTest);
               MatchPostStatus = MatchData[25][0];
+              Logger.log("Routine: fcnAnalyzeResultsWG");
               
               Logger.log('Match Post Status: %s',MatchPostStatus);
               
@@ -436,7 +474,9 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
                     Status[1] = subUpdateStatus(shtRspn, RspnRow, colStatus, colStatusMsg, Status[0]);
                   }
                   // Update Player Army DB and Army List
-                  fcnUpdateArmyDB(shtConfig, RspnDataLosr, MatchData[5][2], shtTest); // MatchData[5][2] = Loser Power Level Bonus
+                  Logger.log("LosingPlayer Update DB: %s",RspnDataLosPlyr);
+                  if(exeUpdatePlyrDB == 'Enabled') fcnUpdateArmyDB(shtConfig, RspnDataLosPlyr, MatchData[5][2], shtTest); // MatchData[5][2] = Loser Power Level Bonus
+                  Logger.log("Routine: fcnAnalyzeResultsWG");
                 }
               }
               
@@ -521,7 +561,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
       } 
       
       // If Both Players are the same, report error
-      if (RspnDataWinr == RspnDataLosr){
+      if (RspnDataWinPlyr == RspnDataLosPlyr){
         
         // Updates the Match ID to an empty value 
         MatchID = '';
@@ -544,11 +584,11 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
           Status[1] = subUpdateStatus(shtRspn, RspnRow, colStatus, colStatusMsg, Status[0]);
         }
         // Get Email addresses from Config File
-        EmailAddresses = subGetEmailAddressDbl(ss, EmailAddresses, RspnDataWinr, RspnDataLosr);
+        EmailAddresses = subGetEmailAddressDbl(ss, EmailAddresses, RspnDataWinPlyr, RspnDataLosPlyr);
+        Logger.log("Routine: fcnAnalyzeResultsWG");
         
         // Send email to players. Each function analyzes language preferences
-        fcnSendConfirmEmailEN(shtConfig, EmailAddresses, MatchData);
-        fcnSendConfirmEmailFR(shtConfig, EmailAddresses, MatchData);
+        fcnSendConfirmEmail(shtConfig, EmailAddresses, MatchData);
         Logger.log('Confirmation Emails Sent');
       }
       
@@ -567,11 +607,10 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
         MatchData[6][0] = ResponseData[0][6];  // Game is a Tie
         
         // Get Email addresses from Config File
-        EmailAddresses = subGetEmailAddressDbl(ss, EmailAddresses, RspnDataWinr, RspnDataLosr);
+        EmailAddresses = subGetEmailAddressDbl(ss, EmailAddresses, RspnDataWinPlyr, RspnDataLosPlyr);
         
         // Send Error Message, each function analyzes language preferences
-        fcnSendErrorEmailEN(shtConfig, EmailAddresses, MatchData, MatchID, Status);
-        fcnSendErrorEmailFR(shtConfig, EmailAddresses, MatchData, MatchID, Status);
+        fcnSendErrorEmail(shtConfig, EmailAddresses, MatchData, MatchID, Status);
         Logger.log('Error Emails Sent');
       }
       
@@ -607,7 +646,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
             
     }
     // When Round Number is empty or if the Response Data was processed, we have reached the end of the list, then exit the loop
-    if(RspnRoundNum == '' || RspnDataPrcssd == 1) {
+    if(RspnDataRoundNum == '' || RspnDataPrcssd == 1) {
       Logger.log('Response Loop exit at Row: %s',RspnRow)
       RspnRow = RspnMaxRows + 1;
     }

@@ -98,7 +98,7 @@ function onRoundChangeWG_Demo40K(){
   // Configuration Parameters
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
   var cfgUrl = shtConfig.getRange(4,11,20,1).getValues();
-  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+  var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
   var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
   var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
   var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
@@ -299,7 +299,7 @@ function onRoundChangeWG_Demo40K(){
     MailApp.sendEmail(GenRecipients, EmailDataFR[0][1],"",{bcc:EmailDataFR[0][0],name:'Turn 1 Gaming League Manager',htmlBody:EmailDataFR[0][2]});
     
     // Execute Ranking function in Standing tab
-    fcnUpdateStandings(ss, shtConfig);
+    fcnUpdateStandings(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExecData);
     
     // Copy all data to League Spreadsheet
     fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, cfgColRndSht, LastRound, 0);

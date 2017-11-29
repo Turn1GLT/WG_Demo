@@ -16,7 +16,7 @@ function fcnCrtRegstnForm_WG() {
     
   // Configuration Data
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
-  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+  var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
   var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
   var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
   var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
@@ -137,7 +137,9 @@ function fcnCrtRegstnForm_WG() {
     for(var i = 1; i < cfgRegFormCnstrVal.length; i++){
       // Check for Question Order in Response Column Value in Configuration File
       if(QuestionOrder == cfgRegFormCnstrVal[i][1]){
+        
         switch(cfgRegFormCnstrVal[i][0]){
+           
             // EMAIL
           case 'Email': {
             // Set Registration Email collection
@@ -256,59 +258,53 @@ function fcnCrtRegstnForm_WG() {
             .setTitle("Army Definition")
             .setHelpText("Enter Army's General Information");
             
-            // Faction
-            if (NbFaction == 1){
-              // Faction Keyword 1
-              formEN.addTextItem()
-              .setTitle("Faction")
-              .setHelpText("Enter your Main Faction Keyword")
-              .setRequired(true);  
-            }
-            if (NbFaction == 2){
-              // Faction Keyword 1
-              formEN.addTextItem()
-              .setTitle("Faction 1")
-              .setHelpText("Enter your First Faction Keyword")
-              .setRequired(true);  
-              
-              // Faction Keyword 2
-              formEN.addTextItem()
-              .setTitle("Faction 2")
-              .setHelpText("Enter your Second Faction Keyword")
-              .setRequired(true);
-            }
-            
-            // Warlord name
-            formEN.addTextItem()
-            .setTitle("Army Warlord")
-            .setHelpText("Enter your Army's Warlord name (or Unit Entry)")
-            .setRequired(true); 
-            
-            // Army name
-            formEN.addTextItem()
-            .setTitle("Army Name")
-            .setHelpText("Enter your Army's Name (optional)")
-            .setRequired(false); 
-            
             // FRENCH
             formFR.addPageBreakItem()
             .setTitle("Définition d'Armée")
             .setHelpText("Entrez les informations générales de votre armée");
             
+            break;
+          }
+            // FACTION KEYWORD 1
+          case 'Faction Keyword 1' :{
             // Faction
             if (NbFaction == 1){
-              // Faction Keyword 1
+              // ENGLISH
+              formEN.addTextItem()
+              .setTitle("Faction")
+              .setHelpText("Enter your Main Faction Keyword")
+              .setRequired(true);  
+              
+              // FRENCH
               formFR.addTextItem()
               .setTitle("Faction")
               .setHelpText("Entrez le mot-clé Faction principal de votre armée")
-              .setRequired(true);  
+              .setRequired(true); 
             }
+                        
             if (NbFaction == 2){
-              // Faction Keyword 1
+              // ENGLISH
+              formEN.addTextItem()
+              .setTitle("Faction 1")
+              .setHelpText("Enter your First Faction Keyword")
+              .setRequired(true);  
+              
+              // FRENCH
               formFR.addTextItem()
               .setTitle("Faction 1")
               .setHelpText("Entrez le premier mot-clé Faction de votre armée")
-              .setRequired(true);  
+              .setRequired(true); 
+            }
+            break;
+          }
+            // FACTION KEYWORD 2
+          case 'Faction Keyword 2' :{
+            if (NbFaction == 2){
+              // ENGLISH
+              formEN.addTextItem()
+              .setTitle("Faction 2")
+              .setHelpText("Enter your Second Faction Keyword")
+              .setRequired(true);
               
               // Faction Keyword 2
               formFR.addTextItem()
@@ -316,20 +312,39 @@ function fcnCrtRegstnForm_WG() {
               .setHelpText("Entrez le deuxième mot-clé Faction de votre armée")
               .setRequired(true);
             }
+            break;
+          }
+            // WARLORD NAME
+          case 'Warlord' :{
+            // ENGLISH
+            formEN.addTextItem()
+            .setTitle("Army Warlord")
+            .setHelpText("Enter your Army's Warlord name (or Unit Entry)")
+            .setRequired(true); 
             
-            // Warlord name
+            // FRENCH
             formFR.addTextItem()
             .setTitle("Seigneur de Guerre de l'armée")
             .setHelpText("Entrez le nom (ou type d'unité) du Seigneur de Guerre de votre armée")
             .setRequired(true); 
-            
-            // Army name
+            break;
+          }
+            // ARMY NAME
+          case 'Army Name' :{ 
+            // ENGLISH
+            formEN.addTextItem()
+            .setTitle("Army Name")
+            .setHelpText("Enter your Army's Name (optional)")
+            .setRequired(false); 
+
+            // FRENCH
             formFR.addTextItem()
             .setTitle("Nom d'Armée")
             .setHelpText("Entrez le nom de votre Armée (optionel)")
             .setRequired(false);
             break;
           }
+          // ARMY LIST
           case 'Army List': {
             Logger.log('%s - %s',QuestionOrder,cfgRegFormCnstrVal[i][0]);  
             // Army List

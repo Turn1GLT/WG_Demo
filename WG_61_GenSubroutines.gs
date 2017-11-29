@@ -143,7 +143,6 @@ function subGetEmailRecipients(shtPlayers, Language){
 
 
 
-
 // **********************************************
 // function subCrtPlayerContact()
 //
@@ -203,7 +202,7 @@ function subAddPlayerContactGroup(shtConfig, PlyrContactInfo){
   //  PlyrContactInfo[3]= Language
   
   // Event Parameters
-  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+  var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
   
   var evntLocation = cfgEvntParam[0][0];
   var evntNameEN = cfgEvntParam[7][0];
@@ -465,4 +464,201 @@ function fcnPlayerWithMost(shtConfig, PlayerMostData, NbPlayers, shtRound){
   return PlayerMostData; 
 }
 
+
+// **********************************************
+// function subCrtMatchRepPlyrList()
+//
+// This function creates the Player List for
+// the Match Report Form 
+//
+// **********************************************
+
+function subCrtMatchRepPlyrList(shtConfig, shtPlayers, cfgEvntParam){
+
+  // Number of Players
+  var NbPlyr = shtConfig.getRange(13,2).getValue();
   
+  // Routine Variables
+  var Players;
+  var PlayerList;
+  
+  // Transfers Players Double Array to Single Array
+  if (NbPlyr > 0){
+    Players = shtPlayers.getRange(3,2,NbPlyr,1).getValues();
+    PlayerList = new Array(NbPlyr);
+    for(var i = 0; i < NbPlyr; i++){
+      PlayerList[i] = Players[i][0];
+    }
+  }
+   
+  return PlayerList;
+}
+    
+// **********************************************
+// function subCrtMatchRepTeamList()
+//
+// This function creates the Team List for
+// the Match Report Form 
+//
+// **********************************************
+
+function subCrtMatchRepTeamList(shtConfig, shtTeams, cfgEvntParam){
+
+  // Event Parameters
+  var evntTeamNbPlyr = cfgEvntParam[10][0];
+  var evntTeamMatch = cfgEvntParam[11][0];
+  
+  //  Number of Players and Teams
+  var NbPlyr = shtConfig.getRange(13,2).getValue();
+  var NbTeam = shtConfig.getRange(14,2).getValue();
+  
+  // Routine Variables
+  var Teams;
+  var TeamList;
+  var TeamListLen;
+  var pntrTeam;
+  var pntrPlyr;
+  var dataList;
+  
+  // Get Teams Data
+  // [0]= N/A, [1]= Team Name, [2-5]= N/A, [6-13]= Members 1-8 
+  Teams = shtTeams.getRange(3,2,NbTeam,14).getValues();
+  
+  // Set the Team and Player Pointer values to 0 and 6;
+  pntrTeam = 0;
+  pntrPlyr = 6;
+      
+  // If Teams are 2 players and Matches are 1v1
+  if(evntTeamNbPlyr == '2' && evntTeamMatch == '1v1'){
+    // Create the Team List Array
+    TeamListLen = NbPlyr;
+    TeamList = new Array(TeamListLen);
+    // Fill the Array
+    for(var i = 0; i < TeamListLen; i++){
+      // Get the Team Name and Team Member
+      dataList = Teams[pntrTeam][1] + ' - ' + Teams[pntrTeam][pntrPlyr];
+      // Populate Array
+      TeamList[i] = dataList;
+      // Update Pointers accordingly
+      if(pntrPlyr == 6)  pntrPlyr = 7;
+      if(pntrPlyr == 7){
+        pntrPlyr = 6;
+        pntrTeam++;
+      }
+    }
+  }
+  
+  // If Teams are 2 players and Matches are 2v2
+  if(evntTeamNbPlyr == '2' && evntTeamMatch == '2v2'){
+    // Create the Team List Array
+    TeamListLen = NbTeam;
+    TeamList = new Array(TeamListLen);
+    // Fill the Array
+    for(var i = 0; i < TeamListLen; i++){
+      // Get the Team Name and Team Member
+      dataList = Teams[pntrTeam][1];
+      // Populate Array
+      TeamList[i] = dataList;
+      // Update Pointers accordingly
+      pntrTeam++;
+    }
+  }
+  
+  // If Teams are 3 players and Matches are 1v1
+  if(evntTeamNbPlyr == '3' && evntTeamMatch == '1v1'){
+    // Create the Team List Array
+    TeamListLen = NbPlyr;
+    TeamList = new Array(TeamListLen);
+    // Fill the Array
+    for(var i = 0; i < TeamListLen; i++){
+      // Get the Team Name and Team Member
+      dataList = Teams[pntrTeam][1] + ' - ' + Teams[pntrTeam][pntrPlyr];
+      // Populate Array
+      TeamList[i] = dataList;
+      // Update Pointers accordingly
+      if(pntrPlyr == 6)  pntrPlyr = 7;
+      if(pntrPlyr == 7)  pntrPlyr = 8;
+      if(pntrPlyr == 8){
+        pntrPlyr = 6;
+        pntrTeam++;
+      }
+    }
+  }
+  
+  // If Teams are 3 players and Matches are 3v3
+  if(evntTeamNbPlyr == '3' && evntTeamMatch == '3v3'){
+    // Create the Team List Array
+    TeamListLen = NbTeam;
+    TeamList = new Array(TeamListLen);
+    // Fill the Array
+    for(var i = 0; i < TeamListLen; i++){
+      // Get the Team Name and Team Member
+      dataList = Teams[pntrTeam][1];
+      // Populate Array
+      TeamList[i] = dataList;
+      // Update Pointers accordingly
+      pntrTeam++;
+    }
+  }
+  
+  // If Teams are 4 players and Matches are 1v1
+  if(evntTeamNbPlyr == '4' && evntTeamMatch == '1v1'){
+    // Create the Team List Array
+    TeamListLen = NbPlyr;
+    TeamList = new Array(TeamListLen);
+    // Fill the Array
+    for(var i = 0; i < TeamListLen; i++){
+      // Get the Team Name and Team Member
+      dataList = Teams[pntrTeam][1] + ' - ' + Teams[pntrTeam][pntrPlyr];
+      // Populate Array
+      TeamList[i] = dataList;
+      // Update Pointers accordingly
+      if(pntrPlyr == 6)  pntrPlyr = 7;
+      if(pntrPlyr == 7)  pntrPlyr = 8;
+      if(pntrPlyr == 8)  pntrPlyr = 9;
+      if(pntrPlyr == 9){
+        pntrPlyr = 6;
+        pntrTeam++;
+      }
+    }
+  }
+  
+  // If Teams are 4 players and Matches are 2v2 (Team A - Team B)
+  if(evntTeamNbPlyr == '4' && evntTeamMatch == '2v2'){
+    // Create the Team List Array
+    TeamListLen = NbTeam * 2;
+    TeamList = new Array(TeamListLen);
+    // Fill the Array
+    for(var i = 0; i < TeamListLen; i++){
+      // Get the Team Name and Team Member Combination (P1 + P2, P3 + P4, P1 + P3, P2 + P4, P1 + P4, P2 + P3)
+      if(pntrPlyr == 6) dataList = Teams[pntrTeam][1] + ' -  A';
+      if(pntrPlyr == 7) dataList = Teams[pntrTeam][1] + ' -  B';
+      // Populate Array
+      TeamList[i] = dataList;
+      // Update Pointers accordingly
+      if(pntrPlyr == 6)  pntrPlyr = 7;
+      if(pntrPlyr == 7){
+        pntrPlyr = 6;
+        pntrTeam++;
+      }
+    }
+  }
+  
+  // If Teams are 4 players and Matches are 4v4
+  if(evntTeamNbPlyr == '4' && evntTeamMatch == '4v4'){
+    // Create the Team List Array
+    TeamListLen = NbTeam;
+    TeamList = new Array(TeamListLen);
+    // Fill the Array
+    for(var i = 0; i < TeamListLen; i++){
+      // Get the Team Name and Team Member
+      dataList = Teams[pntrTeam][1];
+      // Populate Array
+      TeamList[i] = dataList;
+      // Update Pointers accordingly
+      pntrTeam++;
+    }
+  }
+  
+  return TeamList;   
+}

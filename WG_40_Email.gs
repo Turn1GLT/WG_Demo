@@ -13,7 +13,7 @@ function fcnSendConfirmEmail(shtConfig, Address, MatchData) {
   // Configuration Parameters
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
   var cfgUrl = shtConfig.getRange(4,11,20,1).getValues();
-  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+  var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
   
   // Get Log Sheet
   var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName('Log');
@@ -187,7 +187,7 @@ function fcnSendErrorEmail(shtConfig, Address, MatchData, MatchID, Status) {
   // Configuration Parameters
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
   var cfgUrl = shtConfig.getRange(4,11,20,1).getValues();
-  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+  var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
   
   // Get Log Sheet
   var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName('Log');
@@ -500,7 +500,7 @@ function fcnMatchReportPwdError(shtConfig, Address){
 
   // Configuration Parameters
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
-  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+  var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
   
   // Get Log Sheet
   var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName('Log');
@@ -579,7 +579,7 @@ function fcnSendNewPlayerConf(shtConfig, PlayerData){
   // Configuration Parameters
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
   var cfgUrl = shtConfig.getRange(4,11,20,1).getValues();
-  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+  var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
   
   // Get Log Sheet
   var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName('Log');
@@ -716,7 +716,7 @@ function fcnSendNewPlayerConfLoc(shtConfig, PlayerData){
   // Configuration Parameters
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
   var cfgUrl = shtConfig.getRange(4,11,20,1).getValues();
-  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+  var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
   
   // Get Log Sheet
   var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName('Log');
@@ -1030,7 +1030,7 @@ function fcnSendBstrCnfrmEmail(Player, Round, EmailAddresses, PackData, shtConfi
   // Configuration Parameters
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
   var cfgUrl = shtConfig.getRange(4,11,20,1).getValues();
-  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+  var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
   
   // Get Log Sheet
   var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName('Log');
@@ -1165,7 +1165,7 @@ function fcnSendBstrErrorEmail(Player, Round, EmailAddresses, PackData, ErrorMsg
   // Configuration Parameters
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
   var cfgUrl = shtConfig.getRange(4,11,20,1).getValues();
-  var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+  var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
   
   // Get Log Sheet
   var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName('Log');

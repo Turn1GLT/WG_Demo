@@ -113,7 +113,7 @@ function fcnInitializeEvent(){
     var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
     var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
     var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
-    var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+    var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
     
     // Event Parameters
     var evntLocation = cfgEvntParam[0][0];
@@ -168,7 +168,7 @@ function fcnInitializeEvent(){
     // Round Results
     for (var RoundNum = 1; RoundNum <= 8; RoundNum++){
       shtRound = ss.getSheetByName('Round'+RoundNum);
-      shtRound.getRange(5,colRndWin,32,4).clearContent();
+      shtRound.getRange(5,colRndWin,32,3).clearContent();
       shtRound.getRange(5,colRndMatchLoc,32,4).clearContent();
     }
     Logger.log('Event Data Cleared');
@@ -218,7 +218,7 @@ function fcnClearMatchResults(){
   // Insert ui to confirm
   var ui = SpreadsheetApp.getUi();
   var title = "Reset " + cfgEventType + " Match Results";
-  var msg = "Click OK to clear all "+ cfgEventType +"match results";
+  var msg = "Click OK to clear all "+ cfgEventType +" match results";
   var uiResponse = ui.alert(title, msg, ui.ButtonSet.OK_CANCEL);
     
   // If Confirmed (OK), Initialize all League Data
@@ -228,7 +228,7 @@ function fcnClearMatchResults(){
     var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
     var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
     var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
-    var cfgEvntParam = shtConfig.getRange(4,4,32,1).getValues();
+    var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
     
     // Columns from Config File
     var colRspMatchID = cfgColRspSht[1][0];
@@ -267,7 +267,7 @@ function fcnClearMatchResults(){
     // Round Results
     for (var RoundNum = 1; RoundNum <= 8; RoundNum++){
       shtRound = ss.getSheetByName('Round'+RoundNum);
-      shtRound.getRange(5,colRndWin,32,4).clearContent();
+      shtRound.getRange(5,colRndWin,32,3).clearContent();
       shtRound.getRange(5,colRndMatchLoc,32,4).clearContent();
     }
     
@@ -304,12 +304,12 @@ function fcnCrtPlayerArmyDB(){
   var cfgColShtPlyr = shtConfig.getRange(4,28,20,1).getValues();
   
   // Column Values
-  var colShtPlyrName = cfgColShtPlyr[2][0];
-  var colShtPlyrTeam = cfgColShtPlyr[5][0];
-  var colShtPlyrArmy = cfgColShtPlyr[7][0];
-  var colShtPlyrFaction1 = cfgColShtPlyr[8][0];
-  var colShtPlyrFaction2 = cfgColShtPlyr[9][0];
-  var colShtPlyrWarlord = cfgColShtPlyr[10][0];
+  var colShtPlyrName =     cfgColShtPlyr[ 2][0];
+  var colShtPlyrTeam =     cfgColShtPlyr[ 5][0];
+  var colShtPlyrArmy =     cfgColShtPlyr[10][0];
+  var colShtPlyrFaction1 = cfgColShtPlyr[11][0];
+  var colShtPlyrFaction2 = cfgColShtPlyr[12][0];
+  var colShtPlyrWarlord =  cfgColShtPlyr[13][0];
   
   // Current Army Values (Power Level or Points
   var armyBldRatingMode = cfgArmyBuild[0][0];
@@ -325,9 +325,12 @@ function fcnCrtPlayerArmyDB(){
 
   // Players 
   var shtPlayers = ss.getSheetByName('Players'); 
+  var MaxColPlayers = shtPlayers.getMaxColumns();
   var NbPlayers = shtPlayers.getRange(2,1).getValue();
-  var PlayerNames = shtPlayers.getRange(2,colShtPlyrName, NbPlayers+1, 1).getValues();
-    
+  
+  // Get Players Data
+  var PlayerData = shtPlayers.getRange(2,colShtPlyrName, NbPlayers+1, MaxColPlayers-1).getValues();
+     
   var shtPlyrArmyDB;
   var PlyrName;
   var PlyrArmy;
@@ -335,20 +338,19 @@ function fcnCrtPlayerArmyDB(){
   var PlyrFaction2;
   var PlyrWarlord;
   
+  var ArmyDefOffset = 2;
+  
   // Loops through each player starting from the last
   for (var plyr = NbPlayers; plyr > 0; plyr--){
     // Gets the Player Name 
-    PlyrName = PlayerNames[plyr][0];
+    PlyrName = PlayerData[plyr][0];
     // Resets the Player Found flag before searching
     PlayerFound = 0;            
     // Look if player exists, if yes, skip, if not, create player
     for(var sheet = NbSheet; sheet > 0; sheet --){
       SheetName = SheetsArmyDB[sheet-1].getSheetName();
-      Logger.log(SheetName);
       if (SheetName == PlyrName) PlayerFound = 1;
     }
-
-    Logger.log('PlayerFound:%s',PlayerFound);
     
     // If Player is not found, create a tab with the player's name
     if(PlayerFound == 0){
@@ -357,6 +359,12 @@ function fcnCrtPlayerArmyDB(){
       // Inserts Sheet before Template (Last Sheet in Spreadsheet)
       ssArmyDB.insertSheet(PlyrName, NbSheet-1, {template: shtTemplate});
       shtPlyrArmyDB = ssArmyDB.getSheetByName(PlyrName);
+      
+      // Get the Player Data
+      PlyrArmy =     PlayerData[plyr][colShtPlyrArmy-ArmyDefOffset];
+      PlyrFaction1 = PlayerData[plyr][colShtPlyrFaction1-ArmyDefOffset];
+      PlyrFaction2 = PlayerData[plyr][colShtPlyrFaction2-ArmyDefOffset];
+      PlyrWarlord =  PlayerData[plyr][colShtPlyrWarlord-ArmyDefOffset];
       
       // Opens the new sheet and modify appropriate data (Player Name, Header)
       shtPlyrArmyDB.getRange(3,3).setValue(PlyrName);
@@ -447,7 +455,6 @@ function fcnCrtPlayerArmyList(){
     // Look if player exists, if yes, skip, if not, create player
     for(var sheet = NbSheet; sheet > 0; sheet --){
       SheetName = SheetsArmyDB[sheet-1].getSheetName();
-      Logger.log(SheetName);
       if (SheetName == PlyrName) PlayerFound = 1;
     }
           
