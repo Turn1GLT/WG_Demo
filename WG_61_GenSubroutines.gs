@@ -48,6 +48,60 @@ function subCreateArray(X,Y){
 } 
 
 // **********************************************
+// function SubDelPlayerSheets()
+//
+// This function deletes all Players Sheets 
+// from the Parameter 
+//
+// **********************************************
+
+function subDelPlayerSheets(shtID){
+  
+  Logger.log("Routine: fcnDelPlayerSheets");
+  
+  // Spreadsheet
+  var ssDel = SpreadsheetApp.openById(shtID); 
+  var shtTemplate = ssDel.getSheetByName('Template');
+  var sheets = ssDel.getSheets();
+  var NbSheet = ssDel.getNumSheets();
+  
+  // Routine Variables
+  var shtCurr;
+  var shtCurrName;
+  
+  // Activates Template Sheet
+  ssDel.setActiveSheet(shtTemplate);
+  
+  // Loop through the Spreadsheet to delete Sheets
+  for (var sht = 0; sht < NbSheet - 1; sht ++){
+    // Get Sheet Name
+    shtCurrName = sheets[0].getSheetName();
+    Logger.log(sht);
+    Logger.log(NbSheet);
+    Logger.log(shtCurrName);
+    
+    // If First Sheet is Template
+    if(shtCurrName != 'Template') {
+      // Delete Sheet
+      ssDel.deleteSheet(sheets[0]);
+      // Update Sheets
+      sheets = ssDel.getSheets()
+      NbSheet--;
+      sht--;
+    }
+    // If First Sheet is Not Template
+    if(shtCurrName == 'Template' && NbSheet > 1) {
+      // Delete Sheet
+      ssDel.deleteSheet(sheets[1]);
+      // Update Sheets
+      sheets = ssDel.getSheets()
+      NbSheet--;
+      sht--;
+    }
+  }
+}
+
+// **********************************************
 // function subGetEmailAddressSngl()
 //
 // This function gets the email addresses for a

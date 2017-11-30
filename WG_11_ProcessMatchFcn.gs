@@ -33,12 +33,12 @@ function fcnFindDuplicateData(ss, shtRspn, cfgColRspSht, cfgColMatchRep, RspnDat
   var colArrayPlyrSub = cfgColMatchRep[19][0]-1;
   
   // Values from Response Data
-  var RspnDataPwd        = ResponseData[0][colArrayPwd]; // Password
-  var RspnDataLocation   = ResponseData[0][colArrayLoc]; // Match Location (Store Yes or No)
-  var RspnDataRoundNum   = ResponseData[0][colArrayRnd]; // Round Number
+  var RspnDataPwd        = ResponseData[0][colArrayPwd];     // Password
+  var RspnDataLocation   = ResponseData[0][colArrayLoc];     // Match Location (Store Yes or No)
+  var RspnDataRoundNum   = ResponseData[0][colArrayRnd];     // Round Number
   var RspnDataWinPlyr    = ResponseData[0][colArrayWinPlyr]; // Winning Player
   var RspnDataLosPlyr    = ResponseData[0][colArrayLosPlyr]; // Losing Player
-  var RspnDataTie        = ResponseData[0][colArrayTie]; // Tie
+  var RspnDataTie        = ResponseData[0][colArrayTie];     // Tie
 
   // Entry Data
   var EntryRound;

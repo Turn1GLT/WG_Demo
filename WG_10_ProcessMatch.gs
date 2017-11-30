@@ -243,10 +243,11 @@ function fcnProcessMatchWG() {
 
 
 // **********************************************
-// function fcnGameResults()
+// function fcnAnalyzeResultsWG()
 //
-// This function populates the Game Results tab 
-// once a player submitted his Form
+// This function analyzes the Match Results 
+// once a player submitted his Form to populate the 
+// Event Sheets
 //
 // **********************************************
 
@@ -291,6 +292,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
   // League Parameters
   var evntGameType = cfgEvntParam[4][0];
   var evntRoundDuration = cfgEvntParam[13][0];
+  var evntBalanceBonus = cfgEvntParam[21][0];
   var evntNbCardPack = cfgEvntParam[25][0];
     
   // Test Sheet (for Debug)
@@ -315,7 +317,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
   var RspnDataPrcssd = 0;
   var ResponseData;
   var MatchingRspnData;
-
+  
   // Match Data Variables
   var MatchID; 
   var MatchData = subCreateArray(26,4);
@@ -328,9 +330,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
   // 6 = Game Tie (Yes or No)
   // 7-23 = Not Used
   // 24 = MatchPostStatus
-    
-   
-  
+      
   // Email Addresses Array
   var EmailAddresses = subCreateArray(3,2);
   // [0][0]= Administrator Language Preference
@@ -347,8 +347,17 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
   EmailAddresses[2][1] = '';
 
   // Data Processing Flags
-  var Status = new Array(2); // Status[0] = Status Value, Status[1] = Status Message
+  var Status = new Array(2); // [0]= Status Value, [1]= Status Message
   Status[0] = 0;
+  
+  var logStatusPlyrA = new Array(3); // [0]= Status Value, [1]= Status Message, [2]= Player
+  logStatusPlyrA[0] = 0;
+  logStatusPlyrA[1] = '';
+  logStatusPlyrA[2] = '';
+  var logStatusPlyrB = new Array(3); // [0]= Status Value, [1]= Status Message, [2]= Player
+  logStatusPlyrB[0] = 0;
+  logStatusPlyrB[1] = '';
+  logStatusPlyrB[2] = '';
   
   var DuplicateRspn = -99;
   var MatchingRspn = -98;
@@ -452,6 +461,9 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
               // Execute function to populate Match Result Sheet from Response Sheet
               MatchData = fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExecData, shtRspn, ResponseData, MatchingRspnData, MatchID, MatchData, shtTest);
               MatchPostStatus = MatchData[25][0];
+              
+              shtTest.getRange(1, 1, 26, 4).setValues(MatchData);
+              
               Logger.log("Routine: fcnAnalyzeResultsWG");
               
               Logger.log('Match Post Status: %s',MatchPostStatus);
@@ -461,12 +473,16 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
                 // Match ID doesn't change because we assumed it was already OK
                 Logger.log('Match Posted ID: %s',MatchID);
                 
-                // Reserved for TCG
-                // Reserved for TCG
-                // Reserved for TCG
-                // Reserved for TCG
+                // Log Players Match Data
+                logStatusPlyrA[2] = RspnDataWinPlyr;
+                logStatusPlyrA = fcnLogPlayerMatch(shtConfig, logStatusPlyrA, MatchData);
+                Logger.log('Player Log Status for %s : %s',logStatusPlyrA[2],logStatusPlyrA[1]);
                 
-                // If Game Type is Wargame, Update available amount of Power Level Available
+                logStatusPlyrB[2] = RspnDataLosPlyr;
+                logStatusPlyrB = fcnLogPlayerMatch(shtConfig, logStatusPlyrB, MatchData);
+                Logger.log('Player Log Status for %s : %s',logStatusPlyrB[2],logStatusPlyrB[1]);
+                
+                // If Event Game Type is Wargame
                 if(evntGameType == 'Wargame'){
                   // Updates the Status while processing
                   if(Status[0] >= 0){
@@ -474,8 +490,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
                     Status[1] = subUpdateStatus(shtRspn, RspnRow, colStatus, colStatusMsg, Status[0]);
                   }
                   // Update Player Army DB and Army List
-                  Logger.log("LosingPlayer Update DB: %s",RspnDataLosPlyr);
-                  if(exeUpdatePlyrDB == 'Enabled') fcnUpdateArmyDB(shtConfig, RspnDataLosPlyr, MatchData[5][2], shtTest); // MatchData[5][2] = Loser Power Level Bonus
+                  if(exeUpdatePlyrDB == 'Enabled' && evntBalanceBonus == 'Enabled') fcnUpdateArmyDB(shtConfig, RspnDataLosPlyr, MatchData[5][2], shtTest); // MatchData[5][2] = Loser Power Level Bonus
                   Logger.log("Routine: fcnAnalyzeResultsWG");
                 }
               }

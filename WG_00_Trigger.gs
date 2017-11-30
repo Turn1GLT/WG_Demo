@@ -54,19 +54,21 @@ function onOpenWG_Demo40K() {
   AnalyzeDataMenu.push({name: 'Clear Match Results and Entries', functionName:'fcnClearMatchResults'});
   
   var LeagueMenu = [];
+  LeagueMenu.push({name:'Initialize Event', functionName:'fcnInitializeEvent'});
   LeagueMenu.push({name:'Update Config ID & Links', functionName:'fcnUpdateLinksIDs'});
   LeagueMenu.push({name:'Create Match Report Forms', functionName:'fcnCrtMatchReportForm_WG_S'});
   LeagueMenu.push({name:'Setup Match Response Sheets',functionName:'fcnSetupMatchResponseSht'});
   LeagueMenu.push({name:'Create Registration Forms', functionName:'fcnCrtRegstnForm_WG'});
   if(evntEscalation == 'Enabled') LeagueMenu.push({name:'Create Escalation Bonus Forms', functionName:'fcnCrtEscltForm_WG'});
-  LeagueMenu.push({name:'Initialize Event', functionName:'fcnInitializeEvent'});
   LeagueMenu.push(null);
-  LeagueMenu.push({name:'Create Players Army DB', functionName:'fcnCrtPlayerArmyDB'});
+  LeagueMenu.push({name:'Create Players Army DBs', functionName:'fcnCrtPlayerArmyDB'});
   LeagueMenu.push({name:'Create Players Army Lists', functionName:'fcnCrtPlayerArmyList'});
+  LeagueMenu.push({name:'Create Players Records', functionName:'fcnCrtPlayerRecord'});
   if(evntEscalation == 'Enabled') LeagueMenu.push({name:'Create Players Escalation Bonus Sheets', functionName:'fcnCrtPlayerEscltBonus'});
   LeagueMenu.push(null);
-  LeagueMenu.push({name:'Delete Players Army DB', functionName:'fcnDelPlayerArmyDB'});
+  LeagueMenu.push({name:'Delete Players Army DBs', functionName:'fcnDelPlayerArmyDB'});
   LeagueMenu.push({name:'Delete Players Army Lists', functionName:'fcnDelPlayerArmyList'});
+  LeagueMenu.push({name:'Delete Players Records', functionName:'fcnDelPlayerRecord'});
   if(evntEscalation == 'Enabled') LeagueMenu.push({name:'Delete Players Escalation Bonus Sheets', functionName:'fcnDelPlayerEscltBonus'});
   
   var TestMenu  = [];

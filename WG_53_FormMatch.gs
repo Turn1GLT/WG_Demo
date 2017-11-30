@@ -450,3 +450,80 @@ function fcnCrtMatchReportForm_WG_S() {
   subPostLog(shtLog,Logger.getLog());
   
 }
+
+// **********************************************
+// function fcnSetupResponseSht()
+//
+// This function sets up the new Responses sheets 
+// and deletes the old ones
+//
+// **********************************************
+
+function fcnSetupMatchResponseSht(){
+  
+  Logger.log("Routine: fcnSetupResponseSht");
+
+  // Main Spreadsheet
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  // Configuration Sheet
+  var shtConfig = ss.getSheetByName('Config');
+  var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
+  
+  // Open Responses Sheets
+  var shtOldRespEN = ss.getSheetByName('Responses EN');
+  var shtOldRespFR = ss.getSheetByName('Responses FR');
+  var shtNewRespEN = ss.getSheetByName('New Responses EN');
+  var shtNewRespFR = ss.getSheetByName('New Responses FR');
+    
+  var OldRespMaxCol = shtOldRespEN.getMaxColumns();
+  var NewRespMaxRow = shtNewRespEN.getMaxRows();
+  var ColWidth;
+  
+  // Columns Values and Parameters
+  var RspnDataInputs = cfgColRspSht[0][0]; // from Time Stamp to Data Processed
+  var colMatchID = cfgColRspSht[1][0];
+  var colPrcsd = cfgColRspSht[2][0];
+  var colDataConflict = cfgColRspSht[3][0];
+  var colStatus = cfgColRspSht[4][0];
+  var colStatusMsg = cfgColRspSht[5][0];
+  var colMatchIDLastVal = cfgColRspSht[6][0];
+  var colNextEmptyRow = cfgColRspSht[7][0];
+  var colNbUnprcsdEntries = cfgColRspSht[8][0];
+  
+  // Copy Header from Old to New sheet - Loop to Copy Value and Format from cell to cell, copy formula (or set) in last cell
+  for (var col = 1; col <= OldRespMaxCol; col++){
+    // Insert Column if it doesn't exist
+    if (col >= colMatchID-1 && col < OldRespMaxCol){
+      shtNewRespEN.insertColumnAfter(col);
+      shtNewRespFR.insertColumnAfter(col);
+    }
+    // Set New Response Sheet Values 
+    shtOldRespEN.getRange(1,col).copyTo(shtNewRespEN.getRange(1,col));
+    shtOldRespFR.getRange(1,col).copyTo(shtNewRespFR.getRange(1,col));
+    ColWidth = shtOldRespEN.getColumnWidth(col);
+    shtNewRespEN.setColumnWidth(col,ColWidth);
+    shtNewRespFR.setColumnWidth(col,ColWidth);
+  }
+  
+  // Hides Columns 
+  shtNewRespEN.hideColumns(colMatchID);
+  shtNewRespEN.hideColumns(colDataConflict);
+  shtNewRespEN.hideColumns(colStatus);
+  shtNewRespEN.hideColumns(colStatusMsg);
+  shtNewRespEN.hideColumns(colMatchIDLastVal);
+  
+  shtNewRespFR.hideColumns(colMatchID);
+  shtNewRespFR.hideColumns(colDataConflict);
+  shtNewRespFR.hideColumns(colStatus);
+  shtNewRespFR.hideColumns(colStatusMsg);
+  shtNewRespFR.hideColumns(colMatchIDLastVal);
+  
+  // Delete Old Sheets
+  ss.deleteSheet(shtOldRespEN);
+  ss.deleteSheet(shtOldRespFR);
+  
+  // Rename New Sheets
+  shtNewRespEN.setName('Responses EN');
+  shtNewRespFR.setName('Responses FR');
+
+}

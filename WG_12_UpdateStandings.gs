@@ -38,8 +38,8 @@ function fcnUpdateStandings(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExe
   var colWinPerc =  cfgColRndSht[7][0]+1;
   var colLocation = cfgColRndSht[8][0]+1;
     
-  var shtTest = ss.getSheetByName('Test');
-  shtTest.getRange(10,2,16,1).setValues(cfgColRndSht);
+//  var shtTest = ss.getSheetByName('Test');
+//  shtTest.getRange(10,2,16,1).setValues(cfgColRndSht);
   
   // Sheets
   var shtCumul = ss.getSheetByName('Cumulative Results');
@@ -84,13 +84,13 @@ function fcnUpdateStandings(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExe
   if(InLimit > 0){
     RngStandInLim = shtStand.getRange(6, 2, InLimit, NbColValues);
     RngStandInLim.setValues(PlyrInLimArray);
-    shtTest.getRange(10,3).setValue(PlyrInLimArray.length);
+//    shtTest.getRange(10,3).setValue(PlyrInLimArray.length);
   }
   // Out Limit Array
   if(OutLimit > 0){
     RngStandOutLim = shtStand.getRange(6+InLimit, 2, OutLimit, NbColValues);
     RngStandOutLim.setValues(PlyrOutLimArray);
-    shtTest.getRange(11,3).setValue(PlyrOutLimArray.length);
+//    shtTest.getRange(11,3).setValue(PlyrOutLimArray.length);
   }
   
   // Points - Sorts the Standings Values by Points and Matches Played
