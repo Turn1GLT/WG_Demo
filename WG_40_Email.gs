@@ -27,7 +27,7 @@ function fcnSendConfirmEmail(shtConfig, Address, MatchData) {
   // Open Email Templates
   var ssEmailID = shtConfig.getRange(10,15).getValue();
   var ssEmail = SpreadsheetApp.openById(ssEmailID);
-  var shtEmailTemplates = ssEmail.getSheetByName('Templates');
+  var shtEmailTemplates = ssEmail.getSheetByName("Email Templates");
 
   // Addresses and Languages for both players
   var Address1  = Address[1][1];
@@ -201,7 +201,7 @@ function fcnSendErrorEmail(shtConfig, Address, MatchData, MatchID, Status) {
   // Open Email Templates
   var ssEmailID = shtConfig.getRange(10,15).getValue();
   var ssEmail = SpreadsheetApp.openById(ssEmailID);
-  var shtEmailTemplates = ssEmail.getSheetByName('Templates');
+  var shtEmailTemplates = ssEmail.getSheetByName("Email Templates");
 
   // Addresses and Languages for both players
   var Address1  = Address[1][1];
@@ -1044,7 +1044,7 @@ function fcnSendBstrCnfrmEmail(Player, Round, EmailAddresses, PackData, shtConfi
   // Open Email Templates
   var ssEmailID = shtConfig.getRange(10,15).getValue();
   var ssEmail = SpreadsheetApp.openById(ssEmailID);
-  var shtEmailTemplates = ssEmail.getSheetByName('Templates');
+  var shtEmailTemplates = ssEmail.getSheetByName("Email Templates");
   
   // Variables
   var EmailSubject;
@@ -1179,7 +1179,7 @@ function fcnSendBstrErrorEmail(Player, Round, EmailAddresses, PackData, ErrorMsg
   // Open Email Templates
   var ssEmailID = shtConfig.getRange(10,15).getValue();
   var ssEmail = SpreadsheetApp.openById(ssEmailID);
-  var shtEmailTemplates = ssEmail.getSheetByName('Templates');
+  var shtEmailTemplates = ssEmail.getSheetByName("Email Templates");
   
   // Variables
   var EmailSubject;

@@ -76,10 +76,6 @@ function subDelPlayerSheets(shtID){
   for (var sht = 0; sht < NbSheet - 1; sht ++){
     // Get Sheet Name
     shtCurrName = sheets[0].getSheetName();
-    Logger.log(sht);
-    Logger.log(NbSheet);
-    Logger.log(shtCurrName);
-    
     // If First Sheet is Template
     if(shtCurrName != 'Template') {
       // Delete Sheet
@@ -313,7 +309,7 @@ function subAddPlayerContactGroup(shtConfig, PlyrContactInfo){
 //
 // **********************************************
 
-function subCheckDataConflict(DataArray1, DataArray2, ColStart, ColEnd, shtTest) {
+function subCheckDataConflict(DataArray1, DataArray2, ColStart, ColEnd) {
   
   var DataConflict = 0;
   
@@ -339,7 +335,7 @@ function subCheckDataConflict(DataArray1, DataArray2, ColStart, ColEnd, shtTest)
 //
 // **********************************************
 
-function subPlayerMatchValidation(ss, PlayerName, MatchValidation, shtTest) {
+function subPlayerMatchValidation(ss, PlayerName, MatchValidation) {
   
   // Opens Cumulative Results tab
   var shtCumul = ss.getSheetByName('Cumulative Results');
@@ -590,7 +586,7 @@ function subCrtMatchRepTeamList(shtConfig, shtTeams, cfgEvntParam){
     // Fill the Array
     for(var i = 0; i < TeamListLen; i++){
       // Get the Team Name and Team Member
-      dataList = Teams[pntrTeam][1] + ' - ' + Teams[pntrTeam][pntrPlyr];
+      dataList = Teams[pntrTeam][0] + ' - ' + Teams[pntrTeam][pntrPlyr];
       // Populate Array
       TeamList[i] = dataList;
       // Update Pointers accordingly
@@ -610,7 +606,7 @@ function subCrtMatchRepTeamList(shtConfig, shtTeams, cfgEvntParam){
     // Fill the Array
     for(var i = 0; i < TeamListLen; i++){
       // Get the Team Name and Team Member
-      dataList = Teams[pntrTeam][1];
+      dataList = Teams[pntrTeam][0];
       // Populate Array
       TeamList[i] = dataList;
       // Update Pointers accordingly
@@ -626,7 +622,7 @@ function subCrtMatchRepTeamList(shtConfig, shtTeams, cfgEvntParam){
     // Fill the Array
     for(var i = 0; i < TeamListLen; i++){
       // Get the Team Name and Team Member
-      dataList = Teams[pntrTeam][1] + ' - ' + Teams[pntrTeam][pntrPlyr];
+      dataList = Teams[pntrTeam][0] + ' - ' + Teams[pntrTeam][pntrPlyr];
       // Populate Array
       TeamList[i] = dataList;
       // Update Pointers accordingly
@@ -647,7 +643,7 @@ function subCrtMatchRepTeamList(shtConfig, shtTeams, cfgEvntParam){
     // Fill the Array
     for(var i = 0; i < TeamListLen; i++){
       // Get the Team Name and Team Member
-      dataList = Teams[pntrTeam][1];
+      dataList = Teams[pntrTeam][0];
       // Populate Array
       TeamList[i] = dataList;
       // Update Pointers accordingly
@@ -663,7 +659,7 @@ function subCrtMatchRepTeamList(shtConfig, shtTeams, cfgEvntParam){
     // Fill the Array
     for(var i = 0; i < TeamListLen; i++){
       // Get the Team Name and Team Member
-      dataList = Teams[pntrTeam][1] + ' - ' + Teams[pntrTeam][pntrPlyr];
+      dataList = Teams[pntrTeam][0] + ' - ' + Teams[pntrTeam][pntrPlyr];
       // Populate Array
       TeamList[i] = dataList;
       // Update Pointers accordingly
@@ -680,22 +676,32 @@ function subCrtMatchRepTeamList(shtConfig, shtTeams, cfgEvntParam){
   // If Teams are 4 players and Matches are 2v2 (Team A - Team B)
   if(evntTeamNbPlyr == '4' && evntTeamMatch == '2v2'){
     // Create the Team List Array
-    TeamListLen = NbTeam * 2;
+    TeamListLen = NbTeam;
+    //TeamListLen = NbTeam * 2;
     TeamList = new Array(TeamListLen);
     // Fill the Array
     for(var i = 0; i < TeamListLen; i++){
-      // Get the Team Name and Team Member Combination (P1 + P2, P3 + P4, P1 + P3, P2 + P4, P1 + P4, P2 + P3)
-      if(pntrPlyr == 6) dataList = Teams[pntrTeam][1] + ' -  A';
-      if(pntrPlyr == 7) dataList = Teams[pntrTeam][1] + ' -  B';
+      // Get the Team Name and Team Member
+      dataList = Teams[pntrTeam][0];
       // Populate Array
       TeamList[i] = dataList;
       // Update Pointers accordingly
-      if(pntrPlyr == 6)  pntrPlyr = 7;
-      if(pntrPlyr == 7){
-        pntrPlyr = 6;
-        pntrTeam++;
-      }
+      pntrTeam++;
     }
+    
+//    for(var i = 0; i < TeamListLen; i++){
+//      // Get the Team Name and Team Member Combination (P1 + P2, P3 + P4, P1 + P3, P2 + P4, P1 + P4, P2 + P3)
+//      if(pntrPlyr == 6) dataList = Teams[pntrTeam][1] + ' -  A';
+//      if(pntrPlyr == 7) dataList = Teams[pntrTeam][1] + ' -  B';
+//      // Populate Array
+//      TeamList[i] = dataList;
+//      // Update Pointers accordingly
+//      if(pntrPlyr == 6)  pntrPlyr = 7;
+//      if(pntrPlyr == 7){
+//        pntrPlyr = 6;
+//        pntrTeam++;
+//      }
+//    }
   }
   
   // If Teams are 4 players and Matches are 4v4
@@ -706,13 +712,34 @@ function subCrtMatchRepTeamList(shtConfig, shtTeams, cfgEvntParam){
     // Fill the Array
     for(var i = 0; i < TeamListLen; i++){
       // Get the Team Name and Team Member
-      dataList = Teams[pntrTeam][1];
+      dataList = Teams[pntrTeam][0];
       // Populate Array
       TeamList[i] = dataList;
       // Update Pointers accordingly
       pntrTeam++;
     }
   }
-  
   return TeamList;   
+}
+
+// **********************************************
+// function subUpdatePlayer()
+//
+// This function updates the Player Sheet with 
+// the Member Info
+//
+// **********************************************
+
+function subUpdatePlayer(shtConfig, shtPlayers, Member){
+
+  // Registration Form Construction 
+  // Column 1 = Category Name
+  // Column 2 = Category Order in Form
+  // Column 3 = Column Value in Player/Team Sheet
+  var cfgRegFormCnstrVal = shtConfig.getRange(4,26,20,3).getValues();
+  var colTblMemberFileID = cfgRegFormCnstrVal[17][2];
+  var NbPlayers = shtPlayers.getRange(2,1).getValue();
+  
+  shtPlayers.getRange(NbPlayers+2,colTblMemberFileID).setValue(Member[7]);
+
 }

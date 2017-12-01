@@ -114,6 +114,11 @@ function fcnInitializeEvent(){
     var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
     var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
     var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
+    // Registration Form Construction 
+    // Column 1 = Category Name
+    // Column 2 = Category Order in Form
+    // Column 3 = Column Value in Player/Team Sheet
+    var cfgRegFormCnstrVal = shtConfig.getRange(4,26,20,3).getValues();
     
     // Event Parameters
     var evntLocation = cfgEvntParam[0][0];
@@ -128,6 +133,8 @@ function fcnInitializeEvent(){
     var colRspMatchIDLastVal = cfgColRspSht[6][0];
     var colRndWin = cfgColRndSht[3][0];
     var colRndMatchLoc = cfgColRndSht[8][0];
+    var colPlyrName = cfgRegFormCnstrVal[ 2][2];
+    var colPlyrStatus = cfgRegFormCnstrVal[16][2];
     
     // Sheets
     var shtStandings =   ss.getSheetByName('Standings');
@@ -174,7 +181,10 @@ function fcnInitializeEvent(){
     Logger.log('Event Data Cleared');
     
     // Clear Player List
-    shtPlayers.getRange(3, 2, MaxRowPlayers-2, MaxColPlayers-1).clearContent();
+    // From Player Name to Status
+    shtPlayers.getRange(3, 2, MaxRowPlayers-2, colPlyrStatus-colPlyrName).clearContent();
+    // From Status to rest of File
+    shtPlayers.getRange(3, colPlyrStatus+1, MaxRowPlayers-2, MaxColPlayers-colPlyrStatus).clearContent();
     shtExtPlayers.getRange(3, 2, MaxRowPlayers-2, MaxColPlayers-1).clearContent();
     Logger.log('Player List Cleared');
     
@@ -194,8 +204,14 @@ function fcnInitializeEvent(){
     // Clear Players DB and Card Pools
     fcnDelPlayerArmyDB();
     fcnDelPlayerArmyList();
+    fcnDelPlayerRecord();
     Logger.log('Army DB and Army Lists Cleared');
   }
+
+  title = cfgEventType +" Data Cleared";
+  msg = "All " + cfgEventType +" Data has been cleared. You are now ready to start a new " + cfgEventType;
+  uiResponse = ui.alert(title, msg, ui.ButtonSet.OK);
+  
 }
 
 // **********************************************
@@ -271,11 +287,15 @@ function fcnClearMatchResults(){
       shtRound.getRange(5,colRndMatchLoc,32,4).clearContent();
     }
     
-    Logger.log('League Data Cleared');
+    Logger.log('Match Data Cleared');
     
     // Update Standings Copies
     fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, cfgColRndSht, 0, 1);
     Logger.log('Standings Updated');
+    
+    title = "Match Results Cleared";
+    msg = "All Match Results have been cleared. You are now ready to submit Match Reports";
+    uiResponse = ui.alert(title, msg, ui.ButtonSet.OK);
   }
 }
 
@@ -773,7 +793,7 @@ function fcnDelPlayerArmyList(){
 
 function fcnDelPlayerRecord(){
   
-  Logger.log("Routine: fcnDelPlayerArmyDB");
+  Logger.log("Routine: fcnDelPlayerRecord");
 
   // Main Spreadsheet
   var ss = SpreadsheetApp.getActiveSpreadsheet();

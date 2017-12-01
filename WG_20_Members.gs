@@ -8,7 +8,9 @@
 // **********************************************
 
 function fcnSearchMember(Member){
-
+  
+  Logger.log("Routine: fcnSearchMember");
+  
   //  Member[ 0] = Member ID
   //  Member[ 1] = Member Full Name
   //  Member[ 2] = Member First Name
@@ -27,7 +29,7 @@ function fcnSearchMember(Member){
   //  Member[15] = Member Spare
   
   // Defines the Search
-  var searchFor ='title contains "' + Member[0] + '"';
+  var searchFor ='title contains "' + Member[1] + '"';
   var names =   [];
   var fileIds = [];
   
@@ -45,7 +47,7 @@ function fcnSearchMember(Member){
 
   // If Member is Not Found
   if(fileIds.length == 0){
-    Member[7] = 'File Not Found';
+    Member[7] = 'Member Not Found';
     Member[8] = '';
   }
   
@@ -67,6 +69,9 @@ function fcnSearchMember(Member){
 // **********************************************
 
 function fcnCreateMember(Member) {
+  
+  Logger.log("Routine: fcnCreateMember");
+  
   //  Member[ 0] = Member ID
   //  Member[ 1] = Member Full Name
   //  Member[ 2] = Member First Name
@@ -112,11 +117,20 @@ function fcnCreateMember(Member) {
   
   // Copy Templates to Member Spreadsheet
   var ssTemplates = SpreadsheetApp.openById("1HPnrUdIen2X0YeV1R2eNf5CEOZ9Yq_GYJEWTfAuIAMU");
-  ssTemplates.getSheetByName("Member Info").copyTo(ssMember);
-  ssTemplates.getSheetByName("WG Record Template").copyTo(ssMember);
-  ssTemplates.getSheetByName("TCG Record Template").copyTo(ssMember);
-  ssTemplates.getSheetByName("BG Record Template").copyTo(ssMember);
-  
+  // English Files
+  if(Member[5] == "English"){
+    ssTemplates.getSheetByName("Member Info EN").copyTo(ssMember);
+    ssTemplates.getSheetByName("WG Record Template EN").copyTo(ssMember);
+    ssTemplates.getSheetByName("TCG Record Template EN").copyTo(ssMember);
+    ssTemplates.getSheetByName("BG Record Template EN").copyTo(ssMember);
+  }
+  //  French Files
+  if(Member[5] == "Français"){
+    ssTemplates.getSheetByName("Member Info FR").copyTo(ssMember);
+    ssTemplates.getSheetByName("WG Record Template FR").copyTo(ssMember);
+    ssTemplates.getSheetByName("TCG Record Template FR").copyTo(ssMember);
+    ssTemplates.getSheetByName("BG Record Template FR").copyTo(ssMember);
+  }
   // Delete Sheet1
   ssMember.deleteSheet(ssMember.getSheets()[0]);
   
@@ -130,13 +144,16 @@ function fcnCreateMember(Member) {
   for(var sht= 0; sht < memberNbSheets; sht++){
     Sheet = memberSheets[sht];
     SheetName = Sheet.getName();
-    Logger.log("sht: %s - SheetName: %s",sht,SheetName);
     // Rename all tabs
     switch(SheetName){
-      case "Copy of Member Info"         : Sheet.setName("Info"); break;
-      case "Copy of WG Record Template"  : Sheet.setName("WG Record"); break;
-      case "Copy of TCG Record Template" : Sheet.setName("TCG Record"); break;
-      case "Copy of BG Record Template"  : Sheet.setName("BG Record"); break;
+      case "Copy of Member Info EN"         : Sheet.setName("Info"); break;
+      case "Copy of WG Record Template EN"  : Sheet.setName("WG Record"); break;
+      case "Copy of TCG Record Template EN" : Sheet.setName("TCG Record"); break;
+      case "Copy of BG Record Template EN"  : Sheet.setName("BG Record"); break;
+      case "Copy of Member Info FR"         : Sheet.setName("Info"); break;
+      case "Copy of WG Record Template FR"  : Sheet.setName("WG Fiche"); break;
+      case "Copy of TCG Record Template FR" : Sheet.setName("TCG Fiche"); break;
+      case "Copy of BG Record Template FR"  : Sheet.setName("BG Fiche"); break;
     }
   }
   
@@ -164,8 +181,5 @@ function fcnCreateMember(Member) {
   
   // Write Member Info to Member Spreadsheet
   shtInfo.getRange(1, 2, 16, 1).setValues(valMemberSheet);
-  
-  Logger.log(valMemberList);
-  Logger.log(valMemberSheet);
   return Member;
 }

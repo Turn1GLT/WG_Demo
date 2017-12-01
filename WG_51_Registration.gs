@@ -1,5 +1,5 @@
 // **********************************************
-// function fcnRegistrationWG
+// function fcnRegistrationPlyrWG
 //
 // This function adds the new player to
 // the Player's List and calls other functions
@@ -7,9 +7,9 @@
 //
 // **********************************************
 
-function fcnRegistrationWG(shtResponse, RowResponse){
+function fcnRegistrationPlyrWG(shtResponse, RowResponse){
 
-  Logger.log("Routine: fcnRegistrationWG");
+  Logger.log("Routine: fcnRegistrationPlyrWG");
   
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var shtConfig = ss.getSheetByName("Config");
@@ -21,6 +21,12 @@ function fcnRegistrationWG(shtResponse, RowResponse){
   var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
   var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
   var cfgArmyBuild = shtConfig.getRange(4,33,20,1).getValues();
+  
+  // Registration Form Construction 
+  // Column 1 = Category Name
+  // Column 2 = Category Order in Form
+  // Column 3 = Column Value in Player/Team Sheet
+  var cfgRegFormCnstrVal = shtConfig.getRange(4,26,20,3).getValues();
   
   // Log Sheet
   var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName("Log");
@@ -62,7 +68,7 @@ function fcnRegistrationWG(shtResponse, RowResponse){
   var RegRspnVal = shtResponse.getRange(RowResponse,1,1,shtRespMaxCol).getValues();
   
   // Add Player to Player List
-  Member = fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam, Member);
+  Member = fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam, cfgRegFormCnstrVal, Member);
   
   // If Player was succesfully added, the Full Name will be created, then execute the following
   if(Member[1] != "") {
@@ -71,26 +77,31 @@ function fcnRegistrationWG(shtResponse, RowResponse){
     if(exeMemberLink == "Enabled"){
       // Search if Player is Member of Turn1 GLT
       Member = fcnSearchMember(Member);
-      if(Member[7] != "File Not Found") Logger.log("Member %s already existing",Member[1]);
+      if(Member[7] != "Member Not Found") Logger.log("Member %s already existing",Member[1]);
+      Logger.log("Member File ID: %s",Member[7]);
       // If the Member Record File does not exist, the Player is not a member, create it 
-      if(Member[7] == "File Not Found") {
+      if(Member[7] == "Member Not Found") {
         Member = fcnCreateMember(Member);
-        if(Member[7] != "File Not Found") Logger.log("Member %s Created",Member[1]);
+        if(Member[7] != "Member Not Found") Logger.log("Member %s Created",Member[1]);
       }
+      // Update Player File ID in Player Sheet
+      subUpdatePlayer(shtConfig, shtPlayers, Member);
     }
+    
+    
     // Create Player Army DB
     fcnCrtPlayerArmyDB();
     Logger.log("Army Database Generated");
     
-    // Process Player Army List to Army DB 
-    fcnProcessArmyList(shtIDs, shtConfig, shtPlayers, shtResponse, RegRspnVal, Member);
-    Logger.log("Army Data Processed to Army DB");
+//    // Process Player Army List to Army DB 
+//    fcnProcessArmyList(shtIDs, shtConfig, shtPlayers, shtResponse, RegRspnVal, Member);
+//    Logger.log("Army Data Processed to Army DB");
     
     // Create Player Army Lists (Player Access)
     fcnCrtPlayerArmyList();
     Logger.log("Army List Generated");  
     
-    // Create Player Army Lists (Player Access)
+    // Create Player Event Record (Player Access)
     fcnCrtPlayerRecord();
     Logger.log("Player Record Generated");  
     
@@ -126,8 +137,6 @@ function fcnRegistrationWG(shtResponse, RowResponse){
 }
 
 
-
-
 // **********************************************
 // function fcnAddPlayerWG
 //
@@ -136,7 +145,7 @@ function fcnRegistrationWG(shtResponse, RowResponse){
 //
 // **********************************************
 
-function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam, Member) {
+function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam, cfgRegFormCnstrVal, Member) {
 
   // Opens External Players List File
   var ssExtPlayers = SpreadsheetApp.openById(shtIDs[14][0]);
@@ -151,12 +160,6 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
   // Event Properties
   var evntFormat = cfgEvntParam[9][0];
   var evntNbPlyrTeam = cfgEvntParam[10][0];
-  
-  // Registration Form Construction 
-  // Column 1 = Category Name
-  // Column 2 = Category Order in Form
-  // Column 3 = Column Value in Player/Team Sheet
-  var cfgRegFormCnstrVal = shtConfig.getRange(4,26,20,3).getValues();
   
   // Response Columns
   var colRspEmail =        cfgRegFormCnstrVal[ 1][1];
@@ -188,8 +191,10 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
   var colTblArmyWarlord =  cfgRegFormCnstrVal[13][2];
   var colTblArmyList =     cfgRegFormCnstrVal[14][2];
   
-  var colTblContact = cfgRegFormCnstrVal[18][2];
-  var colTblContactGrp = cfgRegFormCnstrVal[19][2];
+  var colTblStatus =       cfgRegFormCnstrVal[16][2];
+  var colTblMemberFileID = cfgRegFormCnstrVal[17][2];
+  var colTblContact =      cfgRegFormCnstrVal[18][2];
+  var colTblContactGrp =   cfgRegFormCnstrVal[19][2];
   
   // Routine Variables
   var PlyrEmail = "";
@@ -376,18 +381,135 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
   }
   
   // Update Member Data
-  Member[0] = PlyrFullName; // Member Full Name
-  Member[1] = PlyrFrstName; // Member First Name
-  Member[2] = PlyrLastName; // Member Last Name
-  Member[3] = PlyrEmail;    // Member Email
-  Member[4] = PlyrLanguage; // Member Language
-  Member[5] = PlyrPhone;    // Member Phone Number
-  Member[6] = "";           // Member Record File ID
-  Member[7] = "";           // Member Record File Link
-  Member[8] = "";           // Member Spare
-  Member[9] = "";           // Member Spare
+  Member[ 0] = "";           // Member ID
+  Member[ 1] = PlyrFullName; // Member Full Name
+  Member[ 2] = PlyrFrstName; // Member First Name
+  Member[ 3] = PlyrLastName; // Member Last Name
+  Member[ 4] = PlyrEmail;    // Member Email
+  Member[ 5] = PlyrLanguage; // Member Language
+  Member[ 6] = PlyrPhone;    // Member Phone Number
+  Member[ 7] = "";           // Member Record File ID
+  Member[ 8] = "";           // Member Record File Link
+  Member[ 9] = "";           // Member Spare
+  Member[10] = "";           // Member Spare
+  Member[11] = "";           // Member Spare
+  Member[12] = "";           // Member Spare
+  Member[13] = "";           // Member Spare
+  Member[14] = "";           // Member Spare
+  Member[15] = "";           // Member Spare
   
   return Member;
+}
+
+// **********************************************
+// function fcnRegistrationTeamWG
+//
+// This function adds the new player to
+// the Player's List and calls other functions
+// to create its complete profile
+//
+// **********************************************
+
+function fcnRegistrationTeamWG(shtResponse, RowResponse){
+
+  Logger.log("Routine: fcnRegistrationTeamWG");
+  
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var shtConfig = ss.getSheetByName("Config");
+  var shtPlayers = ss.getSheetByName("Players");
+  var shtTeams = ss.getSheetByName("Teams");
+  
+  var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
+  var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
+  var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
+  var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
+  var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
+  var cfgArmyBuild = shtConfig.getRange(4,33,20,1).getValues();
+  
+  // Registration Form Construction 
+  // Column 1 = Category Name
+  // Column 2 = Category Order in Form
+  // Column 3 = Column Value in Player/Team Sheet
+  var cfgRegFormCnstrVal = shtConfig.getRange(24,26,20,3).getValues();
+  
+  // Log Sheet
+  var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName("Log");
+  
+  // Execution Parameters
+  var exeMemberLink = cfgExecData[7][0];
+  
+  // Event Parameters
+  var evntEscalation = cfgEvntParam[19][0];
+  
+  // Match Report Form IDs
+  var MatchFormIdEN = shtIDs[7][0];
+  var MatchFormIdFR = shtIDs[8][0];
+  
+  // Create Member 
+  var Member = subCreateArray(16,1);
+  //  Member[ 0] = Member ID
+  //  Member[ 1] = Member Full Name
+  //  Member[ 2] = Member First Name
+  //  Member[ 3] = Member Last Name
+  //  Member[ 4] = Member Email
+  //  Member[ 5] = Member Language
+  //  Member[ 6] = Member Phone Number
+  //  Member[ 7] = Member Record File ID
+  //  Member[ 8] = Member Record File Link
+  //  Member[ 9] = Member Spare
+  //  Member[10] = Member Spare
+  //  Member[11] = Member Spare
+  //  Member[12] = Member Spare
+  //  Member[13] = Member Spare
+  //  Member[14] = Member Spare
+  //  Member[15] = Member Spare
+  
+  // Log new Registration
+  Logger.log( "------- New Team Registration -------");
+
+  // Get All Values from Response Sheet
+  var shtRespMaxCol = shtResponse.getMaxColumns();
+  var RegRspnVal = shtResponse.getRange(RowResponse,1,1,shtRespMaxCol).getValues();
+  
+  // Add Team to Team List
+  Member = fcnAddTeamWG(shtIDs, shtConfig, shtTeams, RegRspnVal, cfgEvntParam, cfgRegFormCnstrVal, Member);
+  
+  // If Player was succesfully added, the Full Name will be created, then execute the following
+  if(Member[1] != "") {
+    
+    // Create Team Event Record (Player Access)
+    fcnCrtTeamRecord();
+    Logger.log("Player Record Generated");  
+    
+    // If Escalation is Enabled, Create Player Escalation Bonus sheet 
+    if(evntEscalation == "Enabled"){
+      fcnCrtPlayerEscltBonus();
+      Logger.log("Round Unit Sheet Generated");   
+    }
+    // Add Team to Match Report Forms
+    if(MatchFormIdEN != "" && MatchFormIdFR != ""){
+      fcnModifyReportFormWG(shtConfig, shtIDs, shtPlayers, cfgEvntParam, evntEscalation);
+      Logger.log("Match Report Form Updated");  
+    }
+    
+    // Execute Ranking function in Standing tab
+    fcnUpdateStandings(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExecData);
+      Logger.log("Overall Standings Updated");  
+    
+    // Copy all data to Standing League Spreadsheet
+    fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, cfgColRndSht, 0, 1);
+      Logger.log("Standing Sheets Updated");  
+    
+    // Send Confirmation to New Player
+    //fcnSendNewPlayerConf(shtConfig, PlayerData);
+    //Logger.log("Confirmation Email Sent");
+    
+    // Send Confirmation to Location
+    // fcnSendNewPlayerConfLocation(shtConfig, PlayerData)
+  }
+
+  // Post Log to Log Sheet
+  subPostLog(shtLog, Logger.getLog());
 }
 
 

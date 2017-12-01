@@ -1,12 +1,12 @@
 // **********************************************
-// function fcnCrtRegstnForm_WG()
+// function fcnCrtRegstnFormPlyr_WG()
 //
-// This function creates the Registration Form 
+// This function creates the Player Registration Form 
 // based on the parameters in the Config File
 //
 // **********************************************
 
-function fcnCrtRegstnForm_WG() {
+function fcnCrtRegstnFormPlyr_WG() {
   
   Logger.log("Routine: fcnCreateRegForm_WG");
   
@@ -119,18 +119,19 @@ function fcnCrtRegstnForm_WG() {
   // If Form Exists, Log Error Message
   if(FormIdEN != '' || FormIdFR != ''){
     ErrorVal = 1;
-    title = "Registration Forms Error";
-    msg = "The Registration Forms already exist. Unlink and delete their response sheets then delete the forms and their ID in the configuration file.";
+    var ui = SpreadsheetApp.getUi();
+    var title = "Registration Forms Error";
+    var msg = "The Registration Forms already exist. Unlink and delete their response sheets then delete the forms and their ID in the configuration file.";
     var uiResponse = ui.alert(title, msg, ui.ButtonSet.OK);
   }
   
   // If Form does not exist, create it
   if(FormIdEN == '' && FormIdFR == ''){
     // Create Forms
-    FormNameEN = evntLocation + " " + evntName + " Registration EN";
+    FormNameEN = evntLocation + " " + evntName + " Player Registration EN";
     formEN = FormApp.create(FormNameEN).setTitle(FormNameEN);
     
-    FormNameFR = evntLocation + " " + evntName + " Registration FR";
+    FormNameFR = evntLocation + " " + evntName + " Player Registration FR";
     formFR = FormApp.create(FormNameFR).setTitle(FormNameFR);
     
     // Loops in Response Columns Values and Create Appropriate Question
@@ -682,9 +683,9 @@ function fcnCrtRegstnForm_WG() {
       // Find and Rename Response Sheet
       ss = SpreadsheetApp.openById(ssID);
       ssSheets = ss.getSheets();
-      ssSheets[0].setName('Registration EN');
+      ssSheets[0].setName('Reg Plyr EN');
       // Move Response Sheet to appropriate spot in file
-      shtResp = ss.getSheetByName('Registration EN');
+      shtResp = ss.getSheetByName('Reg Plyr EN');
       ss.moveActiveSheet(17);
       shtRespMaxRow = shtResp.getMaxRows();
       shtRespMaxCol = shtResp.getMaxColumns();
@@ -707,10 +708,10 @@ function fcnCrtRegstnForm_WG() {
       // Find and Rename Response Sheet
       ss = SpreadsheetApp.openById(ssID);
       ssSheets = ss.getSheets();
-      ssSheets[0].setName('Registration FR');
+      ssSheets[0].setName('Reg Plyr FR');
       
       // Move Response Sheet to appropriate spot in file
-      shtResp = ss.getSheetByName('Registration FR');
+      shtResp = ss.getSheetByName('Reg Plyr FR');
       ss.moveActiveSheet(18);
       shtRespMaxRow = shtResp.getMaxRows();
       shtRespMaxCol = shtResp.getMaxColumns();

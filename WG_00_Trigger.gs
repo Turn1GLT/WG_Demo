@@ -15,22 +15,31 @@ function onSubmitWG_Demo40K(e) {
   var shtResponse = SpreadsheetApp.getActiveSheet();
   var ShtName = shtResponse.getSheetName();
   
-  Logger.log('------- New Response Received -------');
-  Logger.log('Sheet: %s',ShtName);
-  Logger.log('Response Row: %s',RowResponse);
+  Logger.log("------- New Response Received -------");
+  Logger.log("Sheet: %s",ShtName);
+  Logger.log("Response Row: %s",RowResponse);
   
   // If Form Submitted is a Match Report, process results
-  if(ShtName == 'Responses EN' || ShtName == 'Responses FR') {
+  if(ShtName == "MatchResp EN" || ShtName == "MatchResp FR") {
+    Logger.log("Match Report Submission Received");
     fcnProcessMatchWG();
   }
   
   // If Form Submitted is a Player Subscription, Register Player
-  if(ShtName == 'Registration EN' || ShtName == 'Registration FR'){
-    fcnRegistrationWG(shtResponse, RowResponse);
+  if(ShtName == "Reg Plyr EN" || ShtName == "Reg Plyr FR"){
+    Logger.log("Player Registration Received");
+    fcnRegistrationPlyrWG(shtResponse, RowResponse);
+  }
+
+  // If Form Submitted is a Team Subscription, Register Team
+  if(ShtName == "Reg Team EN" || ShtName == "Reg Team FR"){
+    Logger.log("Team Registration Received");
+    fcnRegistrationTeamWG(shtResponse, RowResponse);
   }
   
   // If Form Submitted is a Round Bonus Unit, Enter Bonus Unit
-  if(ShtName == 'EscltBonus EN' || ShtName == 'EscltBonus FR'){
+  if(ShtName == "EscltBonus EN" || ShtName == "EscltBonus FR"){
+    Logger.log("Escalation Bonus Submission Received");
     fcnEscltBonusWG(shtResponse, RowResponse);
   }
 } 
@@ -47,32 +56,34 @@ function onSubmitWG_Demo40K(e) {
 function onOpenWG_Demo40K() {
   
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var evntEscalation = ss.getSheetByName('Config').getRange(68,2).getValue();
+  var evntFormat = ss.getSheetByName("Config").getRange(13,4).getValue();
+  var evntEscalation = ss.getSheetByName("Config").getRange(23,4).getValue();
     
   var AnalyzeDataMenu  = [];
-  AnalyzeDataMenu.push({name: 'Analyze New Match Entry', functionName: 'fcnProcessMatchWG'});
-  AnalyzeDataMenu.push({name: 'Clear Match Results and Entries', functionName:'fcnClearMatchResults'});
+  AnalyzeDataMenu.push({name: "Analyze New Match Entry", functionName: "fcnProcessMatchWG"});
+  AnalyzeDataMenu.push({name: "Clear Match Results and Entries", functionName:"fcnClearMatchResults"});
   
   var LeagueMenu = [];
-  LeagueMenu.push({name:'Initialize Event', functionName:'fcnInitializeEvent'});
-  LeagueMenu.push({name:'Update Config ID & Links', functionName:'fcnUpdateLinksIDs'});
-  LeagueMenu.push({name:'Create Match Report Forms', functionName:'fcnCrtMatchReportForm_WG_S'});
-  LeagueMenu.push({name:'Setup Match Response Sheets',functionName:'fcnSetupMatchResponseSht'});
-  LeagueMenu.push({name:'Create Registration Forms', functionName:'fcnCrtRegstnForm_WG'});
-  if(evntEscalation == 'Enabled') LeagueMenu.push({name:'Create Escalation Bonus Forms', functionName:'fcnCrtEscltForm_WG'});
+  LeagueMenu.push({name:"Initialize Event", functionName:"fcnInitializeEvent"});
+  LeagueMenu.push({name:"Update Config ID & Links", functionName:"fcnUpdateLinksIDs"});
+  LeagueMenu.push({name:"Create Match Report Forms", functionName:"fcnCrtMatchReportForm_WG_S"});
+  LeagueMenu.push({name:"Setup Match Response Sheets",functionName:"fcnSetupMatchResponseSht"});
+  LeagueMenu.push({name:"Create Player Registration Forms", functionName:"fcnCrtRegstnFormPlyr_WG"});
+  if(evntFormat == "Team")   LeagueMenu.push({name:"Create Team Registration Forms", functionName:"fcnCrtRegstnFormTeam_WG"});
+  if(evntEscalation == "Enabled") LeagueMenu.push({name:"Create Escalation Bonus Forms", functionName:"fcnCrtEscltForm_WG"});
   LeagueMenu.push(null);
-  LeagueMenu.push({name:'Create Players Army DBs', functionName:'fcnCrtPlayerArmyDB'});
-  LeagueMenu.push({name:'Create Players Army Lists', functionName:'fcnCrtPlayerArmyList'});
-  LeagueMenu.push({name:'Create Players Records', functionName:'fcnCrtPlayerRecord'});
-  if(evntEscalation == 'Enabled') LeagueMenu.push({name:'Create Players Escalation Bonus Sheets', functionName:'fcnCrtPlayerEscltBonus'});
+  LeagueMenu.push({name:"Create Players Army DBs", functionName:"fcnCrtPlayerArmyDB"});
+  LeagueMenu.push({name:"Create Players Army Lists", functionName:"fcnCrtPlayerArmyList"});
+  LeagueMenu.push({name:"Create Players Records", functionName:"fcnCrtPlayerRecord"});
+  if(evntEscalation == "Enabled") LeagueMenu.push({name:"Create Players Escalation Bonus Sheets", functionName:"fcnCrtPlayerEscltBonus"});
   LeagueMenu.push(null);
-  LeagueMenu.push({name:'Delete Players Army DBs', functionName:'fcnDelPlayerArmyDB'});
-  LeagueMenu.push({name:'Delete Players Army Lists', functionName:'fcnDelPlayerArmyList'});
-  LeagueMenu.push({name:'Delete Players Records', functionName:'fcnDelPlayerRecord'});
-  if(evntEscalation == 'Enabled') LeagueMenu.push({name:'Delete Players Escalation Bonus Sheets', functionName:'fcnDelPlayerEscltBonus'});
+  LeagueMenu.push({name:"Delete Players Army DBs", functionName:"fcnDelPlayerArmyDB"});
+  LeagueMenu.push({name:"Delete Players Army Lists", functionName:"fcnDelPlayerArmyList"});
+  LeagueMenu.push({name:"Delete Players Records", functionName:"fcnDelPlayerRecord"});
+  if(evntEscalation == "Enabled") LeagueMenu.push({name:"Delete Players Escalation Bonus Sheets", functionName:"fcnDelPlayerEscltBonus"});
   
   var TestMenu  = [];
-  TestMenu.push({name: 'Test Email Log', functionName: 'fcnTestEmail'});
+  TestMenu.push({name: "Test Email Log", functionName: "fcnTestEmail"});
   
   ss.addMenu("Manage League", LeagueMenu);
   ss.addMenu("Process Data", AnalyzeDataMenu);

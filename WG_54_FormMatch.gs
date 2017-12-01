@@ -144,15 +144,16 @@ function fcnCrtMatchReportForm_WG_S() {
     if(NbPlyr > 0) PlayerList = subCrtMatchRepPlyrList(shtConfig, shtPlayers, cfgEvntParam);
     
     // Create Team List for Match Report
-    if (NbTeam > 0) TeamList = subCrtMatchRepTeamList(shtConfig, shtTeams, cfgEvntParam);
+    if(NbTeam > 0) TeamList = subCrtMatchRepTeamList(shtConfig, shtTeams, cfgEvntParam);
 
-      
-    
-    
+         
     // Loops in Response Columns Values and Create Appropriate Question
     for(var i = 1; i < cfgReportFormCnstrVal.length; i++){
       // Look for Col Equal to Question Order
       if(QuestionOrder == cfgReportFormCnstrVal[i][1]){
+        Logger.log("Switch");
+        Logger.log("Qstn:%s - Value:%s",QuestionOrder,cfgReportFormCnstrVal[i][1]);
+        Logger.log(cfgReportFormCnstrVal[i][0]);
         switch(cfgReportFormCnstrVal[i][0]){
             
             //---------------------------------------------
@@ -321,15 +322,15 @@ function fcnCrtMatchReportForm_WG_S() {
             if(evntPtsGainedMatch == 'Enabled'){
               // English
               formEN.addTextItem()
-              .setTitle("Points: Winner")
-              .setHelpText("Enter the points scored by the Winner")
+              .setTitle("Points Scored")
+              .setHelpText("Enter the points scored by the Winning Player or Team")
               .setValidation(PointsValidationEN)
               .setRequired(true);
               
               // French
               formFR.addTextItem()
-              .setTitle("Points: Gagnant")
-              .setHelpText("Entrez les points accumulés par le Gagnant")
+              .setTitle("Points Marqués")
+              .setHelpText("Entrez les points accumulés par le joueur ou l'équipe gagnante")
               .setValidation(PointsValidationFR)
               .setRequired(true);
             }
@@ -342,15 +343,15 @@ function fcnCrtMatchReportForm_WG_S() {
             if(evntPtsGainedMatch == 'Enabled'){
               // English
               formEN.addTextItem()
-              .setTitle("Points: Loser")
-              .setHelpText("Enter the points scored by the Loser")
+              .setTitle("Points Scored")
+              .setHelpText("Enter the points scored by the Losing Player or Team")
               .setValidation(PointsValidationEN)
               .setRequired(true);
               
               // French
               formFR.addTextItem()
-              .setTitle("Points: Perdant")
-              .setHelpText("Entrez les points accumulés par le Perdant")
+              .setTitle("Points Marqués")
+              .setHelpText("Entrez les points accumulés par le joueur ou l'équipe perdante")
               .setValidation(PointsValidationFR)
               .setRequired(true);
             }
@@ -386,10 +387,10 @@ function fcnCrtMatchReportForm_WG_S() {
       // Find and Rename Response Sheet
       ss = SpreadsheetApp.openById(ssID);
       ssSheets = ss.getSheets();
-      ssSheets[0].setName('New Responses EN');
+      ssSheets[0].setName('New MatchResp EN');
       
       // Move Response Sheet to appropriate spot in file
-      shtResp = ss.getSheetByName('New Responses EN');
+      shtResp = ss.getSheetByName('New MatchResp EN');
       ss.moveActiveSheet(15);
       shtRespMaxRow = shtResp.getMaxRows();
       shtRespMaxCol = shtResp.getMaxColumns();
@@ -412,10 +413,10 @@ function fcnCrtMatchReportForm_WG_S() {
       // Find and Rename Response Sheet
       ss = SpreadsheetApp.openById(ssID);
       ssSheets = ss.getSheets();
-      ssSheets[0].setName('New Responses FR');
+      ssSheets[0].setName('New MatchResp FR');
       
       // Move Response Sheet to appropriate spot in file
-      shtResp = ss.getSheetByName('New Responses FR');
+      shtResp = ss.getSheetByName('New MatchResp FR');
       ss.moveActiveSheet(16);
       shtRespMaxRow = shtResp.getMaxRows();
       shtRespMaxCol = shtResp.getMaxColumns();
@@ -470,40 +471,179 @@ function fcnSetupMatchResponseSht(){
   var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
   
   // Open Responses Sheets
-  var shtOldRespEN = ss.getSheetByName('Responses EN');
-  var shtOldRespFR = ss.getSheetByName('Responses FR');
-  var shtNewRespEN = ss.getSheetByName('New Responses EN');
-  var shtNewRespFR = ss.getSheetByName('New Responses FR');
+  var shtOldRespEN = ss.getSheetByName('MatchResp EN');
+  var shtOldRespFR = ss.getSheetByName('MatchResp FR');
+  var shtNewRespEN = ss.getSheetByName('New MatchResp EN');
+  var shtNewRespFR = ss.getSheetByName('New MatchResp FR');
     
-  var OldRespMaxCol = shtOldRespEN.getMaxColumns();
   var NewRespMaxRow = shtNewRespEN.getMaxRows();
   var ColWidth;
   
   // Columns Values and Parameters
-  var RspnDataInputs = cfgColRspSht[0][0]; // from Time Stamp to Data Processed
-  var colMatchID = cfgColRspSht[1][0];
-  var colPrcsd = cfgColRspSht[2][0];
-  var colDataConflict = cfgColRspSht[3][0];
-  var colStatus = cfgColRspSht[4][0];
-  var colStatusMsg = cfgColRspSht[5][0];
-  var colMatchIDLastVal = cfgColRspSht[6][0];
-  var colNextEmptyRow = cfgColRspSht[7][0];
+  var RspnDataInputs =      cfgColRspSht[0][0]; // from Time Stamp to Data Processed
+  var colMatchID =          cfgColRspSht[1][0];
+  var colPrcsd =            cfgColRspSht[2][0];
+  var colDataConflict =     cfgColRspSht[3][0];
+  var colStatus =           cfgColRspSht[4][0];
+  var colStatusMsg =        cfgColRspSht[5][0];
+  var colMatchIDLastVal =   cfgColRspSht[6][0];
+  var colNextEmptyRow =     cfgColRspSht[7][0];
   var colNbUnprcsdEntries = cfgColRspSht[8][0];
   
+  var LastCol = colNbUnprcsdEntries;
+  var value;
+  
   // Copy Header from Old to New sheet - Loop to Copy Value and Format from cell to cell, copy formula (or set) in last cell
-  for (var col = 1; col <= OldRespMaxCol; col++){
+  for (var col = 1; col <= LastCol; col++){
     // Insert Column if it doesn't exist
-    if (col >= colMatchID-1 && col < OldRespMaxCol){
-      shtNewRespEN.insertColumnAfter(col);
-      shtNewRespFR.insertColumnAfter(col);
+    if (col >= colMatchID && col <= LastCol){
+      // Insert New Column
+      shtNewRespEN.insertColumnAfter(col-1);
+      shtNewRespFR.insertColumnAfter(col-1);
+    
+      // Set New Response Sheet Values 
+      switch(col){
+        case colMatchID :{
+          // Set Value
+          value = '=CONCATENATE("Match ID",CHAR(10),"(data copied to Match Results)")';
+          shtNewRespEN.getRange(1, col)
+          .setValue(value)
+          .setHorizontalAlignment("center")
+          .setWrap(true);
+          shtNewRespFR.getRange(1, col)
+          .setValue(value)
+          .setHorizontalAlignment("center")
+          .setWrap(true); 
+          // Set Width
+          shtNewRespEN.setColumnWidth(col, 100);
+          shtNewRespFR.setColumnWidth(col, 100);
+          break;
+        }
+		case colPrcsd :{
+          // Set Value
+          value = '=CONCATENATE("Data",CHAR(10),"Processed",CHAR(10),"Status")';
+          shtNewRespEN.getRange(1, col)
+          .setValue(value)
+          .setHorizontalAlignment("center")
+          .setWrap(true); 
+          shtNewRespFR.getRange(1, col)
+          .setValue(value)
+          .setHorizontalAlignment("center")
+          .setWrap(true); 
+          // Set Width
+          shtNewRespEN.setColumnWidth(col, 100);
+          shtNewRespFR.setColumnWidth(col, 100);
+          break;
+        }
+        case colDataConflict :{
+          // Set Value
+          value = '=CONCATENATE("Data",CHAR(10),"Conflict")';
+          shtNewRespEN.getRange(1, col)
+          .setValue(value)
+          .setHorizontalAlignment("center")
+          .setNote("Data Conflict will be validated when both players have sent their form. It will compare every field to make sure they are equal. If not, the Data Conflict column will get the value of the data number mismatching")
+          .setWrap(true); 
+          shtNewRespFR.getRange(1, col)
+          .setValue(value)
+          .setHorizontalAlignment("center")
+          .setNote("Data Conflict will be validated when both players have sent their form. It will compare every field to make sure they are equal. If not, the Data Conflict column will get the value of the data number mismatching")
+          .setWrap(true); 
+          // Set Width
+          shtNewRespEN.setColumnWidth(col, 80);
+          shtNewRespFR.setColumnWidth(col, 80);
+          break;
+        }
+        case colStatus :{
+          // Set Value
+          value = '=CONCATENATE("Process",CHAR(10),"Status")';
+          shtNewRespEN.getRange(1, col)
+          .setValue(value)
+          .setHorizontalAlignment("center")
+          .setWrap(true); 
+          shtNewRespFR.getRange(1, col)
+          .setValue(value)
+          .setHorizontalAlignment("center")
+          .setWrap(true); 
+          // Set Width
+          shtNewRespEN.setColumnWidth(col, 80);
+          shtNewRespFR.setColumnWidth(col, 80);
+          break;
+        }
+        case colStatusMsg :{
+          // Set Value
+          value = 'Status Message';
+          shtNewRespEN.getRange(1, col)
+          .setValue(value)
+          .setHorizontalAlignment("center")
+          .setWrap(true); 
+          shtNewRespFR.getRange(1, col)
+          .setValue(value)
+          .setHorizontalAlignment("center")
+          .setWrap(true); 
+          // Set Width
+          shtNewRespEN.setColumnWidth(col, 250);
+          shtNewRespFR.setColumnWidth(col, 250);
+          break;
+        }
+        case colMatchIDLastVal :{
+          // Set Value
+          value = 0;
+          shtNewRespEN.getRange(1, col)
+          .setValue(value)
+          .setHorizontalAlignment("center")
+          .setNote("Last Match ID Generated"); 
+          shtNewRespFR.getRange(1, col)
+          .setValue(value)
+          .setHorizontalAlignment("center")
+          .setNote("Last Match ID Generated"); 
+          // Set Width
+          shtNewRespEN.setColumnWidth(col, 40);
+          shtNewRespFR.setColumnWidth(col, 40);
+          break;
+        }
+        case colNextEmptyRow :{
+          // Set Value
+          value = '=SUM(indirect("R[1]C[0]",FALSE):indirect("R[301]C[0]",FALSE))+2';
+          shtNewRespEN.getRange(1, col)
+          .setValue(value)
+          .setHorizontalAlignment("center")
+          .setNote("Next Empty Row"); 
+          shtNewRespFR.getRange(1, col)
+          .setValue(value)
+          .setHorizontalAlignment("center")
+          .setNote("Next Empty Row"); 
+          // Set Width
+          shtNewRespEN.setColumnWidth(col, 40);
+          shtNewRespFR.setColumnWidth(col, 40);
+          break;
+        }
+        case colNbUnprcsdEntries :{
+          // Set Value
+          value = '=SUM(indirect("R[1]C[0]",FALSE):indirect("R[301]C[0]",FALSE))';
+          shtNewRespEN.getRange(1, col)
+          .setValue(value)
+          .setHorizontalAlignment("center")
+          .setNote("Number of Unprocessed Entries"); 
+          shtNewRespFR.getRange(1, col)
+          .setValue(value)
+          .setHorizontalAlignment("center")
+          .setNote("Number of Unprocessed Entries"); 
+          // Set Width
+          shtNewRespEN.setColumnWidth(col, 40);
+          shtNewRespFR.setColumnWidth(col, 40);
+          break;
+        }
+      }
     }
-    // Set New Response Sheet Values 
-    shtOldRespEN.getRange(1,col).copyTo(shtNewRespEN.getRange(1,col));
-    shtOldRespFR.getRange(1,col).copyTo(shtNewRespFR.getRange(1,col));
-    ColWidth = shtOldRespEN.getColumnWidth(col);
-    shtNewRespEN.setColumnWidth(col,ColWidth);
-    shtNewRespFR.setColumnWidth(col,ColWidth);
   }
+  
+  // Duplicate New Response EN and rename
+  var shtResponses = ss.getSheetByName("Responses");
+  ss.deleteSheet(shtResponses);
+  shtNewRespEN.activate();
+  ss.duplicateActiveSheet();
+  ss.getSheetByName("Copy of New MatchResp EN").setName("Responses").activate();
+  ss.moveActiveSheet(12);
   
   // Hides Columns 
   shtNewRespEN.hideColumns(colMatchID);
@@ -523,7 +663,7 @@ function fcnSetupMatchResponseSht(){
   ss.deleteSheet(shtOldRespFR);
   
   // Rename New Sheets
-  shtNewRespEN.setName('Responses EN');
-  shtNewRespFR.setName('Responses FR');
+  shtNewRespEN.setName('MatchResp EN');
+  shtNewRespFR.setName('MatchResp FR');
 
 }

@@ -30,13 +30,13 @@ function fcnProcessMatchWG() {
   // Column Values and Parameters
   var RspnDataInputs = cfgColRspSht[0][0]; // from Time Stamp to Data Processed
   var colMatchID = cfgColRspSht[1][0];
-  var colDataCopied = cfgColRspSht[2][0];
+  var colDataPrcsd = cfgColRspSht[2][0];
   var colNextEmptyRow = cfgColRspSht[7][0];
   var colNbUnprcsdEntries = cfgColRspSht[8][0];
   
-  var colArrayPassword  = cfgColMatchRep[1][0]-1;
-  var colArrayRoundNum  = cfgColMatchRep[3][0]-1;
-  var colArrayDataPrcsd = colDataCopied-1;
+  var colArrRspnPassword  = cfgColMatchRep[1][0]-1;
+  var colArrRspnRoundNum  = cfgColMatchRep[3][0]-1;
+  var colArrRspnDataPrcsd = colDataPrcsd-1;
   
   // League Parameters
   var evntRoundDuration = cfgEvntParam[13][0];
@@ -95,9 +95,9 @@ function fcnProcessMatchWG() {
       // Copy the new response data (from Time Stamp to Data Copied Field)
       ResponseData = shtRspnEN.getRange(RspnRow, 1, 1, RspnDataInputs).getValues();
       TimeStamp = ResponseData[0][0];
-      Password = ResponseData[0][colArrayPassword];
-      RoundNum = ResponseData[0][colArrayRoundNum];
-      DataCopiedStatus = ResponseData[0][colArrayDataPrcsd];
+      Password = ResponseData[0][colArrRspnPassword];
+      RoundNum = ResponseData[0][colArrRspnRoundNum];
+      DataCopiedStatus = ResponseData[0][colArrRspnDataPrcsd];
       
       // If TimeStamp is null, Delete Row and start over
       if(TimeStamp == '' && RspnRow < RspnMaxRowsEN) {
@@ -117,7 +117,7 @@ function fcnProcessMatchWG() {
         if (DataCopiedStatus == '' && PasswordValid == 1){
           Logger.log('Password Valid, Data Copied to Responses');
           DataCopiedStatus = 'Data Copied';
-          shtRspnEN.getRange(RspnRow, colDataCopied).setValue(DataCopiedStatus);
+          shtRspnEN.getRange(RspnRow, colDataPrcsd).setValue(DataCopiedStatus);
           // Creates formula to update Last Entry Processed
           shtRspnEN.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchID +']",FALSE)<>"",1,"")');
         }
@@ -126,7 +126,7 @@ function fcnProcessMatchWG() {
         if (TimeStamp != '' && PasswordValid == 0){
           Logger.log('Password Not Valid');
           DataCopiedStatus = 'Password Not Valid';
-          shtRspnEN.getRange(RspnRow, colDataCopied).setValue(DataCopiedStatus);
+          shtRspnEN.getRange(RspnRow, colDataPrcsd).setValue(DataCopiedStatus);
           // Creates formula to update Last Entry Processed
           shtRspnEN.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchID +']",FALSE)<>"",1,"")');
         }
@@ -147,9 +147,9 @@ function fcnProcessMatchWG() {
       // Copy the new response data (from Time Stamp to Data Copied Field)
         ResponseData = shtRspnFR.getRange(RspnRow, 1, 1, RspnDataInputs).getValues();
         TimeStamp = ResponseData[0][0];
-        Password = ResponseData[0][colArrayPassword];
-        RoundNum = ResponseData[0][colArrayRoundNum];
-        DataCopiedStatus = ResponseData[0][colArrayDataPrcsd];
+        Password = ResponseData[0][colArrRspnPassword];
+        RoundNum = ResponseData[0][colArrRspnRoundNum];
+        DataCopiedStatus = ResponseData[0][colArrRspnDataPrcsd];
 
         // If TimeStamp is null, Delete Row and start over
         if (TimeStamp == '' && RspnRow < RspnMaxRowsFR) {
@@ -168,7 +168,7 @@ function fcnProcessMatchWG() {
           if (TimeStamp != '' && DataCopiedStatus == '' && PasswordValid == 1){
             Logger.log('Password Valid, Data Copied to Responses');
             DataCopiedStatus = 'Data Copied';
-            shtRspnFR.getRange(RspnRow, colDataCopied).setValue(DataCopiedStatus);
+            shtRspnFR.getRange(RspnRow, colDataPrcsd).setValue(DataCopiedStatus);
             // Creates formula to update Last Entry Processed
             shtRspnFR.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchID +']",FALSE)<>"",1,"")');
           }
@@ -177,7 +177,7 @@ function fcnProcessMatchWG() {
           if (TimeStamp != '' && PasswordValid == 0){
             Logger.log('Password Not Valid');
             DataCopiedStatus = 'Password Not Valid';
-            shtRspnFR.getRange(RspnRow, colDataCopied).setValue(DataCopiedStatus);
+            shtRspnFR.getRange(RspnRow, colDataPrcsd).setValue(DataCopiedStatus);
             // Creates formula to update Last Entry Processed
             shtRspnFR.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchID +']",FALSE)<>"",1,"")');
           }
@@ -258,78 +258,63 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
   // Data from Configuration File
     
   // Code Execution Options
-  var exeDualSubmission = cfgExecData[0][0]; // If Dual Submission is disabled, look for duplicate instead
-  var exePostResult = cfgExecData[1][0];
+  var exeDualSubmission =      cfgExecData[0][0]; // If Dual Submission is disabled, look for duplicate instead
+  var exePostResult =          cfgExecData[1][0];
   var exePlyrMatchValidation = cfgExecData[2][0];
-  var exeSendEmail = cfgExecData[5][0];
-  var exeUpdatePlyrDB = cfgExecData[6][0];
+  var exeSendEmail =           cfgExecData[5][0];
+  var exeUpdatePlyrDB =        cfgExecData[6][0];
   
   // Columns Values and Parameters
-  var RspnDataInputs = cfgColRspSht[0][0]; // from Time Stamp to Data Processed
-  var colMatchID = cfgColRspSht[1][0];
-  var colPrcsd = cfgColRspSht[2][0];
-  var colDataConflict = cfgColRspSht[3][0];
-  var colStatus = cfgColRspSht[4][0];
-  var colStatusMsg = cfgColRspSht[5][0];
-  var colMatchIDLastVal = cfgColRspSht[6][0];
-  var colNextEmptyRow = cfgColRspSht[7][0];
+  var RspnDataInputs =      cfgColRspSht[0][0]; // from Time Stamp to Data Processed
+  var colMatchID =          cfgColRspSht[1][0];
+  var colPrcsd =            cfgColRspSht[2][0];
+  var colDataConflict =     cfgColRspSht[3][0];
+  var colStatus =           cfgColRspSht[4][0];
+  var colStatusMsg =        cfgColRspSht[5][0];
+  var colMatchIDLastVal =   cfgColRspSht[6][0];
+  var colNextEmptyRow =     cfgColRspSht[7][0];
   var colNbUnprcsdEntries = cfgColRspSht[8][0];
   
   // Column Values for Data in Response Sheet
-  var colArrayDataPrcsd = colPrcsd-1;
-  var colArrayPwd =     cfgColMatchRep[ 1][0]-1;
-  var colArrayLoc =     cfgColMatchRep[ 2][0]-1;
-  var colArrayRnd =     cfgColMatchRep[ 3][0]-1;
-  var colArrayWinPlyr = cfgColMatchRep[ 4][0]-1;
-  var colArrayLosPlyr = cfgColMatchRep[ 5][0]-1;
-  var colArrayTie =     cfgColMatchRep[ 6][0]-1;
-  var colArrayWinPts =  cfgColMatchRep[ 7][0]-1;
-  var colArrayLosPts =  cfgColMatchRep[ 8][0]-1;
-  var colArrayWinTeam = cfgColMatchRep[ 9][0]-1;
-  var colArrayLosTeam = cfgColMatchRep[10][0]-1;
-  var colArrayPlyrSub = cfgColMatchRep[19][0]-1;
+  var colArrRspnDataPrcsd = colPrcsd-1;
+  var colArrRspnPwd =       cfgColMatchRep[ 1][0]-1;
+  var colArrRspnLoc =       cfgColMatchRep[ 2][0]-1;
+  var colArrRspnRound =     cfgColMatchRep[ 3][0]-1;
+  var colArrRspnWinPlyr =   cfgColMatchRep[ 4][0]-1;
+  var colArrRspnWinTeam =   cfgColMatchRep[ 5][0]-1;
+  var colArrRspnWinPts =    cfgColMatchRep[ 6][0]-1;
+  var colArrRspnLosPlyr =   cfgColMatchRep[ 7][0]-1;
+  var colArrRspnLosTeam =   cfgColMatchRep[ 8][0]-1;
+  var colArrRspnLosPts =    cfgColMatchRep[ 9][0]-1;
+  var colArrRspnTie =       cfgColMatchRep[10][0]-1;
+  var colArrRspnPlyrSub =   cfgColMatchRep[19][0]-1;
   
   // League Parameters
-  var evntGameType = cfgEvntParam[4][0];
+  var evntGameType =      cfgEvntParam[ 4][0];
   var evntRoundDuration = cfgEvntParam[13][0];
-  var evntBalanceBonus = cfgEvntParam[21][0];
-  var evntNbCardPack = cfgEvntParam[25][0];
+  var evntBalanceBonus =  cfgEvntParam[21][0];
+  var evntNbCardPack =    cfgEvntParam[25][0];
     
-  // Test Sheet (for Debug)
-  var shtTest = ss.getSheetByName('Test') ;  
-  
   // Form Responses Sheet Variables
   var RspnMaxRows = shtRspn.getMaxRows();
   var RspnMaxCols = shtRspn.getMaxColumns();
   var RspnNextRowPrcss = shtRspn.getRange(1, colNextEmptyRow).getValue() - shtRspn.getRange(1, colNbUnprcsdEntries).getValue();
-  var RspnDataPlyrSubmit;
-  var RspnDataPwd
-  var RspnDataLocation;
-  var RspnDataRoundNum;
-  var RspnDataRound;
-  var RspnDataWinPlyr;
-  var RspnDataLosPlyr;
-  var RspnDataWinT;
-  var RspnDataLosT;
-  var RspnDataTie;
-  var RspnDataWinPts;
-  var RspnDataLosPts;
-  var RspnDataPrcssd = 0;
   var ResponseData;
   var MatchingRspnData;
   
   // Match Data Variables
   var MatchID; 
   var MatchData = subCreateArray(26,4);
-  // 0 = TimeStamp
-  // 1 = Location
-  // 2 = MatchID
-  // 3 = Round #
-  // 4 = Winning Player
-  // 5 = Losing Player
-  // 6 = Game Tie (Yes or No)
-  // 7-23 = Not Used
-  // 24 = MatchPostStatus
+  // [0][0]= TimeStamp
+  // [1][0]= MatchID
+  // [2][0]= Round Number
+  // [3][0]= Winning Player / Team, [3][1]= Points, [3][2]= Matches Played 
+  // [4][0]= Losing Player / Team,  [4][1]= Points, [4][2]= Matches Played, [4][3]= Balance Bonus Value
+  // [5][0]= Game Tie (Yes or No)
+  // [6][0]= Location Bonus
+  // [7][0]= Balance Bonus
+  // [8-23] = Not Used
+  // [24] = MatchPostStatus
       
   // Email Addresses Array
   var EmailAddresses = subCreateArray(3,2);
@@ -379,16 +364,22 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
     ResponseData = shtRspn.getRange(RspnRow, 1, 1, RspnDataInputs).getValues();
     
     // Values from Response Data
-    RspnDataPwd        = ResponseData[0][colArrayPwd]; // Password
-    RspnDataLocation   = ResponseData[0][colArrayLoc]; // Match Location (Store Yes or No)
-    RspnDataRoundNum   = ResponseData[0][colArrayRnd]; // Round Number
-    RspnDataWinPlyr    = ResponseData[0][colArrayWinPlyr]; // Winning Player
-    RspnDataLosPlyr    = ResponseData[0][colArrayLosPlyr]; // Losing Player
-    RspnDataTie        = ResponseData[0][colArrayTie]; // Tie
-    RspnDataPrcssd     = ResponseData[0][colArrayDataPrcsd];
-    RspnDataPlyrSubmit = ResponseData[0][colArrayPlyrSub];
+    var RspnDataPwd        = ResponseData[0][colArrRspnPwd];      // Password
+    var RspnDataLocation   = ResponseData[0][colArrRspnLoc];      // Match Location (Store Yes or No)
+    var RspnDataRoundNum   = ResponseData[0][colArrRspnRound];    // Round Number
+    var RspnDataWinPlyr    = ResponseData[0][colArrRspnWinPlyr];  // Winning Player
+    var RspnDataWinTeam    = ResponseData[0][colArrRspnWinTeam];  // Winning Team
+    var RspnDataWinPts     = ResponseData[0][colArrRspnWinPts];   // Winning Points
+    var RspnDataLosPlyr    = ResponseData[0][colArrRspnLosPlyr];  // Losing Player
+    var RspnDataLosTeam    = ResponseData[0][colArrRspnLosTeam];  // Losing Team
+    var RspnDataLosPts     = ResponseData[0][colArrRspnLosPts];   // Losing Points
+    var RspnDataTie        = ResponseData[0][colArrRspnTie];      // Tie
     
-    Logger.log('Players: %s, %s',ResponseData[0][colArrayWinPlyr],ResponseData[0][colArrayLosPlyr]);
+    var RspnDataPrcssd     = ResponseData[0][colArrRspnDataPrcsd];// Data Processed Status
+    
+    var RspnDataPlyrSubmit = ResponseData[0][colArrRspnPlyrSub];  // Player Submitting Match Report
+    
+    Logger.log('Players: %s, %s',ResponseData[0][colArrRspnWinPlyr],ResponseData[0][colArrRspnLosPlyr]);
     
     // If Round number is not empty and Processed is empty, Response Data needs to be processed
     if (RspnDataRoundNum != '' && RspnDataPrcssd == ''){
