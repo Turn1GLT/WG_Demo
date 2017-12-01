@@ -236,6 +236,7 @@ function fcnPostResultRoundWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgC
   // Column Values for Rounds Sheets
   var colRndPlyr =     cfgColRndSht[ 0][0];
   var colRndTeam =     cfgColRndSht[ 1][0];
+  var colRndMP =       cfgColRndSht[ 2][0];
   var colRndWin =      cfgColRndSht[ 3][0];
   var colRndLos =      cfgColRndSht[ 4][0];
   var colRndTie =      cfgColRndSht[ 5][0];
@@ -314,9 +315,9 @@ function fcnPostResultRoundWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgC
     
     // Get Winner and Loser Records when both rows have been found
     if (RoundWinrRow != '' && RoundLosrRow != '') {
-      // Get Winner and Loser Match Record, 4 values: Win, Loss, Ties, Points
-      RoundWinrRec = shtRoundRslt.getRange(RoundWinrRow,colRndWin,1,4).getValues();
-      RoundLosrRec = shtRoundRslt.getRange(RoundLosrRow,colRndWin,1,4).getValues();
+      // Get Winner and Loser Match Record, 6 values: Matches Played, Wins, Loss, Ties, Points, Win%
+      RoundWinrRec = shtRoundRslt.getRange(RoundWinrRow,colRndMP,1,6).getValues();
+      RoundLosrRec = shtRoundRslt.getRange(RoundLosrRow,colRndMP,1,6).getValues();
       
       // Get Winner and Loser Location Bonus if Applicable
       if(evntLocationBonus == "Enabled"){
@@ -329,49 +330,60 @@ function fcnPostResultRoundWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgC
   }
   
   // Initializes Empty Cells for both Winner and Loser
-  if (RoundWinrRec[0][0] == '') RoundWinrRec[0][0] = 0; // Win
-  if (RoundWinrRec[0][1] == '') RoundWinrRec[0][1] = 0; // Loss
-  if (RoundWinrRec[0][2] == '') RoundWinrRec[0][2] = 0; // Tie
-  if (RoundWinrRec[0][3] == '') RoundWinrRec[0][3] = 0; // Points
+  if (RoundWinrRec[0][0] == '') RoundWinrRec[0][0] = 0; // MP
+  if (RoundWinrRec[0][1] == '') RoundWinrRec[0][1] = 0; // Win
+  if (RoundWinrRec[0][2] == '') RoundWinrRec[0][2] = 0; // Loss
+  if (RoundWinrRec[0][3] == '') RoundWinrRec[0][3] = 0; // Tie
+  if (RoundWinrRec[0][4] == '') RoundWinrRec[0][4] = 0; // Points
+  if (RoundWinrRec[0][5] == '') RoundWinrRec[0][5] = 0; // Win %
   
-  if (RoundLosrRec[0][0] == '') RoundLosrRec[0][0] = 0; // Win
-  if (RoundLosrRec[0][1] == '') RoundLosrRec[0][1] = 0; // Loss
-  if (RoundLosrRec[0][2] == '') RoundLosrRec[0][2] = 0; // Tie
-  if (RoundWinrRec[0][3] == '') RoundWinrRec[0][3] = 0; // Points
+  if (RoundLosrRec[0][0] == '') RoundLosrRec[0][0] = 0; // MP
+  if (RoundLosrRec[0][1] == '') RoundLosrRec[0][1] = 0; // Win
+  if (RoundLosrRec[0][2] == '') RoundLosrRec[0][2] = 0; // Loss
+  if (RoundLosrRec[0][3] == '') RoundLosrRec[0][3] = 0; // Tie
+  if (RoundLosrRec[0][4] == '') RoundLosrRec[0][4] = 0; // Points
+  if (RoundLosrRec[0][5] == '') RoundLosrRec[0][5] = 0; // Win %
   
   // Match Tie Result
   if(ResultData[0][colArrRsltTie] == 'Yes' || ResultData[0][colArrRsltTie] == 'Oui'){
     RoundMatchTie = 1;  
   }
   
+  // Update Matches Played
+  // Update Winning Player Results
+  RoundWinrRec[0][0] = RoundWinrRec[0][0] + 1;
+  // Update Losing Player Results
+  RoundLosrRec[0][0] = RoundLosrRec[0][0] + 1;
+  
+  // Update Wins / Loss
   // If match is not a Tie
   if(RoundMatchTie == 0){
-    // Update Winning Player Results
-    RoundWinrRec[0][0] = RoundWinrRec[0][0] + 1;
-    // Update Losing Player Results
-    RoundLosrRec[0][1] = RoundLosrRec[0][1] + 1;
-  }
-
-  // If match is a Tie
-  if(RoundMatchTie == 1){
-    // Update "Winning" Player Results
-    RoundWinrRec[0][2] = RoundWinrRec[0][2] + 1;
-    // Update "Losing" Player Results
+    RoundWinrRec[0][1] = RoundWinrRec[0][1] + 1;
     RoundLosrRec[0][2] = RoundLosrRec[0][2] + 1;
   }
+
+  // Update Ties
+  if(RoundMatchTie == 1){
+    RoundWinrRec[0][3] = RoundWinrRec[0][3] + 1;
+    RoundLosrRec[0][3] = RoundLosrRec[0][3] + 1;
+  }
   
-  // Update Points if Disabled
-  // Points are equal to the sum of Wins*PtsPerWin + Loss*PtsPerLoss + Ties*PtsPerTie
+  // Update Points
+  // If Points per Game are not used, Points are equal to the sum of Wins*PtsPerWin + Loss*PtsPerLoss + Ties*PtsPerTie
   if(evntPtsGainedMatch == "Disabled"){
-    RoundWinrRec[0][3] = (RoundWinrRec[0][0] * evntPtsPerWin) + (RoundWinrRec[0][1] * evntPtsPerLoss) + (RoundWinrRec[0][2] * evntPtsPerTie);
-    RoundLosrRec[0][3] = (RoundLosrRec[0][0] * evntPtsPerWin) + (RoundLosrRec[0][1] * evntPtsPerLoss) + (RoundLosrRec[0][2] * evntPtsPerTie);
+    RoundWinrRec[0][4] = (RoundWinrRec[0][1] * evntPtsPerWin) + (RoundWinrRec[0][2] * evntPtsPerLoss) + (RoundWinrRec[0][3] * evntPtsPerTie);
+    RoundLosrRec[0][4] = (RoundLosrRec[0][1] * evntPtsPerWin) + (RoundLosrRec[0][2] * evntPtsPerLoss) + (RoundLosrRec[0][3] * evntPtsPerTie);
   }
   
-  // Update Points if Enabled
+  // If Points per Game are used, Points are equal to the sum of all points made during all matches
   if(evntPtsGainedMatch == "Enabled"){
-    RoundWinrRec[0][3] = RoundWinrRec[0][3] + MatchDataWinPts;
-    RoundLosrRec[0][3] = RoundLosrRec[0][3] + MatchDataLosPts;
+    RoundWinrRec[0][4] = RoundWinrRec[0][4] + MatchDataWinPts;
+    RoundLosrRec[0][4] = RoundLosrRec[0][4] + MatchDataLosPts;
   }
+
+  // Update Win Percentage
+  if(RoundWinrRec[0][0] > 0) RoundWinrRec[0][5] = RoundWinrRec[0][1] / RoundWinrRec[0][0];
+  if(RoundLosrRec[0][0] > 0) RoundLosrRec[0][5] = RoundLosrRec[0][1] / RoundLosrRec[0][0];
   
   // Updates Match Location
   if (evntLocationBonus == "Enabled" && (MatchLoc == 'Yes' || MatchLoc == 'Oui')) {
@@ -391,9 +403,9 @@ function fcnPostResultRoundWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgC
   else RoundLosrMatchup += ', ' + MatchDataWinPT;
   
   // Update the Round Results Sheet
-  shtRoundRslt.getRange(RoundWinrRow,colRndWin,1,4).setValues(RoundWinrRec);
+  shtRoundRslt.getRange(RoundWinrRow,colRndWin,1,6).setValues(RoundWinrRec);
+  shtRoundRslt.getRange(RoundLosrRow,colRndWin,1,6).setValues(RoundLosrRec);
   shtRoundRslt.getRange(RoundWinrRow,colRndMatchup).setValue(RoundWinrMatchup);
-  shtRoundRslt.getRange(RoundLosrRow,colRndWin,1,4).setValues(RoundLosrRec);
   shtRoundRslt.getRange(RoundLosrRow,colRndMatchup).setValue(RoundLosrMatchup);
   
   // If Location Bonus is Enabled

@@ -52,8 +52,8 @@ function fcnProcessMatchWG() {
   
   // Open Responses sheets
   var shtRspn = ss.getSheetByName('Responses');
-  var shtRspnEN = ss.getSheetByName('Responses EN');
-  var shtRspnFR = ss.getSheetByName('Responses FR');
+  var shtRspnEN = ss.getSheetByName('MatchResp EN');
+  var shtRspnFR = ss.getSheetByName('MatchResp FR');
 
   var RspnMaxRowsEN = shtRspnEN.getMaxRows();
   var RspnMaxRowsFR = shtRspnFR.getMaxRows();
@@ -88,7 +88,7 @@ function fcnProcessMatchWG() {
     EntriesProcessing = shtRspn.getRange(1, colNbUnprcsdEntries).getValue();
     Logger.log('Nb of Entries Before Copying: %s',EntriesProcessing);
     
-    // Look for Unprocessed Data in Responses EN
+    // Look for Unprocessed Data in MatchResp EN
     for (RspnRow = RspnNextRowEN; RspnRow <= RspnMaxRowsEN; RspnRow++){
       
       Logger.log('Row: %s',RspnRow)
@@ -130,7 +130,7 @@ function fcnProcessMatchWG() {
           // Creates formula to update Last Entry Processed
           shtRspnEN.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchID +']",FALSE)<>"",1,"")');
         }
-        // If Data is copied or Password is not Valid or TimeStamp is null, Exit loop Responses EN and Loop through Responses FR
+        // If Data is copied or Password is not Valid or TimeStamp is null, Exit loop MatchResp EN and Loop through MatchResp FR
         if (DataCopiedStatus == 'Data Copied' || DataCopiedStatus == 'Password Not Valid' || (TimeStamp == '' && RspnRow >= RspnMaxRowsEN)) {
           RspnRow = RspnMaxRowsEN + 1;
           if(TimeStamp == '' && RspnRow >= RspnMaxRowsEN) DataCopiedStatus = 0;
@@ -138,10 +138,10 @@ function fcnProcessMatchWG() {
       }
     }
     
-    // Executes Responses FR loop only if Responses EN did not find anything
+    // Executes MatchResp FR loop only if MatchResp EN did not find anything
     if (DataCopiedStatus == 0){
       
-      // Look for Unprocessed Data in Responses FR
+      // Look for Unprocessed Data in MatchResp FR
       for (RspnRow = RspnNextRowFR; RspnRow <= RspnMaxRowsFR; RspnRow++){
         
       // Copy the new response data (from Time Stamp to Data Copied Field)
@@ -181,7 +181,7 @@ function fcnProcessMatchWG() {
             // Creates formula to update Last Entry Processed
             shtRspnFR.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchID +']",FALSE)<>"",1,"")');
           }
-          // If Data is copied or Password is not Valid or TimeStamp is null, Exit loop Responses FR to process data
+          // If Data is copied or Password is not Valid or TimeStamp is null, Exit loop MatchResp FR to process data
           if (DataCopiedStatus == 'Data Copied' || DataCopiedStatus == 'Password Not Valid' || (TimeStamp == '' && RspnRow >= RspnMaxRowsFR)) {
             RspnRow = RspnMaxRowsFR + 1;
           }

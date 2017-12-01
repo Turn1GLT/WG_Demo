@@ -108,7 +108,7 @@ function fcnInitializeEvent(){
     
   // If Confirmed (OK), Initialize all League Data
   if(uiResponse == "OK"){
-  
+//  if(cfgEventType == "League" || cfgEventType == "Tournament"){
     // Config Sheet to get options
     var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
     var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
@@ -140,8 +140,8 @@ function fcnInitializeEvent(){
     var shtStandings =   ss.getSheetByName('Standings');
     var shtMatchRslt   = ss.getSheetByName('Match Results');
     var shtResponses   = ss.getSheetByName('Responses');
-    var shtResponsesEN = ss.getSheetByName('Responses EN');
-    var shtResponsesFR = ss.getSheetByName('Responses FR');
+    var shtMatchRespEN = ss.getSheetByName('MatchResp EN');
+    var shtMatchRespFR = ss.getSheetByName('MatchResp FR');
     var shtPlayers =     ss.getSheetByName('Players');
     var ssExtPlayers = SpreadsheetApp.openById(shtIDs[14][0]); // External Player List Spreadsheet
     var shtExtPlayers = ssExtPlayers.getSheetByName('Players');// External Player List Sheet
@@ -154,10 +154,10 @@ function fcnInitializeEvent(){
     var MaxColRslt = shtMatchRslt.getMaxColumns();
     var MaxRowRspn = shtResponses.getMaxRows();
     var MaxColRspn = shtResponses.getMaxColumns();
-    var MaxRowRspnEN = shtResponsesEN.getMaxRows();
-    var MaxColRspnEN = shtResponsesEN.getMaxColumns();
-    var MaxRowRspnFR = shtResponsesFR.getMaxRows();
-    var MaxColRspnFR = shtResponsesFR.getMaxColumns();
+    var MaxRowRspnEN = shtMatchRespEN.getMaxRows();
+    var MaxColRspnEN = shtMatchRespEN.getMaxColumns();
+    var MaxRowRspnFR = shtMatchRespFR.getMaxRows();
+    var MaxColRspnFR = shtMatchRespFR.getMaxColumns();
     var MaxRowPlayers = shtPlayers.getMaxRows();
     var MaxColPlayers = shtPlayers.getMaxColumns();
         
@@ -169,13 +169,13 @@ function fcnInitializeEvent(){
     // Responses
     shtResponses.getRange(2,1,MaxRowRspn-1,MaxColRspn).clearContent();
     shtResponses.getRange(1,colRspMatchIDLastVal).setValue(0);
-    shtResponsesEN.getRange(2,1,MaxRowRspnEN-1,MaxColRspnEN).clearContent();
-    shtResponsesFR.getRange(2,1,MaxRowRspnFR-1,MaxColRspnFR).clearContent()
+    shtMatchRespEN.getRange(2,1,MaxRowRspnEN-1,MaxColRspnEN).clearContent();
+    shtMatchRespFR.getRange(2,1,MaxRowRspnFR-1,MaxColRspnFR).clearContent()
     
     // Round Results
     for (var RoundNum = 1; RoundNum <= 8; RoundNum++){
       shtRound = ss.getSheetByName('Round'+RoundNum);
-      shtRound.getRange(5,colRndWin,32,3).clearContent();
+      shtRound.getRange(5,colRndWin,32,4).clearContent();
       shtRound.getRange(5,colRndMatchLoc,32,4).clearContent();
     }
     Logger.log('Event Data Cleared');
@@ -257,8 +257,8 @@ function fcnClearMatchResults(){
     var shtMatchRslt   = ss.getSheetByName('Match Results');
     var shtRound;
     var shtResponses   = ss.getSheetByName('Responses');
-    var shtResponsesEN = ss.getSheetByName('Responses EN');
-    var shtResponsesFR = ss.getSheetByName('Responses FR');
+    var shtMatchRespEN = ss.getSheetByName('MatchResp EN');
+    var shtMatchRespFR = ss.getSheetByName('MatchResp FR');
     
     // Max Rows / Columns
     var MaxRowStdg = shtStandings.getMaxRows();
@@ -267,18 +267,18 @@ function fcnClearMatchResults(){
     var MaxColRslt = shtMatchRslt.getMaxColumns();
     var MaxRowRspn = shtResponses.getMaxRows();
     var MaxColRspn = shtResponses.getMaxColumns();
-    var MaxRowRspnEN = shtResponsesEN.getMaxRows();
-    var MaxColRspnEN = shtResponsesEN.getMaxColumns();
-    var MaxRowRspnFR = shtResponsesFR.getMaxRows();
-    var MaxColRspnFR = shtResponsesFR.getMaxColumns();
+    var MaxRowRspnEN = shtMatchRespEN.getMaxRows();
+    var MaxColRspnEN = shtMatchRespEN.getMaxColumns();
+    var MaxRowRspnFR = shtMatchRespFR.getMaxRows();
+    var MaxColRspnFR = shtMatchRespFR.getMaxColumns();
     
     // Clear Data
     shtStandings.getRange(6,2,32,7).clearContent();
     shtMatchRslt.getRange(6,2,MaxRowRslt-5,MaxColRslt-2).clearContent();
     shtResponses.getRange(2,1,MaxRowRspn-1,MaxColRspn).clearContent();
     shtResponses.getRange(1,colRspMatchIDLastVal).setValue(0);
-    shtResponsesEN.getRange(2,colRspMatchID,MaxRowRspnEN-1,MaxColRspnEN-colRspMatchID+1).clearContent();
-    shtResponsesFR.getRange(2,colRspMatchID,MaxRowRspnFR-1,MaxColRspnFR-colRspMatchID+1).clearContent();
+    shtMatchRespEN.getRange(2,colRspMatchID,MaxRowRspnEN-1,MaxColRspnEN-colRspMatchID+1).clearContent();
+    shtMatchRespFR.getRange(2,colRspMatchID,MaxRowRspnFR-1,MaxColRspnFR-colRspMatchID+1).clearContent();
     
     // Round Results
     for (var RoundNum = 1; RoundNum <= 8; RoundNum++){
