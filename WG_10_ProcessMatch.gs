@@ -406,7 +406,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
         
         // Look for Duplicate Entry (looks in all entries with MatchID and combination of Round Number, Winner and Loser) 
         // Real code will look at Player Posting Data as well
-        DuplicateRspn = fcnFindDuplicateData(ss, shtRspn, cfgColRspSht, cfgColMatchRep, RspnDataInputs, ResponseData, RspnRow, RspnMaxRows);  
+        DuplicateRspn = fcnFindDuplicateData(ss, shtRspn, cfgEvntParam, cfgColRspSht, cfgColMatchRep, RspnDataInputs, ResponseData, RspnRow, RspnMaxRows);  
         if(DuplicateRspn == 0) Logger.log('No Duplicate Found');
         if(DuplicateRspn > 0 ) Logger.log('Duplicate Found at Row: %s', DuplicateRspn);
         
@@ -424,7 +424,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
               Status[1] = subUpdateStatus(shtRspn, RspnRow, colStatus, colStatusMsg, Status[0]);
             }
             // function returns row where the matching data was found
-            MatchingRspn = fcnFindMatchingData(ss, cfgColRspSht, cfgExecData, shtRspn, ResponseData, RspnRow, RspnMaxRows, shtTest);
+            MatchingRspn = fcnFindMatchingData(ss, cfgEvntParam, cfgColRspSht, cfgColMatchRep, cfgExecData, shtRspn, ResponseData, RspnRow, RspnMaxRows);
             Logger.log("Routine: fcnAnalyzeResultsWG");
             if (MatchingRspn < 0) DuplicateRspn = 0 - MatchingRspn;
           }
@@ -450,7 +450,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
                 Status[1] = subUpdateStatus(shtRspn, RspnRow, colStatus, colStatusMsg, Status[0]);
               }
               // Execute function to populate Match Result Sheet from Response Sheet
-              MatchData = fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExecData, shtRspn, ResponseData, MatchingRspnData, MatchID, MatchData, shtTest);
+              MatchData = fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExecData, cfgColMatchRep, ResponseData, MatchingRspnData, MatchID, MatchData);
               MatchPostStatus = MatchData[25][0];
               
               shtTest.getRange(1, 1, 26, 4).setValues(MatchData);
@@ -466,11 +466,11 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
                 
                 // Log Players Match Data
                 logStatusPlyrA[2] = RspnDataWinPlyr;
-                logStatusPlyrA = fcnLogPlayerMatch(shtConfig, logStatusPlyrA, MatchData);
+                logStatusPlyrA = fcnLogPlayerMatch(ss, shtConfig, logStatusPlyrA, MatchData);
                 Logger.log('Player Log Status for %s : %s',logStatusPlyrA[2],logStatusPlyrA[1]);
                 
                 logStatusPlyrB[2] = RspnDataLosPlyr;
-                logStatusPlyrB = fcnLogPlayerMatch(shtConfig, logStatusPlyrB, MatchData);
+                logStatusPlyrB = fcnLogPlayerMatch(ss, shtConfig, logStatusPlyrB, MatchData);
                 Logger.log('Player Log Status for %s : %s',logStatusPlyrB[2],logStatusPlyrB[1]);
                 
                 // If Event Game Type is Wargame
