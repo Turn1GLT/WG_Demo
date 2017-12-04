@@ -446,14 +446,14 @@ function subUpdateStatus(shtRspn, RspnRow, ColStatus, ColStatusMsg, StatusNum) {
 }
 
 // **********************************************
-// function fcnPlayerWithMost()
+// function subPlayerWithMost()
 //
 // This function searches for the player with the 
 // most "Param" for a given Round
 //
 // **********************************************
 
-function fcnPlayerWithMost(shtConfig, PlayerMostData, NbPlayers, shtRound){
+function subPlayerWithMost(shtConfig, PlayerMostData, NbPlayers, shtRound){
  
   
   var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
@@ -723,14 +723,14 @@ function subCrtMatchRepTeamList(shtConfig, shtTeams, cfgEvntParam){
 }
 
 // **********************************************
-// function subUpdatePlayer()
+// function subUpdatePlayerMember()
 //
 // This function updates the Player Sheet with 
 // the Member Info
 //
 // **********************************************
 
-function subUpdatePlayer(shtConfig, shtPlayers, Member){
+function subUpdatePlayerMember(shtConfig, shtPlayers, Member){
 
   // Registration Form Construction 
   // Column 1 = Category Name
@@ -742,4 +742,50 @@ function subUpdatePlayer(shtConfig, shtPlayers, Member){
   
   shtPlayers.getRange(NbPlayers+2,colTblMemberFileID).setValue(Member[7]);
 
+}
+
+// **********************************************
+// function subUpdatePlyrEvntRecord()
+//
+// This function updates the Player Event Record
+//
+// **********************************************
+
+function subUpdatePlyrEvntRecord(RndRecPlyr, GameResult, evntPtsGainedMatch, MatchDataPts, evntPtsPerWin, evntPtsPerLoss, evntPtsPerTie){
+  
+  // Initializes Player Round Record
+  if (RndRecPlyr[0][0] == '') RndRecPlyr[0][0] = 0; // MP
+  if (RndRecPlyr[0][1] == '') RndRecPlyr[0][1] = 0; // Win
+  if (RndRecPlyr[0][2] == '') RndRecPlyr[0][2] = 0; // Loss
+  if (RndRecPlyr[0][3] == '') RndRecPlyr[0][3] = 0; // Tie
+  if (RndRecPlyr[0][4] == '') RndRecPlyr[0][4] = 0; // Points
+  if (RndRecPlyr[0][5] == '') RndRecPlyr[0][5] = 0; // Win %
+  
+  // Update Player Matches Played
+  RndRecPlyr[0][0] = RndRecPlyr[0][0] + 1;
+  
+  // Update Player Wins
+  if(GameResult == "Win") RndRecPlyr[0][1] = RndRecPlyr[0][1] + 1;
+  
+  // Update Player Loss
+  if(GameResult == "Loss") RndRecPlyr[0][2] = RndRecPlyr[0][2] + 1;
+  
+  // Update Player Tie
+  if(GameResult == "Tie") RndRecPlyr[0][3] = RndRecPlyr[0][3] + 1;
+  
+   // Update Points
+  // If Points per Game are not used, Points are equal to the sum of Wins*PtsPerWin + Loss*PtsPerLoss + Ties*PtsPerTie
+  if(evntPtsGainedMatch == "Disabled"){
+    RndRecPlyr[0][4] = (RndRecPlyr[0][1] * evntPtsPerWin) + (RndRecPlyr[0][2] * evntPtsPerLoss) + (RndRecPlyr[0][3] * evntPtsPerTie);
+    }
+  
+  // If Points per Game are used, Points are equal to the sum of all points made during all matches
+  if(evntPtsGainedMatch == "Enabled"){
+    RndRecPlyr[0][4] = RndRecPlyr[0][4] + MatchDataPts;
+  }
+  
+  // Update Win Percentage
+  if(RndRecPlyr[0][0] > 0) RndRecPlyr[0][5] = RndRecPlyr[0][1] / RndRecPlyr[0][0];
+  
+  return RndRecPlyr;
 }

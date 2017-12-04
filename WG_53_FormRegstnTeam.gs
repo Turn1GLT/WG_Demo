@@ -223,6 +223,8 @@ function fcnCrtRegstnFormTeam_WG() {
     // Create Response Sheet in Main File and Rename
     if(exeGnrtResp == 'Enabled'){
       Logger.log("Generating Response Sheets and Form Links");
+      var IndexTeams = ss.getSheetByName("Teams").getIndex();
+      
       // English Form
       formEN.setDestination(FormApp.DestinationType.SPREADSHEET, ssID);
       
@@ -232,7 +234,7 @@ function fcnCrtRegstnFormTeam_WG() {
       ssSheets[0].setName('Reg Team EN');
       // Move Response Sheet to appropriate spot in file
       shtResp = ss.getSheetByName('Reg Team EN');
-      ss.moveActiveSheet(20);
+      ss.moveActiveSheet(IndexTeams+1);
       shtRespMaxRow = shtResp.getMaxRows();
       shtRespMaxCol = shtResp.getMaxColumns();
       
@@ -258,7 +260,7 @@ function fcnCrtRegstnFormTeam_WG() {
       
       // Move Response Sheet to appropriate spot in file
       shtResp = ss.getSheetByName('Reg Team FR');
-      ss.moveActiveSheet(21);
+      ss.moveActiveSheet(IndexTeams+2);
       shtRespMaxRow = shtResp.getMaxRows();
       shtRespMaxCol = shtResp.getMaxColumns();
       

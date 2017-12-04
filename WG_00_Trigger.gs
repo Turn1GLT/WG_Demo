@@ -223,13 +223,13 @@ function onRoundChangeWG_Demo40K(){
     
     // Round Awards
     //Player with Most 1
-    PlayerMost1 = fcnPlayerWithMost(PlayerMost1, NbPlayers, shtRound);
+    PlayerMost1 = subPlayerWithMost(PlayerMost1, NbPlayers, shtRound);
     
     // Player with Most 2
-    PlayerMost2 = fcnPlayerWithMost(PlayerMost2, NbPlayers, shtRound);
+    PlayerMost2 = subPlayerWithMost(PlayerMost2, NbPlayers, shtRound);
   
     // Player with Most 3
-    PlayerMost3 = fcnPlayerWithMost(PlayerMost3, NbPlayers, shtRound);
+    PlayerMost3 = subPlayerWithMost(PlayerMost3, NbPlayers, shtRound);
 
     // Send Round Report Email
     

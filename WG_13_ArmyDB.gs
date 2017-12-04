@@ -5,7 +5,7 @@
 //
 // **********************************************
 
-function fcnUpdateArmyDB(shtConfig, Player, NewValue, shtTest){
+function fcnUpdateArmyDB(shtConfig, Player, NewValue){
   
   Logger.log("Routine: fcnUpdateArmyDB");
   

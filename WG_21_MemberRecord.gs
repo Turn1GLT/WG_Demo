@@ -1,9 +1,9 @@
 // **********************************************
 // function fcnLogPlayerMatch
 //
-// This function adds the new player to
-// the Player's List and calls other functions
-// to create its complete profile
+// This function logs the match to the player's record 
+// for this event ant to the player's profile 
+// if the Member Option is enabled
 //
 // **********************************************
 

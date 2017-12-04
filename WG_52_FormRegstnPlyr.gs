@@ -677,6 +677,7 @@ function fcnCrtRegstnFormPlyr_WG() {
     // Create Response Sheet in Main File and Rename
     if(exeGnrtResp == 'Enabled'){
       Logger.log("Generating Response Sheets and Form Links");
+      var IndexPlayers = ss.getSheetByName("Players").getIndex();
       // English Form
       formEN.setDestination(FormApp.DestinationType.SPREADSHEET, ssID);
       
@@ -686,7 +687,7 @@ function fcnCrtRegstnFormPlyr_WG() {
       ssSheets[0].setName('Reg Plyr EN');
       // Move Response Sheet to appropriate spot in file
       shtResp = ss.getSheetByName('Reg Plyr EN');
-      ss.moveActiveSheet(17);
+      ss.moveActiveSheet(IndexPlayers+1);
       shtRespMaxRow = shtResp.getMaxRows();
       shtRespMaxCol = shtResp.getMaxColumns();
       
@@ -712,7 +713,7 @@ function fcnCrtRegstnFormPlyr_WG() {
       
       // Move Response Sheet to appropriate spot in file
       shtResp = ss.getSheetByName('Reg Plyr FR');
-      ss.moveActiveSheet(18);
+      ss.moveActiveSheet(IndexPlayers+2);
       shtRespMaxRow = shtResp.getMaxRows();
       shtRespMaxCol = shtResp.getMaxColumns();
       

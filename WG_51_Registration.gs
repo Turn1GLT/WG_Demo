@@ -85,7 +85,7 @@ function fcnRegistrationPlyrWG(shtResponse, RowResponse){
         if(Member[7] != "Member Not Found") Logger.log("Member %s Created",Member[1]);
       }
       // Update Player File ID in Player Sheet
-      subUpdatePlayer(shtConfig, shtPlayers, Member);
+      subUpdatePlayerMember(shtConfig, shtPlayers, Member);
     }
     
     

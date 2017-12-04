@@ -33,14 +33,14 @@ function fcnCrtMatchReportForm_WG_S() {
   var exeGnrtResp = cfgExecData[3][0];
   
   // Event Properties
-  var evntLocation = cfgEvntParam[0][0];
-  var evntName = cfgEvntParam[7][0];
-  var evntFormat = cfgEvntParam[9][0];
-  var evntTeamNbPlyr = cfgEvntParam[10][0];
-  var evntTeamMatch = cfgEvntParam[11][0];
-  var evntLocationBonus = cfgEvntParam[23][0];
-  var evntMatchPtsMin = 0;
-  var evntMatchPtsMax = cfgEvntParam[28][0];
+  var evntLocation =       cfgEvntParam[0][0];
+  var evntName =           cfgEvntParam[7][0];
+  var evntFormat =         cfgEvntParam[9][0];
+  var evntTeamNbPlyr =     cfgEvntParam[10][0];
+  var evntTeamMatch =      cfgEvntParam[11][0];
+  var evntLocationBonus =  cfgEvntParam[23][0];
+  var evntMatchPtsMin =    0;
+  var evntMatchPtsMax =    cfgEvntParam[28][0];
   var evntPtsGainedMatch = cfgEvntParam[32][0];
   
   var RoundNum = shtConfig.getRange(7,2).getValue();
@@ -53,7 +53,7 @@ function fcnCrtMatchReportForm_WG_S() {
   var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName('Log');
 
   // Registration ID from the Config File
-  var ssID = shtIDs[0][0];
+  var ssID =     shtIDs[0][0];
   var FormIdEN = shtIDs[7][0];
   var FormIdFR = shtIDs[8][0];
  
@@ -111,7 +111,7 @@ function fcnCrtMatchReportForm_WG_S() {
     ErrorVal = 1;
     title = "Match Report Forms Error";
     msg = "The Match Report Forms already exist. Unlink their response sheets then delete the forms and their ID in the configuration file.";
-    var uiResponse = ui.alert(title, msg, ui.ButtonSet.OK);
+    var uiResponse = ui.alert(title, msg, ui.ButtonSet.OK_CANCEL);
   }
 
   // CREATE UNIT VALIDATIONS
@@ -170,28 +170,6 @@ function fcnCrtMatchReportForm_WG_S() {
             .setTitle("Mot de passe de l'événement")
             .setHelpText("SVP, entrez le mot de passe de l'événement pour envoyer votre rapport de match")
             .setRequired(true);
-            
-            break;
-          }
-            
-            //---------------------------------------------
-            // LOCATION SECTION
-          case 'Location':{ 
-            // English
-            formEN.addPageBreakItem().setTitle("Location")
-            formEN.addMultipleChoiceItem()
-            .setTitle("Location Bonus")
-            .setHelpText("Did you play at the store?")
-            .setRequired(true)
-            .setChoiceValues(["Yes","No"]);
-            
-            // French
-            formFR.addPageBreakItem().setTitle("Localisation")
-            formFR.addMultipleChoiceItem()
-            .setTitle("Bonus de Localisation")
-            .setHelpText("Avez-vous joué au magasin?")
-            .setRequired(true)
-            .setChoiceValues(["Oui","Non"]);
             
             break;
           }
@@ -298,24 +276,6 @@ function fcnCrtMatchReportForm_WG_S() {
             
             break;
           }
-            
-            //---------------------------------------------
-            // GAME TIE
-          case 'Game is Tie':{
-            // English
-            formEN.addMultipleChoiceItem()
-            .setTitle("Game is a Tie?")
-            .setHelpText("OPTIONAL")
-            .setChoiceValues(["No","Yes"]);
-            
-            // French
-            formFR.addMultipleChoiceItem()
-            .setTitle("Partie est Nulle?")
-            .setHelpText("OPTIONNEL")
-            .setChoiceValues(["Non","Oui"]);
-            break;
-          }
-            
             //---------------------------------------------
             // WINNING POINTS
           case 'Winning Points':{ 
@@ -357,6 +317,43 @@ function fcnCrtMatchReportForm_WG_S() {
             }
             break;
           }
+            //---------------------------------------------
+            // GAME TIE
+          case 'Game is Tie':{
+            // English
+            formEN.addMultipleChoiceItem()
+            .setTitle("Game is a Tie?")
+            .setHelpText("OPTIONAL")
+            .setChoiceValues(["No","Yes"]);
+            
+            // French
+            formFR.addMultipleChoiceItem()
+            .setTitle("Partie est Nulle?")
+            .setHelpText("OPTIONNEL")
+            .setChoiceValues(["Non","Oui"]);
+            break;
+          }
+
+            //---------------------------------------------
+            // LOCATION SECTION
+          case 'Location':{ 
+            // English
+            formEN.addPageBreakItem().setTitle("Location")
+            formEN.addMultipleChoiceItem()
+            .setTitle("Location Bonus")
+            .setHelpText("Did you play at the store?")
+            .setRequired(true)
+            .setChoiceValues(["Yes","No"]);
+            
+            // French
+            formFR.addPageBreakItem().setTitle("Localisation")
+            formFR.addMultipleChoiceItem()
+            .setTitle("Bonus de Localisation")
+            .setHelpText("Avez-vous joué au magasin?")
+            .setRequired(true)
+            .setChoiceValues(["Oui","Non"]);
+            break;
+          }
           default : break;
         }
         // Increment to Next Question
@@ -381,6 +378,8 @@ function fcnCrtMatchReportForm_WG_S() {
     // Create Response Sheet in Main File and Rename
     if(exeGnrtResp == 'Enabled'){
       Logger.log("Generating Response Sheets and Form Links");
+      var IndexResponses = ss.getSheetByName("Responses").getIndex();
+      
       // English Form
       formEN.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
       
@@ -391,7 +390,7 @@ function fcnCrtMatchReportForm_WG_S() {
       
       // Move Response Sheet to appropriate spot in file
       shtResp = ss.getSheetByName('New MatchResp EN');
-      ss.moveActiveSheet(15);
+      ss.moveActiveSheet(IndexResponses+1);
       shtRespMaxRow = shtResp.getMaxRows();
       shtRespMaxCol = shtResp.getMaxColumns();
       
@@ -417,7 +416,7 @@ function fcnCrtMatchReportForm_WG_S() {
       
       // Move Response Sheet to appropriate spot in file
       shtResp = ss.getSheetByName('New MatchResp FR');
-      ss.moveActiveSheet(16);
+      ss.moveActiveSheet(IndexResponses+2);
       shtRespMaxRow = shtResp.getMaxRows();
       shtRespMaxCol = shtResp.getMaxColumns();
       
@@ -638,12 +637,13 @@ function fcnSetupMatchResponseSht(){
   }
   
   // Duplicate New Response EN and rename
-  var shtResponses = ss.getSheetByName("Responses");
+  var shtResponses = ss.getSheetByName("Responses")
+  var IndexResponses = shtResponses.getIndex();
   ss.deleteSheet(shtResponses);
   shtNewRespEN.activate();
   ss.duplicateActiveSheet();
   ss.getSheetByName("Copy of New MatchResp EN").setName("Responses").activate();
-  ss.moveActiveSheet(12);
+  ss.moveActiveSheet(IndexResponses);
   
   // Hides Columns 
   shtNewRespEN.hideColumns(colMatchID);

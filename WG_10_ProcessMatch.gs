@@ -24,21 +24,33 @@ function fcnProcessMatchWG() {
   var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
   var cfgColMatchRep = shtConfig.getRange(4,31,20,1).getValues();
   
+  // Execution Options
   var exeSendEmail = cfgExecData[5][0];
   var exeTrigReport = cfgExecData[4][0];
   
   // Column Values and Parameters
-  var RspnDataInputs = cfgColRspSht[0][0]; // from Time Stamp to Data Processed
-  var colMatchID = cfgColRspSht[1][0];
-  var colDataPrcsd = cfgColRspSht[2][0];
-  var colNextEmptyRow = cfgColRspSht[7][0];
+  var RspnDataInputs =      cfgColRspSht[0][0]; // from Time Stamp to Data Processed
+  var colMatchID =          cfgColRspSht[1][0];
+  var colDataPrcsd =        cfgColRspSht[2][0];
+  var colNextEmptyRow =     cfgColRspSht[7][0];
   var colNbUnprcsdEntries = cfgColRspSht[8][0];
   
-  var colArrRspnPassword  = cfgColMatchRep[1][0]-1;
-  var colArrRspnRoundNum  = cfgColMatchRep[3][0]-1;
+  // Column Values for Data in Response Sheet
   var colArrRspnDataPrcsd = colDataPrcsd-1;
+  var colArrRspnPwd =       cfgColMatchRep[ 1][0]-1;
+  var colArrRspnRound =     cfgColMatchRep[ 2][0]-1;
+  var colArrRspnWinPlyr =   cfgColMatchRep[ 3][0]-1;
+  var colArrRspnWinTeam =   cfgColMatchRep[ 4][0]-1;
+  var colArrRspnWinPts =    cfgColMatchRep[ 4][0]-1;
+  var colArrRspnLosPlyr =   cfgColMatchRep[ 6][0]-1;
+  var colArrRspnLosTeam =   cfgColMatchRep[ 7][0]-1;
+  var colArrRspnLosPts =    cfgColMatchRep[ 8][0]-1;
+  var colArrRspnTie =       cfgColMatchRep[ 9][0]-1;
+  var colArrRspnLoc =       cfgColMatchRep[10][0]-1;
+  var colArrRspnPlyrSub =   cfgColMatchRep[19][0]-1;
   
-  // League Parameters
+  // Event Parameters
+  var evntFormat = cfgEvntParam[9][0];
   var evntRoundDuration = cfgEvntParam[13][0];
   var evntPassword = cfgEvntParam[27][0];
   
@@ -66,6 +78,8 @@ function fcnProcessMatchWG() {
   var PasswordValid = 0;
   var RspnRow;
   var RoundNum;
+  var Side1;
+  var Side2;
   
   var EmailAddresses = subCreateArray(3,2);
   
@@ -95,9 +109,18 @@ function fcnProcessMatchWG() {
       // Copy the new response data (from Time Stamp to Data Copied Field)
       ResponseData = shtRspnEN.getRange(RspnRow, 1, 1, RspnDataInputs).getValues();
       TimeStamp = ResponseData[0][0];
-      Password = ResponseData[0][colArrRspnPassword];
-      RoundNum = ResponseData[0][colArrRspnRoundNum];
+      Password = ResponseData[0][colArrRspnPwd];
+      RoundNum = ResponseData[0][colArrRspnRound];
       DataCopiedStatus = ResponseData[0][colArrRspnDataPrcsd];
+      
+      if(evntFormat == "Single"){
+        Side1 = ResponseData[0][colArrRspnWinPlyr];
+        Side2 = ResponseData[0][colArrRspnLosPlyr];
+      }
+      if(evntFormat == "Team"){
+        Side1 = ResponseData[0][colArrRspnWinTeam];
+        Side2 = ResponseData[0][colArrRspnLosTeam];
+      }
       
       // If TimeStamp is null, Delete Row and start over
       if(TimeStamp == '' && RspnRow < RspnMaxRowsEN) {
@@ -147,8 +170,8 @@ function fcnProcessMatchWG() {
       // Copy the new response data (from Time Stamp to Data Copied Field)
         ResponseData = shtRspnFR.getRange(RspnRow, 1, 1, RspnDataInputs).getValues();
         TimeStamp = ResponseData[0][0];
-        Password = ResponseData[0][colArrRspnPassword];
-        RoundNum = ResponseData[0][colArrRspnRoundNum];
+        Password = ResponseData[0][colArrRspnPwd];
+        RoundNum = ResponseData[0][colArrRspnRound];
         DataCopiedStatus = ResponseData[0][colArrRspnDataPrcsd];
 
         // If TimeStamp is null, Delete Row and start over
@@ -195,7 +218,7 @@ function fcnProcessMatchWG() {
       // Copy New Entry Data to Main Responses Sheet
       shtRspn.getRange(RspnNextRow, 1, 1, RspnDataInputs).setValues(ResponseData);
       
-      Logger.log('Match Data Copied for Players: %s, %s',ResponseData[0][4],ResponseData[0][5]);
+      Logger.log('Match Data Copied for Players: %s, %s',Side1,Side2);
       
       // Copy Formula to detect if an entry is currently processing
       shtRspn.getRange(RspnNextRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchID +']",FALSE)<>"",1,"")');
@@ -259,7 +282,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
     
   // Code Execution Options
   var exeDualSubmission =      cfgExecData[0][0]; // If Dual Submission is disabled, look for duplicate instead
-  var exePostResult =          cfgExecData[1][0];
+  var exePostMatchResult =     cfgExecData[1][0];
   var exePlyrMatchValidation = cfgExecData[2][0];
   var exeSendEmail =           cfgExecData[5][0];
   var exeUpdatePlyrDB =        cfgExecData[6][0];
@@ -267,7 +290,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
   // Columns Values and Parameters
   var RspnDataInputs =      cfgColRspSht[0][0]; // from Time Stamp to Data Processed
   var colMatchID =          cfgColRspSht[1][0];
-  var colPrcsd =            cfgColRspSht[2][0];
+  var colDataPrcsd =        cfgColRspSht[2][0];
   var colDataConflict =     cfgColRspSht[3][0];
   var colStatus =           cfgColRspSht[4][0];
   var colStatusMsg =        cfgColRspSht[5][0];
@@ -276,17 +299,17 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
   var colNbUnprcsdEntries = cfgColRspSht[8][0];
   
   // Column Values for Data in Response Sheet
-  var colArrRspnDataPrcsd = colPrcsd-1;
+  var colArrRspnDataPrcsd = colDataPrcsd-1;
   var colArrRspnPwd =       cfgColMatchRep[ 1][0]-1;
-  var colArrRspnLoc =       cfgColMatchRep[ 2][0]-1;
-  var colArrRspnRound =     cfgColMatchRep[ 3][0]-1;
-  var colArrRspnWinPlyr =   cfgColMatchRep[ 4][0]-1;
-  var colArrRspnWinTeam =   cfgColMatchRep[ 5][0]-1;
-  var colArrRspnWinPts =    cfgColMatchRep[ 6][0]-1;
-  var colArrRspnLosPlyr =   cfgColMatchRep[ 7][0]-1;
-  var colArrRspnLosTeam =   cfgColMatchRep[ 8][0]-1;
-  var colArrRspnLosPts =    cfgColMatchRep[ 9][0]-1;
-  var colArrRspnTie =       cfgColMatchRep[10][0]-1;
+  var colArrRspnRound =     cfgColMatchRep[ 2][0]-1;
+  var colArrRspnWinPlyr =   cfgColMatchRep[ 3][0]-1;
+  var colArrRspnWinTeam =   cfgColMatchRep[ 4][0]-1;
+  var colArrRspnWinPts =    cfgColMatchRep[ 4][0]-1;
+  var colArrRspnLosPlyr =   cfgColMatchRep[ 6][0]-1;
+  var colArrRspnLosTeam =   cfgColMatchRep[ 7][0]-1;
+  var colArrRspnLosPts =    cfgColMatchRep[ 8][0]-1;
+  var colArrRspnTie =       cfgColMatchRep[ 9][0]-1;
+  var colArrRspnLoc =       cfgColMatchRep[10][0]-1;
   var colArrRspnPlyrSub =   cfgColMatchRep[19][0]-1;
   
   // League Parameters
@@ -349,10 +372,12 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
   var MatchPostStatus = -97;
   var CardDBUpdated = -96;
   
+  var shtTest = ss.getSheetByName("Test");
+  
   Logger.log('--------- Posting Match ---------'); 
   Logger.log('--------- Options ---------');
   Logger.log('Dual Submission Option: %s',exeDualSubmission);
-  Logger.log('Post Results Option: %s',exePostResult);
+  Logger.log('Post Results Option: %s',exePostMatchResult);
   Logger.log('Player Match Validation Option: %s',exePlyrMatchValidation);
   Logger.log('Game Type: %s',evntGameType);
   Logger.log('Send Email Option: %s',exeSendEmail);
@@ -439,7 +464,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
           // If the result of the fcnFindMatchingEntry function returns something greater than 0, we found a matching entry, continue analyzing the response data
           if (MatchingRspn > 0){
             
-            if (exePostResult == 'Enabled'){
+            if (exePostMatchResult == 'Enabled'){
               
               // Get the Entry Data found at row MatchingRspn
               MatchingRspnData = shtRspn.getRange(MatchingRspn, 1, 1, RspnDataInputs).getValues();
@@ -453,7 +478,8 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
               MatchData = fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExecData, cfgColMatchRep, ResponseData, MatchingRspnData, MatchID, MatchData);
               MatchPostStatus = MatchData[25][0];
               
-              shtTest.getRange(1, 1, 26, 4).setValues(MatchData);
+              
+              shtTest.getRange(2, 1, 26, 4).setValues(MatchData);
               
               Logger.log("Routine: fcnAnalyzeResultsWG");
               
@@ -464,14 +490,14 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
                 // Match ID doesn't change because we assumed it was already OK
                 Logger.log('Match Posted ID: %s',MatchID);
                 
-                // Log Players Match Data
-                logStatusPlyrA[2] = RspnDataWinPlyr;
-                logStatusPlyrA = fcnLogPlayerMatch(ss, shtConfig, logStatusPlyrA, MatchData);
-                Logger.log('Player Log Status for %s : %s',logStatusPlyrA[2],logStatusPlyrA[1]);
-                
-                logStatusPlyrB[2] = RspnDataLosPlyr;
-                logStatusPlyrB = fcnLogPlayerMatch(ss, shtConfig, logStatusPlyrB, MatchData);
-                Logger.log('Player Log Status for %s : %s',logStatusPlyrB[2],logStatusPlyrB[1]);
+//                // Log Players Match Data
+//                logStatusPlyrA[2] = RspnDataWinPlyr;
+//                logStatusPlyrA = fcnLogPlayerMatch(ss, shtConfig, logStatusPlyrA, MatchData);
+//                Logger.log('Player Log Status for %s : %s',logStatusPlyrA[2],logStatusPlyrA[1]);
+//                
+//                logStatusPlyrB[2] = RspnDataLosPlyr;
+//                logStatusPlyrB = fcnLogPlayerMatch(ss, shtConfig, logStatusPlyrB, MatchData);
+//                Logger.log('Player Log Status for %s : %s',logStatusPlyrB[2],logStatusPlyrB[1]);
                 
                 // If Event Game Type is Wargame
                 if(evntGameType == 'Wargame'){
@@ -481,7 +507,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
                     Status[1] = subUpdateStatus(shtRspn, RspnRow, colStatus, colStatusMsg, Status[0]);
                   }
                   // Update Player Army DB and Army List
-                  if(exeUpdatePlyrDB == 'Enabled' && evntBalanceBonus == 'Enabled') fcnUpdateArmyDB(shtConfig, RspnDataLosPlyr, MatchData[5][2], shtTest); // MatchData[5][2] = Loser Power Level Bonus
+                  if(exeUpdatePlyrDB == 'Enabled' && evntBalanceBonus == 'Enabled') fcnUpdateArmyDB(shtConfig, RspnDataLosPlyr, MatchData[5][2]); // MatchData[5][2] = Loser Power Level Bonus
                   Logger.log("Routine: fcnAnalyzeResultsWG");
                 }
               }
@@ -508,7 +534,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
               }
             }
             // If Posting is disabled, generate Match ID for testing        
-            if (exePostResult == 'Disabled'){
+            if (exePostMatchResult == 'Disabled'){
               // Match ID doesn't change because we assumed it was already OK
               
             }
@@ -626,7 +652,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
         Status[1] = subUpdateStatus(shtRspn, RspnRow, colStatus, colStatusMsg, Status[0]);
       }
       // Set the Match ID (for both Response and Matching Entry), and Updates the Last Match ID generated, 
-      if (MatchPostStatus == 1 || exePostResult == 'Disabled'){
+      if (MatchPostStatus == 1 || exePostMatchResult == 'Disabled'){
         shtRspn.getRange(RspnRow, colMatchID).setValue(MatchID);
         shtRspn.getRange(1, colMatchIDLastVal).setValue(MatchID);
       }
@@ -638,7 +664,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
         Status[2] = MatchData[3][0]; // Round Processed
       }
       // Updating Match Process Data
-      shtRspn.getRange(RspnRow, colPrcsd).setValue(RspnDataPrcssd);
+      shtRspn.getRange(RspnRow, colDataPrcsd).setValue(RspnDataPrcssd);
       shtRspn.getRange(RspnRow, colNbUnprcsdEntries).setValue(0);
       
       // If Process Error has been detected, update the Response Process Data

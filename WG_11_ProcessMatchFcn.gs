@@ -11,15 +11,18 @@ function fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfg
   
   Logger.log("Routine: fcnPostMatchResultsWG");
   
-  var cfgColMatchRslt = ss.getSheetByName("Config").getRange(20,18,32,1).getValues();
+  var cfgColMatchRslt = ss.getSheetByName("Config").getRange(21,18,32,1).getValues();
   
   // Code Execution Options
-  var exeDualSubmission = cfgExecData[0][0]; // If Dual Submission is disabled, look for duplicate instead
+  var exeDualSubmission =      cfgExecData[0][0]; // If Dual Submission is disabled, look for duplicate instead
   var exePlyrMatchValidation = cfgExecData[2][0];
+  var exePostRoundResult =     cfgExecData[8][0];
   
   // Event Parameters
-  var evntGameType = cfgEvntParam[4][0];
-  var evntFormat =   cfgEvntParam[9][0];
+  var evntGameType =       cfgEvntParam[4][0];
+  var evntFormat =         cfgEvntParam[9][0];
+  var evntLocationBonus =  cfgEvntParam[23][0];
+  var evntPtsGainedMatch = cfgEvntParam[32][0];
   
   // Cumulative Results sheet variables
   var shtCumul;
@@ -29,7 +32,7 @@ function fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfg
   var shtRslt = ss.getSheetByName('Match Results');
   var shtRsltMaxRows = shtRslt.getMaxRows();
   var shtRsltMaxCol = shtRslt.getMaxColumns();
-  var RsltLastResultRowRng = shtRslt.getRange(3, 4);
+  var RsltLastResultRowRng = shtRslt.getRange(3, 5);
   var RsltLastResultRow = RsltLastResultRowRng.getValue() + 1;
   var RsltRng = shtRslt.getRange(RsltLastResultRow, 1, 1, shtRsltMaxCol);
   var ResultData = RsltRng.getValues();
@@ -43,18 +46,19 @@ function fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfg
   
   // Column Values for Data in Response Sheet
   var colArrRspnPwd =       cfgColMatchRep[ 1][0]-1;
-  var colArrRspnLoc =       cfgColMatchRep[ 2][0]-1;
-  var colArrRspnRound =     cfgColMatchRep[ 3][0]-1;
-  var colArrRspnWinPlyr =   cfgColMatchRep[ 4][0]-1;
-  var colArrRspnWinTeam =   cfgColMatchRep[ 5][0]-1;
-  var colArrRspnWinPts =    cfgColMatchRep[ 6][0]-1;
-  var colArrRspnLosPlyr =   cfgColMatchRep[ 7][0]-1;
-  var colArrRspnLosTeam =   cfgColMatchRep[ 8][0]-1;
-  var colArrRspnLosPts =    cfgColMatchRep[ 9][0]-1;
-  var colArrRspnTie =       cfgColMatchRep[10][0]-1;
+  var colArrRspnRound =     cfgColMatchRep[ 2][0]-1;
+  var colArrRspnWinPlyr =   cfgColMatchRep[ 3][0]-1;
+  var colArrRspnWinTeam =   cfgColMatchRep[ 4][0]-1;
+  var colArrRspnWinPts =    cfgColMatchRep[ 4][0]-1;
+  var colArrRspnLosPlyr =   cfgColMatchRep[ 6][0]-1;
+  var colArrRspnLosTeam =   cfgColMatchRep[ 7][0]-1;
+  var colArrRspnLosPts =    cfgColMatchRep[ 8][0]-1;
+  var colArrRspnTie =       cfgColMatchRep[ 9][0]-1;
+  var colArrRspnLoc =       cfgColMatchRep[10][0]-1;
   var colArrRspnPlyrSub =   cfgColMatchRep[19][0]-1;
 
   // Column Values for Data in Match Result Sheet
+  var colArrRsltResultID = cfgColMatchRslt[ 0][0]-1;
   var colArrRsltMatchCnt = cfgColMatchRslt[ 1][0]-1;
   var colArrRsltMatchID =  cfgColMatchRslt[ 2][0]-1;
   var colArrRsltRound =    cfgColMatchRslt[ 3][0]-1;
@@ -81,9 +85,9 @@ function fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfg
     RsltPlyrDataB = MatchingRspnData;
   }
   
-  // Copies Players Data
-  ResultData[0][colArrRsltLoc]   = ResponseData[0][colArrRspnLoc];  // Location
+  // Copy Players Data
   ResultData[0][colArrRsltRound] = ResponseData[0][colArrRspnRound];  // Round Number
+  
   // If Single Event
   if(evntFormat == "Single"){
     ResultData[0][colArrRsltWinPT] = ResponseData[0][colArrRspnWinPlyr];  // Winning Player
@@ -94,16 +98,25 @@ function fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfg
     ResultData[0][colArrRsltWinPT] = ResponseData[0][colArrRspnWinTeam];  // Winning Team
     ResultData[0][colArrRsltLosPT] = ResponseData[0][colArrRspnLosTeam];  // Losing Team
   }
-  // Winner and Losser Names
+  
+  // Points
+  if(evntPtsGainedMatch == "Enabled"){
+    ResultData[0][colArrRsltWinPts] = ResponseData[0][colArrRspnWinPts]; // Winning Player Points
+    ResultData[0][colArrRsltLosPts] = ResponseData[0][colArrRspnLosPts]; // Losing Player Points
+  }
+  else{
+    ResultData[0][colArrRsltWinPts] = "N/A"; // Winning Player Points
+    ResultData[0][colArrRsltLosPts] = "N/A"; // Losing Player Points
+  }
+  
+  // Winner and Loser Names
   Winr = ResultData[0][colArrRsltWinPT];
   Losr = ResultData[0][colArrRsltLosPT];
   
   ResultData[0][colArrRsltTie] =    ResponseData[0][colArrRspnTie];  // Game is Tie
-  ResultData[0][colArrRsltWinPts] = ResponseData[0][colArrRspnWinPts]; // Winning Player Points
-  ResultData[0][colArrRsltLosPts] = ResponseData[0][colArrRspnLosPts]; // Losing Player Points
+  if(evntLocationBonus == "Enabled") ResultData[0][colArrRsltLoc]   = ResponseData[0][colArrRspnLoc];  // Location
   
-
-  
+   
   // If option is enabled, Validate if players are allowed to post results (look for number of games played versus total amount of games allowed
   if (exePlyrMatchValidation == 'Enabled'){
     // Call subroutine to check if players match are valid
@@ -157,14 +170,16 @@ function fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfg
     // Update the Match Posted Status
     MatchPostedStatus = 1;
     
-//    // Post Results in Appropriate Round Number for Both Players
-//    // DataPostedLosr is an Array with [0]=Post Status (1=Success) [1]=Loser Row [2]=Power Level Column
-//    DataPostedLosr = fcnPostResultRoundWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgColMatchRslt, ResultData);
-//    
-//    // Gets New Power Level / Points Bonus for Loser from Cumulative Results Sheet
-//    shtCumul = ss.getSheetByName('Cumulative Results');
-//    BalanceBonusLosr = shtCumul.getRange(DataPostedLosr[1],DataPostedLosr[2]).getValue();
-//    Logger.log('Cumulative Power Level: %s',BalanceBonusLosr);
+    // Post Results in Appropriate Round Number for Both Players
+    if(exePostRoundResult == "Enabled") {
+      // DataPostedLosr is an Array with [0]=Post Status (1=Success) [1]=Loser Row [2]=Power Level Column
+      DataPostedLosr = fcnPostRoundResultWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgColMatchRslt, ResultData);
+      
+      // Gets New Power Level / Points Bonus for Loser from Cumulative Results Sheet
+      shtCumul = ss.getSheetByName('Cumulative Results');
+      BalanceBonusLosr = shtCumul.getRange(DataPostedLosr[1],DataPostedLosr[2]).getValue();
+      Logger.log('Cumulative Power Level: %s',BalanceBonusLosr);
+    }
   }
   
   // If Match Validation was not successful, generate Error Status
@@ -221,7 +236,7 @@ function fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfg
 
 
 // **********************************************
-// function fcnPostResultRoundWG()
+// function fcnPostRoundResultWG()
 //
 // Once the Match Data has been posted in the 
 // Match Results Tab, the Round X results are updated
@@ -229,7 +244,7 @@ function fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfg
 //
 // **********************************************
 
-function fcnPostResultRoundWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgColMatchRslt, ResultData) {
+function fcnPostRoundResultWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgColMatchRslt, ResultData) {
   
   Logger.log("Routine: fcnPostResultRoundWG");
 
@@ -271,23 +286,23 @@ function fcnPostResultRoundWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgC
   
   
   // function variables
-  var shtRoundRslt;
-  var shtRoundMaxCol;
-  var RoundPlyrList;
-  var RoundWinrRec;
-  var RoundWinrLoc
-  var RoundLosrRec;
-  var RoundLosrLoc;
-  var RoundPackData;
-  var RoundWinrMatchup;
-  var RoundLosrMatchup;
+  var shtRndRslt;
+  var shtRndMaxCol;
+  var RndPlyrList;
+  var RndRecPlyr1;
+  var RndLocPlyr1
+  var RndRecPlyr2;
+  var RndLocPlyr2;
+  var RndPackData;
+  var RndPlyr1Matchup;
+  var RndPlyr2Matchup;
   
-  var RoundWinrRow = 0;
-  var RoundLosrRow = 0;
-  var RoundMatchTie = 0; // Match is not a Tie by default
+  var RndPlyr1Row = 0;
+  var RndPlyr2Row = 0;
+  var RndMatchTie = 0; // Match is not a Tie by default
   
-  var BalanceDataLosr = new Array(3);
-  var LosrBalBonusVal;
+  var BalanceDataPlyr2 = new Array(3);
+  var Plyr2BalBonusVal;
   
   // Match Values
   var MatchRound =      ResultData[0][colArrRsltRound];
@@ -299,134 +314,84 @@ function fcnPostResultRoundWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgC
   var MatchLoc =        ResultData[0][colArrRsltLoc];
   
   var Round = 'Round'+MatchRound;
-  shtRoundRslt = ss.getSheetByName(Round);
+  shtRndRslt = ss.getSheetByName(Round);
   
-  shtRoundMaxCol = shtRoundRslt.getMaxColumns();
+  shtRndMaxCol = shtRndRslt.getMaxColumns();
 
   // Gets All Players Names
-  RoundPlyrList = shtRoundRslt.getRange(5,colRndPlyr,32,1).getValues();
+  RndPlyrList = shtRndRslt.getRange(5,colRndPlyr,32,1).getValues();
   
   // Find the Winning and Losing Player in the Round Result Tab
   for (var RsltRow = 5; RsltRow <= 36; RsltRow ++){
     
     // Get Rows for Winner and Loser
-    if (RoundPlyrList[RsltRow - 5][0] == MatchDataWinPT) RoundWinrRow = RsltRow;
-    if (RoundPlyrList[RsltRow - 5][0] == MatchDataLosPT) RoundLosrRow = RsltRow;
+    if (RndPlyrList[RsltRow - 5][0] == MatchDataWinPT) RndPlyr1Row = RsltRow;
+    if (RndPlyrList[RsltRow - 5][0] == MatchDataLosPT) RndPlyr2Row = RsltRow;
     
     // Get Winner and Loser Records when both rows have been found
-    if (RoundWinrRow != '' && RoundLosrRow != '') {
-      // Get Winner and Loser Match Record, 6 values: Matches Played, Wins, Loss, Ties, Points, Win%
-      RoundWinrRec = shtRoundRslt.getRange(RoundWinrRow,colRndMP,1,6).getValues();
-      RoundLosrRec = shtRoundRslt.getRange(RoundLosrRow,colRndMP,1,6).getValues();
+    if (RndPlyr1Row != '' && RndPlyr2Row != '') {
+      // Get Winner (Player 1) and Loser (Player 2) Match Record, 6 values: Matches Played, Wins, Loss, Ties, Points, Win%
+      RndRecPlyr1 = shtRndRslt.getRange(RndPlyr1Row,colRndMP,1,6).getValues();
+      RndRecPlyr2 = shtRndRslt.getRange(RndPlyr2Row,colRndMP,1,6).getValues();
       
-      // Get Winner and Loser Location Bonus if Applicable
-      if(evntLocationBonus == "Enabled"){
-        RoundWinrLoc = shtRoundRslt.getRange(RoundWinrRow,colRndLocation).getValue();
-        RoundLosrLoc = shtRoundRslt.getRange(RoundLosrRow,colRndLocation).getValue();
+      // Update Winner and Loser Location Bonus if Applicable
+      if(evntLocationBonus == "Enabled" && (MatchLoc == 'Yes' || MatchLoc == 'Oui')){
+        RndLocPlyr1 = shtRndRslt.getRange(RndPlyr1Row,colRndLocation).getValue() + 1;
+        RndLocPlyr2 = shtRndRslt.getRange(RndPlyr2Row,colRndLocation).getValue() + 1;
+        
+        shtRndRslt.getRange(RndPlyr1Row,colRndLocation).setValue(RndLocPlyr1);
+        shtRndRslt.getRange(RndPlyr2Row,colRndLocation).setValue(RndLocPlyr2);
       }
       // Exit For Loop
       RsltRow = 37;
     }
   }
-  
-  // Initializes Empty Cells for both Winner and Loser
-  if (RoundWinrRec[0][0] == '') RoundWinrRec[0][0] = 0; // MP
-  if (RoundWinrRec[0][1] == '') RoundWinrRec[0][1] = 0; // Win
-  if (RoundWinrRec[0][2] == '') RoundWinrRec[0][2] = 0; // Loss
-  if (RoundWinrRec[0][3] == '') RoundWinrRec[0][3] = 0; // Tie
-  if (RoundWinrRec[0][4] == '') RoundWinrRec[0][4] = 0; // Points
-  if (RoundWinrRec[0][5] == '') RoundWinrRec[0][5] = 0; // Win %
-  
-  if (RoundLosrRec[0][0] == '') RoundLosrRec[0][0] = 0; // MP
-  if (RoundLosrRec[0][1] == '') RoundLosrRec[0][1] = 0; // Win
-  if (RoundLosrRec[0][2] == '') RoundLosrRec[0][2] = 0; // Loss
-  if (RoundLosrRec[0][3] == '') RoundLosrRec[0][3] = 0; // Tie
-  if (RoundLosrRec[0][4] == '') RoundLosrRec[0][4] = 0; // Points
-  if (RoundLosrRec[0][5] == '') RoundLosrRec[0][5] = 0; // Win %
-  
+
   // Match Tie Result
   if(ResultData[0][colArrRsltTie] == 'Yes' || ResultData[0][colArrRsltTie] == 'Oui'){
-    RoundMatchTie = 1;  
+    RndMatchTie = 1;  
+    // Update Player 1
+    RndRecPlyr1 = subUpdatePlyrEvntRecord(RndRecPlyr1, "Tie", evntPtsGainedMatch, MatchDataWinPts, evntPtsPerWin, evntPtsPerLoss, evntPtsPerTie);
+    // Update Player 2
+    RndRecPlyr2 = subUpdatePlyrEvntRecord(RndRecPlyr2, "Tie", evntPtsGainedMatch, MatchDataLosPts, evntPtsPerWin, evntPtsPerLoss, evntPtsPerTie);
   }
-  
-  // Update Matches Played
-  // Update Winning Player Results
-  RoundWinrRec[0][0] = RoundWinrRec[0][0] + 1;
-  // Update Losing Player Results
-  RoundLosrRec[0][0] = RoundLosrRec[0][0] + 1;
-  
-  // Update Wins / Loss
-  // If match is not a Tie
-  if(RoundMatchTie == 0){
-    RoundWinrRec[0][1] = RoundWinrRec[0][1] + 1;
-    RoundLosrRec[0][2] = RoundLosrRec[0][2] + 1;
-  }
-
-  // Update Ties
-  if(RoundMatchTie == 1){
-    RoundWinrRec[0][3] = RoundWinrRec[0][3] + 1;
-    RoundLosrRec[0][3] = RoundLosrRec[0][3] + 1;
-  }
-  
-  // Update Points
-  // If Points per Game are not used, Points are equal to the sum of Wins*PtsPerWin + Loss*PtsPerLoss + Ties*PtsPerTie
-  if(evntPtsGainedMatch == "Disabled"){
-    RoundWinrRec[0][4] = (RoundWinrRec[0][1] * evntPtsPerWin) + (RoundWinrRec[0][2] * evntPtsPerLoss) + (RoundWinrRec[0][3] * evntPtsPerTie);
-    RoundLosrRec[0][4] = (RoundLosrRec[0][1] * evntPtsPerWin) + (RoundLosrRec[0][2] * evntPtsPerLoss) + (RoundLosrRec[0][3] * evntPtsPerTie);
-  }
-  
-  // If Points per Game are used, Points are equal to the sum of all points made during all matches
-  if(evntPtsGainedMatch == "Enabled"){
-    RoundWinrRec[0][4] = RoundWinrRec[0][4] + MatchDataWinPts;
-    RoundLosrRec[0][4] = RoundLosrRec[0][4] + MatchDataLosPts;
-  }
-
-  // Update Win Percentage
-  if(RoundWinrRec[0][0] > 0) RoundWinrRec[0][5] = RoundWinrRec[0][1] / RoundWinrRec[0][0];
-  if(RoundLosrRec[0][0] > 0) RoundLosrRec[0][5] = RoundLosrRec[0][1] / RoundLosrRec[0][0];
-  
-  // Updates Match Location
-  if (evntLocationBonus == "Enabled" && (MatchLoc == 'Yes' || MatchLoc == 'Oui')) {
-    RoundWinrLoc = RoundWinrLoc + 1;
-    RoundLosrLoc = RoundLosrLoc + 1;
+  else {
+    // Update Player 1
+    RndRecPlyr1 = subUpdatePlyrEvntRecord(RndRecPlyr1, "Win", evntPtsGainedMatch, MatchDataWinPts, evntPtsPerWin, evntPtsPerLoss, evntPtsPerTie);
+    // Update Player 2
+    RndRecPlyr2 = subUpdatePlyrEvntRecord(RndRecPlyr2, "Loss", evntPtsGainedMatch, MatchDataLosPts, evntPtsPerWin, evntPtsPerLoss, evntPtsPerTie);
   }
   
   // Update Round Matchups
   // Winning Player
-  RoundWinrMatchup = shtRoundRslt.getRange(RoundWinrRow,colRndMatchup).getValue();
-  if(RoundWinrMatchup == '') RoundWinrMatchup = MatchDataLosPT;
-  else RoundWinrMatchup += ', ' + MatchDataLosPT;
+  RndPlyr1Matchup = shtRndRslt.getRange(RndPlyr1Row,colRndMatchup).getValue();
+  if(RndPlyr1Matchup == '') RndPlyr1Matchup = MatchDataLosPT;
+  else RndPlyr1Matchup += ', ' + MatchDataLosPT;
   
   // Losing Player
-  RoundLosrMatchup = shtRoundRslt.getRange(RoundLosrRow,colRndMatchup).getValue();
-  if(RoundLosrMatchup == '') RoundLosrMatchup = MatchDataWinPT;
-  else RoundLosrMatchup += ', ' + MatchDataWinPT;
+  RndPlyr2Matchup = shtRndRslt.getRange(RndPlyr2Row,colRndMatchup).getValue();
+  if(RndPlyr2Matchup == '') RndPlyr2Matchup = MatchDataWinPT;
+  else RndPlyr2Matchup += ', ' + MatchDataWinPT;
   
   // Update the Round Results Sheet
-  shtRoundRslt.getRange(RoundWinrRow,colRndWin,1,6).setValues(RoundWinrRec);
-  shtRoundRslt.getRange(RoundLosrRow,colRndWin,1,6).setValues(RoundLosrRec);
-  shtRoundRslt.getRange(RoundWinrRow,colRndMatchup).setValue(RoundWinrMatchup);
-  shtRoundRslt.getRange(RoundLosrRow,colRndMatchup).setValue(RoundLosrMatchup);
-  
-  // If Location Bonus is Enabled
-  if (evntLocationBonus == "Enabled"){
-    shtRoundRslt.getRange(RoundWinrRow,colRndLocation).setValue(RoundWinrLoc);
-    shtRoundRslt.getRange(RoundLosrRow,colRndLocation).setValue(RoundLosrLoc);
-  }
+  shtRndRslt.getRange(RndPlyr1Row,colRndWin,1,6).setValues(RndRecPlyr1);
+  shtRndRslt.getRange(RndPlyr2Row,colRndWin,1,6).setValues(RndRecPlyr2);
+  shtRndRslt.getRange(RndPlyr1Row,colRndMatchup).setValue(RndPlyr1Matchup);
+  shtRndRslt.getRange(RndPlyr2Row,colRndMatchup).setValue(RndPlyr2Matchup);
 
   // If Game Type is Wargame and Balance Bonus is Enabled
-  if (RoundMatchTie == 0 && evntBalBonus == 'Enabled'){
+  if (RndMatchTie == 0 && evntBalBonus == 'Enabled'){
     // Get Loser Amount of Balance Bonus Points and Increase by value from Config file
-    LosrBalBonusVal = shtRoundRslt.getRange(RoundLosrRow,colRndBalBonus).getValue() + evntBalBonusVal;
-    shtRoundRslt.getRange(RoundLosrRow,colRndBalBonus).setValue(LosrBalBonusVal);
+    Plyr2BalBonusVal = shtRndRslt.getRange(RndPlyr2Row,colRndBalBonus).getValue() + evntBalBonusVal;
+    shtRndRslt.getRange(RndPlyr2Row,colRndBalBonus).setValue(Plyr2BalBonusVal);
   }
   
   // Populate Data Posted for Loser
-  BalanceDataLosr[0]= 1;
-  BalanceDataLosr[1]= RoundLosrRow;
-  BalanceDataLosr[2]= colRndBalBonus;
+  BalanceDataPlyr2[0]= 1;
+  BalanceDataPlyr2[1]= RndPlyr2Row;
+  BalanceDataPlyr2[2]= colRndBalBonus;
                  
-  return BalanceDataLosr;
+  return BalanceDataPlyr2;
 }
 
 
@@ -455,17 +420,16 @@ function fcnFindDuplicateData(ss, shtRspn, cfgEvntParam, cfgColRspSht, cfgColMat
   var colArrRspnPrcsd =   cfgColRspSht[2][0]-1;
   
   // Column Values for Data in Response Sheet
-  var colArrRspnDataPrcsd = colArrRspnPrcsd-1;
   var colArrRspnPwd =       cfgColMatchRep[ 1][0]-1;
-  var colArrRspnLoc =       cfgColMatchRep[ 2][0]-1;
-  var colArrRspnRound =     cfgColMatchRep[ 3][0]-1;
-  var colArrRspnWinPlyr =   cfgColMatchRep[ 4][0]-1;
-  var colArrRspnWinTeam =   cfgColMatchRep[ 5][0]-1;
-  var colArrRspnWinPts =    cfgColMatchRep[ 6][0]-1;
-  var colArrRspnLosPlyr =   cfgColMatchRep[ 7][0]-1;
-  var colArrRspnLosTeam =   cfgColMatchRep[ 8][0]-1;
-  var colArrRspnLosPts =    cfgColMatchRep[ 9][0]-1;
-  var colArrRspnTie =       cfgColMatchRep[10][0]-1;
+  var colArrRspnRound =     cfgColMatchRep[ 2][0]-1;
+  var colArrRspnWinPlyr =   cfgColMatchRep[ 3][0]-1;
+  var colArrRspnWinTeam =   cfgColMatchRep[ 4][0]-1;
+  var colArrRspnWinPts =    cfgColMatchRep[ 4][0]-1;
+  var colArrRspnLosPlyr =   cfgColMatchRep[ 6][0]-1;
+  var colArrRspnLosTeam =   cfgColMatchRep[ 7][0]-1;
+  var colArrRspnLosPts =    cfgColMatchRep[ 8][0]-1;
+  var colArrRspnTie =       cfgColMatchRep[ 9][0]-1;
+  var colArrRspnLoc =       cfgColMatchRep[10][0]-1;
   var colArrRspnPlyrSub =   cfgColMatchRep[19][0]-1;
    
   // Values from Response Data
@@ -497,7 +461,9 @@ function fcnFindDuplicateData(ss, shtRspn, cfgEvntParam, cfgColRspSht, cfgColMat
   EntryData = shtRspn.getRange(1, 1, RspnMaxRows, RspnDataInputs).getValues();
   
   // Loop to find if another entry has the same data
-  for (var EntryRow = 1; EntryRow <= RspnMaxRows; EntryRow++){
+  for (var EntryRow = 1; EntryRow < RspnMaxRows; EntryRow++){
+    
+    Logger.log("Entry Round: %s",EntryData[EntryRow][colArrRspnRound])
     
     // Filters only entries of the same Round the response was posted
     if (EntryData[EntryRow][colArrRspnRound] == RspnDataRound){
@@ -567,12 +533,16 @@ function fcnFindMatchingData(ss, cfgEvntParam, cfgColRspSht, cfgColMatchRep, cfg
   var colArrRspnPrcsd =   cfgColRspSht[2][0]-1;
   
   // Column Values for Data in Response Sheet
-  var colArrRspnDataPrcsd = colArrRspnPrcsd-1;
-  var colArrRspnRound =     cfgColMatchRep[ 3][0]-1;
-  var colArrRspnWinPlyr =   cfgColMatchRep[ 4][0]-1;
-  var colArrRspnWinTeam =   cfgColMatchRep[ 5][0]-1;
-  var colArrRspnLosPlyr =   cfgColMatchRep[ 7][0]-1;
-  var colArrRspnLosTeam =   cfgColMatchRep[ 8][0]-1;
+  var colArrRspnPwd =       cfgColMatchRep[ 1][0]-1;
+  var colArrRspnRound =     cfgColMatchRep[ 2][0]-1;
+  var colArrRspnWinPlyr =   cfgColMatchRep[ 3][0]-1;
+  var colArrRspnWinTeam =   cfgColMatchRep[ 4][0]-1;
+  var colArrRspnWinPts =    cfgColMatchRep[ 4][0]-1;
+  var colArrRspnLosPlyr =   cfgColMatchRep[ 6][0]-1;
+  var colArrRspnLosTeam =   cfgColMatchRep[ 7][0]-1;
+  var colArrRspnLosPts =    cfgColMatchRep[ 8][0]-1;
+  var colArrRspnTie =       cfgColMatchRep[ 9][0]-1;
+  var colArrRspnLoc =       cfgColMatchRep[10][0]-1;
   var colArrRspnPlyrSub =   cfgColMatchRep[19][0]-1;
   
   // Response Data
