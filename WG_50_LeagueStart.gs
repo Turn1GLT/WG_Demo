@@ -168,7 +168,7 @@ function fcnInitializeEvent(){
     // Standings
     shtStandings.getRange(6,2,MaxRowStdg-5,MaxColStdg-1).clearContent();
     // Match Results (does not clear the last column)
-    shtMatchRslt.getRange(6,2,MaxRowRslt-5,MaxColRslt-2).clearContent();
+    shtMatchRslt.getRange(6,2,MaxRowRslt-5,MaxColRslt-1).clearContent();
     // Responses
     shtResponses.getRange(2,1,MaxRowRspn-1,MaxColRspn).clearContent();
     shtResponses.getRange(1,colRspMatchIDLastVal).setValue(0);
@@ -275,8 +275,8 @@ function fcnClearMatchResults(){
     var MaxColRndSht = shtRound.getMaxColumns();
     
     // Clear Data
-    shtStandings.getRange(6,2,32,7).clearContent();
-    shtMatchRslt.getRange(6,2,MaxRowRslt-5,MaxColRslt-2).clearContent();
+    shtStandings.getRange(6,2,MaxRowStdg-5,MaxColStdg-1).clearContent();
+    shtMatchRslt.getRange(6,2,MaxRowRslt-5,MaxColRslt-1).clearContent();
     shtResponses.getRange(2,1,MaxRowRspn-1,MaxColRspn).clearContent();
     shtResponses.getRange(1,colRspMatchIDLastVal).setValue(0);
     shtMatchRespEN.getRange(2,colRspMatchID,MaxRowRspnEN-1,MaxColRspnEN-colRspMatchID+1).clearContent();
@@ -696,14 +696,17 @@ function fcnCrtEvntPlayerRecord(){
       // Translate Header if Player's Language Preference is French
       if(PlayerData[plyr][colShtPlyrLang - colShtPlyrName] == 'Français'){
         // Set Global Header
-        GlobalHdr = shtPlyr.getRange(3,1,1,6).getValues();
-        GlobalHdr[0][0] = 'Joué';       // Played
-        GlobalHdr[0][1] = 'Victoires';  // Win
-        GlobalHdr[0][2] = 'Défaites';   // Loss
-        GlobalHdr[0][3] = 'Nulles';     // Tie
-        GlobalHdr[0][4] = 'Points';     // Points
-        GlobalHdr[0][5] = '% Victoire'; // Win%
-        shtPlyr.getRange(3,1,1,6).setValues(GlobalHdr);
+        GlobalHdr = shtPlyr.getRange(3,1,1,9).getValues();
+        GlobalHdr[0][0] = 'Joué';           // Played
+        GlobalHdr[0][1] = 'Victoires';      // Win
+        GlobalHdr[0][2] = 'Défaites';       // Loss
+        GlobalHdr[0][3] = 'Nulles';         // Tie
+        GlobalHdr[0][4] = 'Pts Marqués';    // Pts Scored
+        GlobalHdr[0][5] = 'Pts Alloués';    // Pts Allowed
+        GlobalHdr[0][6] = '% Victoire';     // Win%
+        GlobalHdr[0][7] = 'Pts Mrq/Match'; // Pts Scored / Match
+        GlobalHdr[0][8] = 'Pts All/Match'; // Pts Allowed / Match
+        shtPlyr.getRange(3,1,1,9).setValues(GlobalHdr);
       
         // Set Hstry Header
         HstryHdr = shtPlyr.getRange(6,1,1,9).getValues();
@@ -843,7 +846,7 @@ function fcnClrEvntPlayerRecord(){
   // Get Player Log Spreadsheet
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
   var ssEvntPlyrRec = SpreadsheetApp.openById(shtIDs[13][0]);
-  var rngRecord = "A4:F4";
+  var rngRecord = "A4:I4";
   var evntPlyrRecNbSheets = ssEvntPlyrRec.getNumSheets();
   var evntPlyrSheets = ssEvntPlyrRec.getSheets();
   var evntPlyrRowStart = 7;

@@ -49,7 +49,7 @@ function fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfg
   var colArrRspnRound =     cfgColMatchRep[ 2][0]-1;
   var colArrRspnWinPlyr =   cfgColMatchRep[ 3][0]-1;
   var colArrRspnWinTeam =   cfgColMatchRep[ 4][0]-1;
-  var colArrRspnWinPts =    cfgColMatchRep[ 4][0]-1;
+  var colArrRspnWinPts =    cfgColMatchRep[ 5][0]-1;
   var colArrRspnLosPlyr =   cfgColMatchRep[ 6][0]-1;
   var colArrRspnLosTeam =   cfgColMatchRep[ 7][0]-1;
   var colArrRspnLosPts =    cfgColMatchRep[ 8][0]-1;
@@ -116,8 +116,8 @@ function fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfg
   Winr = ResultData[0][colArrRsltWinPT];
   Losr = ResultData[0][colArrRsltLosPT];
   
-  ResultData[0][colArrRsltTie] =    ResponseData[0][colArrRspnTie];  // Game is Tie
-  if(evntLocationBonus == "Enabled") ResultData[0][colArrRsltLoc]   = ResponseData[0][colArrRspnLoc];  // Location
+  if(evntTiePossible == "Enabled")   ResultData[0][colArrRsltTie] = ResponseData[0][colArrRspnTie];  // Game is Tie
+  if(evntLocationBonus == "Enabled") ResultData[0][colArrRsltLoc] = ResponseData[0][colArrRspnLoc];  // Location
   
   // If option is enabled, Validate if players are allowed to post results (look for number of games played versus total amount of games allowed
   if (exePlyrMatchValidation == 'Enabled'){

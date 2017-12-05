@@ -93,19 +93,19 @@ function fcnUpdateStandings(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExe
 //    shtTest.getRange(11,3).setValue(PlyrOutLimArray.length);
   }
   
-  // Points - Sorts the Standings Values by Points and Matches Played
+  // Points - Sorts the Standings Values by Points, Wins and Win Percentage
   if(evntRanking == 'Points'){
     // Sort In Limit Range
-    if(InLimit > 0)  RngStandInLim.sort([{column: colPts, ascending: false},{column: colWinPerc, ascending: false}]);
+    if(InLimit > 0)  RngStandInLim.sort([{column: colPts, ascending: false},{column: colWins, ascending: false},{column: colWinPerc, ascending: false}]);
     // Sort Out Limit Range
-    if(OutLimit > 0) RngStandOutLim.sort([{column: colPts, ascending: false},{column: colWinPerc, ascending: false}]);
+    if(OutLimit > 0) RngStandOutLim.sort([{column: colPts, ascending: false},{column: colWins, ascending: false},{column: colWinPerc, ascending: false}]);
   }
-  // Wins - Sorts the Standings Values by Wins and Win Percentage
+  // Wins - Sorts the Standings Values by Wins, by Points and by Win Percentage
   if(evntRanking == 'Wins'){
     // Sort In Limit Range
-    if(InLimit > 0)  RngStandInLim.sort([{column: colWins, ascending: false},{column: colWinPerc, ascending: false}]);
+    if(InLimit > 0)  RngStandInLim.sort([{column: colWins, ascending: false},{column: colPts, ascending: false},{column: colWinPerc, ascending: false}]);
     // Sort Out Limit Range
-    if(OutLimit > 0) RngStandOutLim.sort([{column: colWins, ascending: false},{column: colWinPerc, ascending: false}]);
+    if(OutLimit > 0) RngStandOutLim.sort([{column: colWins, ascending: false},{column: colPts, ascending: false},{column: colWinPerc, ascending: false}]);
   }
   // Win % - Sorts the Standings Values by Win Percentage and Matches Played
   if(evntRanking == 'Win%'){
