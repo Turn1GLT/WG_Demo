@@ -5,20 +5,33 @@
 //
 // **********************************************
 
-function fcnUpdateArmyDB(shtConfig, Player, NewValue){
+function fcnUpdateArmyDB(ss, shtConfig, cfgColRndSht, Player){
   
   Logger.log("Routine: fcnUpdateArmyDB");
   
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
   var cfgArmyBuild = shtConfig.getRange(4,33,20,1).getValues();
   
+  // Column Values for Rounds Sheets
+  var colRndPlyr =     cfgColRndSht[ 0][0];
+  var colRndBalBonus = cfgColRndSht[ 9][0];
+  
   // Config Spreadsheet
-  var ssArmyDBID = shtIDs[2][0];
+  var ssArmyDBID =     shtIDs[2][0];
   var ssArmyListEnID = shtIDs[3][0];
   var ssArmyListFrID = shtIDs[4][0];
 
-  var armyBldRatingMode = cfgArmyBuild[0][0];
-  var armyBldCurrRoundValue = cfgArmyBuild[4][0];
+  var armyBldRating =       cfgArmyBuild[0][0];
+  var armyBldCurrRoundVal = cfgArmyBuild[4][0];
+  
+  // Gets New Balance Bonus for Player from Cumulative Results Sheet
+  var shtCumul = ss.getSheetByName('Cumulative Results');
+  
+  // Find Player Rows : subFindPlayerRow(sheet, rowStart, colPlyr, length, PlayerName)
+  var RndPlyr2Row = subFindPlayerRow(shtCumul, 5, colRndPlyr, 32, Player);  
+  
+  var BalanceBonusVal = shtCumul.getRange(RndPlyr2Row,colRndBalBonus).getValue();
+  Logger.log('Total Balance Bonus: %s',BalanceBonusVal);
   
   // Player Card DB Spreadsheet
   Logger.log("Player Army DB: %s",Player);
@@ -42,18 +55,18 @@ function fcnUpdateArmyDB(shtConfig, Player, NewValue){
   var rngArmyListFrBonusPoints = shtArmyListFr.getRange(5,12);
   
   // Get Cells to Update according to the Army Rating Mode (Power Level or Points)
-  if(armyBldRatingMode == 'Power Level'){
+  if(armyBldRating == 'Power Level'){
     // Update the Army DB
-    rngArmyDBCurrRoundPwrLvl.setValue(armyBldCurrRoundValue);
-    rngArmyDBAvailPwrLvl.setValue(NewValue);
+    rngArmyDBCurrRoundPwrLvl.setValue(armyBldCurrRoundVal);
+    rngArmyDBAvailPwrLvl.setValue(BalanceBonusVal);
     
     // Update the Player Army List
     // English File
-    rngArmyListEnCurrRoundPwrLvl.setValue(armyBldCurrRoundValue);
-    rngArmyListEnBonusPwrLvl.setValue(NewValue);
+    rngArmyListEnCurrRoundPwrLvl.setValue(armyBldCurrRoundVal);
+    rngArmyListEnBonusPwrLvl.setValue(BalanceBonusVal);
     // French File
-    rngArmyListFrCurrRoundPwrLvl.setValue(armyBldCurrRoundValue);
-    rngArmyListFrBonusPwrLvl.setValue(NewValue);
+    rngArmyListFrCurrRoundPwrLvl.setValue(armyBldCurrRoundVal);
+    rngArmyListFrBonusPwrLvl.setValue(BalanceBonusVal);
     
     // Hide Points Columns (6-7-8, 11-12)
     shtArmyListEn.hideColumns(6, 3);
@@ -62,18 +75,18 @@ function fcnUpdateArmyDB(shtConfig, Player, NewValue){
     shtArmyListFr.hideColumns(11, 2);
   }
 
-  if(armyBldRatingMode == 'Points'){
+  if(armyBldRating == 'Points'){
     // Update the Army DB
-    rngArmyDBCurrRoundPoints.setValue(armyBldCurrRoundValue);
-    rngArmyDBAvailPoints.setValue(NewValue);
+    rngArmyDBCurrRoundPoints.setValue(armyBldCurrRoundVal);
+    rngArmyDBAvailPoints.setValue(BalanceBonusVal);
     
     // Update the Player Army List
     // English File
-    rngArmyListEnCurrRoundPoints.setValue(armyBldCurrRoundValue);
-    rngArmyListEnBonusPoints.setValue(NewValue);
+    rngArmyListEnCurrRoundPoints.setValue(armyBldCurrRoundVal);
+    rngArmyListEnBonusPoints.setValue(BalanceBonusVal);
     // French File
-    rngArmyListFrCurrRoundPoints.setValue(armyBldCurrRoundValue);
-    rngArmyListFrBonusPoints.setValue(NewValue);
+    rngArmyListFrCurrRoundPoints.setValue(armyBldCurrRoundVal);
+    rngArmyListFrBonusPoints.setValue(BalanceBonusVal);
   
     // Hide Power Level Columns (5, 9-10)
     shtArmyListEn.hideColumns(5, 1);

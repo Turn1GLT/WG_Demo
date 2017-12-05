@@ -74,12 +74,12 @@ function onOpenWG_Demo40K() {
   LeagueMenu.push(null);
   LeagueMenu.push({name:"Create Players Army DBs", functionName:"fcnCrtPlayerArmyDB"});
   LeagueMenu.push({name:"Create Players Army Lists", functionName:"fcnCrtPlayerArmyList"});
-  LeagueMenu.push({name:"Create Players Records", functionName:"fcnCrtPlayerRecord"});
+  LeagueMenu.push({name:"Create Players Records", functionName:"fcnCrtEvntPlayerRecord"});
   if(evntEscalation == "Enabled") LeagueMenu.push({name:"Create Players Escalation Bonus Sheets", functionName:"fcnCrtPlayerEscltBonus"});
   LeagueMenu.push(null);
   LeagueMenu.push({name:"Delete Players Army DBs", functionName:"fcnDelPlayerArmyDB"});
   LeagueMenu.push({name:"Delete Players Army Lists", functionName:"fcnDelPlayerArmyList"});
-  LeagueMenu.push({name:"Delete Players Records", functionName:"fcnDelPlayerRecord"});
+  LeagueMenu.push({name:"Delete Players Records", functionName:"fcnDelEventPlayerRecord"});
   if(evntEscalation == "Enabled") LeagueMenu.push({name:"Delete Players Escalation Bonus Sheets", functionName:"fcnDelPlayerEscltBonus"});
   
   var TestMenu  = [];

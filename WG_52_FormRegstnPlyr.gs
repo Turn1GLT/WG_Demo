@@ -20,22 +20,26 @@ function fcnCrtRegstnFormPlyr_WG() {
   var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
   var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
   var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
-  var cfgArmyBuild = shtConfig.getRange(4,33,20,1).getValues();
   
   // Registration Form Construction 
   // Column 1 = Category Name
   // Column 2 = Category Order in Form
   // Column 3 = Column Value in Player/Team Sheet
   var cfgRegFormCnstrVal = shtConfig.getRange(4,26,20,3).getValues();
+  var cfgArmyBuild =       shtConfig.getRange(4,33,16,1).getValues();
   
   // Execution Parameters
   var exeGnrtResp = cfgExecData[3][0];
   
   // Event Properties
-  var evntLocation = cfgEvntParam[0][0];
-  var evntName = cfgEvntParam[7][0];
-  var evntFormat = cfgEvntParam[9][0];
+  var evntLocation   = cfgEvntParam[0][0];
+  var evntGameSystem = cfgEvntParam[5][0];
+  var evntName       = cfgEvntParam[7][0];
+  var evntFormat     = cfgEvntParam[9][0];
   var evntNbPlyrTeam = cfgEvntParam[10][0];
+  
+  var armyBuildRatingVal = cfgArmyBuild[0][0];
+  var armyBuildStartVal  = cfgArmyBuild[1][0];
     
   // Log Sheet
   var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName('Log');
@@ -55,24 +59,28 @@ function fcnCrtRegstnFormPlyr_WG() {
   var QuestionOrder = 2;
   
   // Army Building Options
-  var ArmyRating = cfgArmyBuild[0][0]; 
-  var NbFaction     = cfgArmyBuild[6][0];
-  var NbDetachMax   = cfgArmyBuild[7][0];
-  var NbUnitDetach1 = cfgArmyBuild[8][0];
-  var NbUnitDetach2 = cfgArmyBuild[9][0];
-  var NbUnitDetach3 = cfgArmyBuild[10][0];
-  var UnitModelMin  = 1;
-  var UnitModelMax  = cfgArmyBuild[11][0];
-  var UnitRatingMin = 1;
-  var UnitRatingMax = cfgArmyBuild[12][0];
-  
-  var DetachList = shtConfig.getRange(4,34,20,2).getValues();
-  var DetachIncr = 0;
-  var DetachTypeArray = new Array(12);
-  
-  var UnitRolesList = shtConfig.getRange(4,37,10,2).getValues();
-  var UnitIncr = 0;
-  var UnitRoleArray = new Array(9);
+  if(evntGameSystem == "Warhammer 40k"){
+    var shtConfigWH40k = ss.getSheetByName('ConfigWH40k');
+    var ArmyBuild40k = shtConfigWH40k.getRange(4,2,20,1).getValues();
+    
+    var NbFaction     = ArmyBuild40k[1][0];
+    var NbDetachMax   = ArmyBuild40k[2][0];
+    var NbUnitDetach1 = ArmyBuild40k[3][0];
+    var NbUnitDetach2 = ArmyBuild40k[4][0];
+    var NbUnitDetach3 = ArmyBuild40k[5][0];
+    var UnitModelMin  = 1;
+    var UnitModelMax  = ArmyBuild40k[6][0];
+    var UnitRatingMin = 1;
+    var UnitRatingMax = ArmyBuild40k[7][0];
+    
+    var DetachList = shtConfigWH40k.getRange(4,3,20,2).getValues();
+    var DetachIncr = 0;
+    var DetachTypeArray = new Array(12);
+    
+    var UnitRolesList = shtConfigWH40k.getRange(4,6,10,2).getValues();
+    var UnitIncr = 0;
+    var UnitRoleArray = new Array(9);
+  }
   
   // Routine Variables
   var ssSheets;
@@ -568,16 +576,16 @@ function fcnCrtRegstnFormPlyr_WG() {
                 
                 // POWER LEVEL / POINTS
                 // ENGLISH
-                if(ArmyRating == 'Power Level') ArmyRatingText = " - Power Level";
-                if(ArmyRating == 'Points')      ArmyRatingText = " - Total Points";
+                if(armyBuildRatingVal == 'Power Level') ArmyRatingText = " - Power Level";
+                if(armyBuildRatingVal == 'Points')      ArmyRatingText = " - Total Points";
                 formEN.addTextItem()
                 .setTitle("Detachment " + DetachNb + " - Unit " + UnitNb + ArmyRatingText)
                 .setRequired(true)
                 .setValidation(RatingValidationEN);
                 
                 // FRENCH
-                if(ArmyRating == 'Power Level') ArmyRatingText = " - Niveau Puissance";
-                if(ArmyRating == 'Points')      ArmyRatingText = " - Total de Points";
+                if(armyBuildRatingVal == 'Power Level') ArmyRatingText = " - Niveau Puissance";
+                if(armyBuildRatingVal == 'Points')      ArmyRatingText = " - Total de Points";
                 formFR.addTextItem()
                 .setTitle("Détachement " + DetachNb + " - Unité " + UnitNb + ArmyRatingText)
                 .setRequired(true)

@@ -102,7 +102,7 @@ function fcnRegistrationPlyrWG(shtResponse, RowResponse){
     Logger.log("Army List Generated");  
     
     // Create Player Event Record (Player Access)
-    fcnCrtPlayerRecord();
+    fcnCrtEvntPlayerRecord();
     Logger.log("Player Record Generated");  
     
     // If Escalation is Enabled, Create Player Escalation Bonus sheet 

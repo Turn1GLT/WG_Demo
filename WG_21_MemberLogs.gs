@@ -1,13 +1,13 @@
 // **********************************************
-// function fcnLogPlayerMatch
+// function fcnLogMemberMatch
 //
 // This function logs the match to the player's record 
-// for this event ant to the player's profile 
+// for this event and to the player's profile 
 // if the Member Option is enabled
 //
 // **********************************************
 
-function fcnLogPlayerMatch(ss, shtConfig, logStatusPlyr, MatchData){
+function fcnLogMemberMatch(ss, shtConfig, logStatusPlyr, MatchData){
 
   var StatusVal  = logStatusPlyr[0];
   var StatusMsg  = logStatusPlyr[1];

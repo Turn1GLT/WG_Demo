@@ -130,14 +130,16 @@ function fcnInitializeEvent(){
     var ContactGroupFR;
     
     // Columns from Config File
+    var colRspMatchID        = cfgColRspSht[1][0];
     var colRspMatchIDLastVal = cfgColRspSht[6][0];
-    var colRndWin = cfgColRndSht[3][0];
-    var colRndMatchLoc = cfgColRndSht[8][0];
-    var colPlyrName = cfgRegFormCnstrVal[ 2][2];
+    var colRndMP             = cfgColRndSht[2][0];
+    
+    var colPlyrName   = cfgRegFormCnstrVal[ 2][2];
     var colPlyrStatus = cfgRegFormCnstrVal[16][2];
     
     // Sheets
     var shtStandings =   ss.getSheetByName('Standings');
+    var shtRound       = ss.getSheetByName('Round1');
     var shtMatchRslt   = ss.getSheetByName('Match Results');
     var shtResponses   = ss.getSheetByName('Responses');
     var shtMatchRespEN = ss.getSheetByName('MatchResp EN');
@@ -145,7 +147,6 @@ function fcnInitializeEvent(){
     var shtPlayers =     ss.getSheetByName('Players');
     var ssExtPlayers = SpreadsheetApp.openById(shtIDs[14][0]); // External Player List Spreadsheet
     var shtExtPlayers = ssExtPlayers.getSheetByName('Players');// External Player List Sheet
-    var shtRound;
     
     // Max Rows / Columns
     var MaxRowStdg = shtStandings.getMaxRows();
@@ -158,6 +159,8 @@ function fcnInitializeEvent(){
     var MaxColRspnEN = shtMatchRespEN.getMaxColumns();
     var MaxRowRspnFR = shtMatchRespFR.getMaxRows();
     var MaxColRspnFR = shtMatchRespFR.getMaxColumns();
+    var MaxRowRndSht = shtRound.getMaxRows();
+    var MaxColRndSht = shtRound.getMaxColumns();
     var MaxRowPlayers = shtPlayers.getMaxRows();
     var MaxColPlayers = shtPlayers.getMaxColumns();
         
@@ -175,8 +178,7 @@ function fcnInitializeEvent(){
     // Round Results
     for (var RoundNum = 1; RoundNum <= 8; RoundNum++){
       shtRound = ss.getSheetByName('Round'+RoundNum);
-      shtRound.getRange(5,colRndWin,32,4).clearContent();
-      shtRound.getRange(5,colRndMatchLoc,32,4).clearContent();
+      shtRound.getRange(5,colRndMP,MaxRowRndSht-4,MaxColRndSht-colRndMP+1).clearContent();
     }
     Logger.log('Event Data Cleared');
     
@@ -204,14 +206,13 @@ function fcnInitializeEvent(){
     // Clear Players DB and Card Pools
     fcnDelPlayerArmyDB();
     fcnDelPlayerArmyList();
-    fcnDelPlayerRecord();
+    fcnDelEventPlayerRecord();
     Logger.log('Army DB and Army Lists Cleared');
+        
+    title = cfgEventType +" Data Cleared";
+    msg = "All " + cfgEventType +" Data has been cleared. You are now ready to start a new " + cfgEventType;
+    uiResponse = ui.alert(title, msg, ui.ButtonSet.OK);    
   }
-
-  title = cfgEventType +" Data Cleared";
-  msg = "All " + cfgEventType +" Data has been cleared. You are now ready to start a new " + cfgEventType;
-  uiResponse = ui.alert(title, msg, ui.ButtonSet.OK);
-  
 }
 
 // **********************************************
@@ -247,15 +248,14 @@ function fcnClearMatchResults(){
     var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
     
     // Columns from Config File
-    var colRspMatchID = cfgColRspSht[1][0];
+    var colRspMatchID        = cfgColRspSht[1][0];
     var colRspMatchIDLastVal = cfgColRspSht[6][0];
-    var colRndWin = cfgColRndSht[3][0];
-    var colRndMatchLoc = cfgColRndSht[8][0];
+    var colRndMP             = cfgColRndSht[2][0];
     
     // Sheets
     var shtStandings   = ss.getSheetByName('Standings');
+    var shtRound       = ss.getSheetByName('Round1');
     var shtMatchRslt   = ss.getSheetByName('Match Results');
-    var shtRound;
     var shtResponses   = ss.getSheetByName('Responses');
     var shtMatchRespEN = ss.getSheetByName('MatchResp EN');
     var shtMatchRespFR = ss.getSheetByName('MatchResp FR');
@@ -271,6 +271,8 @@ function fcnClearMatchResults(){
     var MaxColRspnEN = shtMatchRespEN.getMaxColumns();
     var MaxRowRspnFR = shtMatchRespFR.getMaxRows();
     var MaxColRspnFR = shtMatchRespFR.getMaxColumns();
+    var MaxRowRndSht = shtRound.getMaxRows();
+    var MaxColRndSht = shtRound.getMaxColumns();
     
     // Clear Data
     shtStandings.getRange(6,2,32,7).clearContent();
@@ -283,9 +285,16 @@ function fcnClearMatchResults(){
     // Round Results
     for (var RoundNum = 1; RoundNum <= 8; RoundNum++){
       shtRound = ss.getSheetByName('Round'+RoundNum);
-      shtRound.getRange(5,colRndWin,32,3).clearContent();
-      shtRound.getRange(5,colRndMatchLoc,32,4).clearContent();
+      shtRound.getRange(5,colRndMP,MaxRowRndSht-4,MaxColRndSht-colRndMP+1).clearContent();
     }
+    
+    // Clear Event Player Records
+    fcnClrEvntPlayerRecord();
+    
+//    fcnDelPlayerArmyDB();
+//    fcnDelPlayerArmyList();
+//    fcnCrtPlayerArmyDB();
+//    fcnCrtPlayerArmyList();
     
     Logger.log('Match Data Cleared');
     
@@ -610,16 +619,16 @@ function fcnCopyArmyDBtoArmyList(shtConfig,PlyrName){
 
 
 // **********************************************
-// function fcnCrtPlayerRecord()
+// function fcnCrtEvntPlayerRecord()
 //
 // This function generates all Players Records 
 // from the Config File
 //
 // **********************************************
 
-function fcnCrtPlayerRecord(){
+function fcnCrtEvntPlayerRecord(){
   
-  Logger.log("Routine: fcnCrtPlayerRecord");
+  Logger.log("Routine: fcnCrtEvntPlayerRecord");
     
   // Main Spreadsheet
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -697,7 +706,7 @@ function fcnCrtPlayerRecord(){
         shtPlyr.getRange(3,1,1,6).setValues(GlobalHdr);
       
         // Set Hstry Header
-        HstryHdr = shtPlyr.getRange(6,1,1,8).getValues();
+        HstryHdr = shtPlyr.getRange(6,1,1,9).getValues();
         HstryHdr[0][0] = 'Événement';      // Event Name
         HstryHdr[0][1] = '';               // Event Name (merged cell)
         HstryHdr[0][2] = 'Jeu';            // Game
@@ -705,8 +714,9 @@ function fcnCrtPlayerRecord(){
         HstryHdr[0][4] = 'Résultat';       // Match Result
         HstryHdr[0][5] = 'Joué contre';    // Played vs
         HstryHdr[0][6] = '';               // Played vs (merged cell)
-        HstryHdr[0][7] = 'Points Marqués'; // Scored Points
-        shtPlyr.getRange(6,1,1,8).setValues(HstryHdr);
+        HstryHdr[0][7] = 'Points Marqués'; // Points Scored
+        HstryHdr[0][8] = 'Points Alloués'; // Points Allowed
+        shtPlyr.getRange(6,1,1,9).setValues(HstryHdr);
       }
     }
   }
@@ -784,16 +794,16 @@ function fcnDelPlayerArmyList(){
 }
 
 // **********************************************
-// function fcnDelPlayerRecord()
+// function fcnDelEventPlayerRecord()
 //
 // This function deletes all Player Record Sheets
 // from the Config File
 //
 // **********************************************
 
-function fcnDelPlayerRecord(){
+function fcnDelEventPlayerRecord(){
   
-  Logger.log("Routine: fcnDelPlayerRecord");
+  Logger.log("Routine: fcnDelEventPlayerRecord");
 
   // Main Spreadsheet
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -812,5 +822,54 @@ function fcnDelPlayerRecord(){
   subDelPlayerSheets(shtIDs[13][0]);
 
 }
+
+// **********************************************
+// function fcnClrEvntPlayerRecord()
+//
+// This function clears all data in Player Record Sheets
+//
+// **********************************************
+
+function fcnClrEvntPlayerRecord(){
+
+  Logger.log("Routine: fcnClrEvntPlayerRecord");
+
+  // Main Spreadsheet
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // Config Spreadsheet
+  var shtConfig = ss.getSheetByName('Config');
+  
+  // Get Player Log Spreadsheet
+  var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
+  var ssEvntPlyrRec = SpreadsheetApp.openById(shtIDs[13][0]);
+  var rngRecord = "A4:F4";
+  var evntPlyrRecNbSheets = ssEvntPlyrRec.getNumSheets();
+  var evntPlyrSheets = ssEvntPlyrRec.getSheets();
+  var evntPlyrRowStart = 7;
+  
+  // Routine Variables
+  var sheet;
+  var shtMaxCol;
+  var shtMaxRow;
+  
+  // Loop through all Players Sheets
+  for(var sht = 0; sht < evntPlyrRecNbSheets; sht++){
+    // Get Sheet
+    sheet = evntPlyrSheets[sht];
+    shtMaxCol = sheet.getMaxColumns();
+    shtMaxRow = sheet.getMaxRows();
+    
+    // Clear Player Record
+    sheet.getRange(rngRecord).clearContent();
+    
+    // Delete all History Rows from Row 8 to Max Row
+    if(shtMaxRow > evntPlyrRowStart) sheet.deleteRows(evntPlyrRowStart+1, shtMaxRow-evntPlyrRowStart);
+    
+    // Clear Player History
+    sheet.getRange(evntPlyrRowStart, 1, 1, shtMaxCol).clearContent();
+  }
+}
+
 
 

@@ -97,6 +97,32 @@ function subDelPlayerSheets(shtID){
   }
 }
 
+
+
+// **********************************************
+// function subFindPlayerRow()
+//
+// This function finds the Player Row in the Spreadsheet
+//
+// **********************************************
+
+function subFindPlayerRow(sheet, rowStart, colPlyr, length, PlayerName){
+  Logger.log("Routine: subFindPlayerRow: %s",PlayerName);
+  var RsltRow = 0;
+  
+  var RndPlyrList = sheet.getRange(rowStart,colPlyr,length,1).getValues();
+  
+  // Find the Winning and Losing Player in the Round Result Tab
+  for (var row = rowStart; row < length+rowStart; row ++){
+    if (RndPlyrList[row - 5][0] == PlayerName) {
+      RsltRow = row;
+      row = 37;
+    }
+  }
+  Logger.log("Player Row Found for %s : %s",PlayerName,RsltRow);
+  return RsltRow;
+}
+
 // **********************************************
 // function subGetEmailAddressSngl()
 //
@@ -751,7 +777,12 @@ function subUpdatePlayerMember(shtConfig, shtPlayers, Member){
 //
 // **********************************************
 
-function subUpdatePlyrEvntRecord(RndRecPlyr, GameResult, evntPtsGainedMatch, MatchDataPts, evntPtsPerWin, evntPtsPerLoss, evntPtsPerTie){
+function subUpdatePlyrEvntRecord(cfgEvntParam, RndRecPlyr, GameResult, MatchDataPts){
+  
+  var evntPtsPerWin =      cfgEvntParam[29][0];
+  var evntPtsPerLoss =     cfgEvntParam[30][0];
+  var evntPtsPerTie =      cfgEvntParam[31][0];
+  var evntPtsGainedMatch = cfgEvntParam[32][0];
   
   // Initializes Player Round Record
   if (RndRecPlyr[0][0] == '') RndRecPlyr[0][0] = 0; // MP

@@ -240,6 +240,7 @@ function fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, cfgColRndSht, RspnR
       // And copy to Standings
       ssLgShtEN.getRange(ssMstrShtStartRow,1,NumValues,ssMstrShtNbCol).setValues(ssMstrShtData);
       ssLgShtFR.getRange(ssMstrShtStartRow,1,NumValues,ssMstrShtNbCol).setValues(ssMstrShtData);
+      Logger.log("Copied to Sheet: %s",ssLgShtEN.getName());
       
       // Hide Unused Rows
       if(NbPlayers > 0){
