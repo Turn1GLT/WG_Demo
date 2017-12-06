@@ -17,12 +17,12 @@ function fcnProcessMatchWG() {
   
   // Config Sheet to get options
   var shtConfig = ss.getSheetByName('Config');
-  var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
-  var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
-  var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
-  var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
-  var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
-  var cfgColMatchRep = shtConfig.getRange(4,31,20,1).getValues();
+  var cfgEvntParam =    shtConfig.getRange( 4, 4,48,1).getValues();
+  var cfgColRspSht =    shtConfig.getRange( 4,18,16,1).getValues();
+  var cfgColRndSht =    shtConfig.getRange( 4,21,16,1).getValues();
+  var cfgExecData  =    shtConfig.getRange( 4,24,16,1).getValues();
+  var cfgColMatchRep =  shtConfig.getRange( 4,31,20,1).getValues();
+  var cfgColMatchRslt = shtConfig.getRange(21,18,32,1).getValues();
   
   // Execution Options
   var exeSendEmail = cfgExecData[5][0];
@@ -37,22 +37,25 @@ function fcnProcessMatchWG() {
   
   // Column Values for Data in Response Sheet
   var colArrRspnDataPrcsd = colDataPrcsd-1;
-  var colArrRspnPwd =       cfgColMatchRep[ 1][0]-1;
-  var colArrRspnRound =     cfgColMatchRep[ 2][0]-1;
-  var colArrRspnWinPlyr =   cfgColMatchRep[ 3][0]-1;
-  var colArrRspnWinTeam =   cfgColMatchRep[ 4][0]-1;
-  var colArrRspnWinPts =    cfgColMatchRep[ 4][0]-1;
-  var colArrRspnLosPlyr =   cfgColMatchRep[ 6][0]-1;
-  var colArrRspnLosTeam =   cfgColMatchRep[ 7][0]-1;
-  var colArrRspnLosPts =    cfgColMatchRep[ 8][0]-1;
-  var colArrRspnTie =       cfgColMatchRep[ 9][0]-1;
-  var colArrRspnLoc =       cfgColMatchRep[10][0]-1;
-  var colArrRspnPlyrSub =   cfgColMatchRep[19][0]-1;
+  var colArrRspnPwd =     cfgColMatchRep[ 1][0]-1;
+  var colArrRspnRound =   cfgColMatchRep[ 2][0]-1;
+  var colArrRspnPlyr1 =   cfgColMatchRep[ 3][0]-1;
+  var colArrRspnTeam1 =   cfgColMatchRep[ 4][0]-1;
+  var colArrRspnPts1 =    cfgColMatchRep[ 5][0]-1;
+  var colArrRspnPlyr2 =   cfgColMatchRep[ 6][0]-1;
+  var colArrRspnTeam2 =   cfgColMatchRep[ 7][0]-1;
+  var colArrRspnPts2 =    cfgColMatchRep[ 8][0]-1;
+  var colArrRspnTie =     cfgColMatchRep[ 9][0]-1;
+  var colArrRspnLoc =     cfgColMatchRep[10][0]-1;
+  var colArrRspnPlyrSub = cfgColMatchRep[19][0]-1;
   
   // Event Parameters
   var evntFormat = cfgEvntParam[9][0];
   var evntRoundDuration = cfgEvntParam[13][0];
   var evntPassword = cfgEvntParam[27][0];
+  
+  // Get Sheet IDs
+  var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
   
   // Get Log Sheet
   var shtLog = SpreadsheetApp.openById(shtIDs[1][0]).getSheetByName('Log');
@@ -78,8 +81,8 @@ function fcnProcessMatchWG() {
   var PasswordValid = 0;
   var RspnRow;
   var RoundNum;
-  var Side1;
-  var Side2;
+  var PT1; // Player/Team 1
+  var PT2; // Player/Team 2
   
   var EmailAddresses = subCreateArray(3,2);
   
@@ -114,12 +117,12 @@ function fcnProcessMatchWG() {
       DataCopiedStatus = ResponseData[0][colArrRspnDataPrcsd];
       
       if(evntFormat == "Single"){
-        Side1 = ResponseData[0][colArrRspnWinPlyr];
-        Side2 = ResponseData[0][colArrRspnLosPlyr];
+        PT1 = ResponseData[0][colArrRspnPlyr1];
+        PT2 = ResponseData[0][colArrRspnPlyr2];
       }
       if(evntFormat == "Team"){
-        Side1 = ResponseData[0][colArrRspnWinTeam];
-        Side2 = ResponseData[0][colArrRspnLosTeam];
+        PT1 = ResponseData[0][colArrRspnTeam1];
+        PT2 = ResponseData[0][colArrRspnTeam2];
       }
       
       // If TimeStamp is null, Delete Row and start over
@@ -218,7 +221,7 @@ function fcnProcessMatchWG() {
       // Copy New Entry Data to Main Responses Sheet
       shtRspn.getRange(RspnNextRow, 1, 1, RspnDataInputs).setValues(ResponseData);
       
-      Logger.log('Match Data Copied for Players: %s, %s',Side1,Side2);
+      Logger.log('Match Data Copied for Players: %s, %s',PT1,PT2);
       
       // Copy Formula to detect if an entry is currently processing
       shtRspn.getRange(RspnNextRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchID +']",FALSE)<>"",1,"")');
@@ -301,19 +304,19 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
   
   // Column Values for Data in Response Sheet
   var colArrRspnDataPrcsd = colDataPrcsd-1;
-  var colArrRspnPwd =       cfgColMatchRep[ 1][0]-1;
-  var colArrRspnRound =     cfgColMatchRep[ 2][0]-1;
-  var colArrRspnWinPlyr =   cfgColMatchRep[ 3][0]-1;
-  var colArrRspnWinTeam =   cfgColMatchRep[ 4][0]-1;
-  var colArrRspnWinPts =    cfgColMatchRep[ 4][0]-1;
-  var colArrRspnLosPlyr =   cfgColMatchRep[ 6][0]-1;
-  var colArrRspnLosTeam =   cfgColMatchRep[ 7][0]-1;
-  var colArrRspnLosPts =    cfgColMatchRep[ 8][0]-1;
-  var colArrRspnTie =       cfgColMatchRep[ 9][0]-1;
-  var colArrRspnLoc =       cfgColMatchRep[10][0]-1;
-  var colArrRspnPlyrSub =   cfgColMatchRep[19][0]-1;
+  var colArrRspnPwd =     cfgColMatchRep[ 1][0]-1;
+  var colArrRspnRound =   cfgColMatchRep[ 2][0]-1;
+  var colArrRspnPlyr1 =   cfgColMatchRep[ 3][0]-1;
+  var colArrRspnTeam1 =   cfgColMatchRep[ 4][0]-1;
+  var colArrRspnPts1 =    cfgColMatchRep[ 5][0]-1;
+  var colArrRspnPlyr2 =   cfgColMatchRep[ 6][0]-1;
+  var colArrRspnTeam2 =   cfgColMatchRep[ 7][0]-1;
+  var colArrRspnPts2 =    cfgColMatchRep[ 8][0]-1;
+  var colArrRspnTie =     cfgColMatchRep[ 9][0]-1;
+  var colArrRspnLoc =     cfgColMatchRep[10][0]-1;
+  var colArrRspnPlyrSub = cfgColMatchRep[19][0]-1;
   
-  // League Parameters
+  // Event Parameters
   var evntNameEN =         cfgEvntParam[ 0][0] + ' ' + cfgEvntParam[7][0];
   var evntNameFR =         cfgEvntParam[ 8][0] + ' ' + cfgEvntParam[0][0];
   var evntGameType =       cfgEvntParam[ 4][0];
@@ -366,14 +369,19 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
   var Status = new Array(2); // [0]= Status Value, [1]= Status Message
   Status[0] = 0;
   
-  var logStatusPlyr1 = new Array(3); // [0]= Status Value, [1]= Status Message, [2]= Player
-  logStatusPlyr1[0] = 0;
-  logStatusPlyr1[1] = '';
-  logStatusPlyr1[2] = '';
-  var logStatusPlyr2 = new Array(3); // [0]= Status Value, [1]= Status Message, [2]= Player
-  logStatusPlyr2[0] = 0;
-  logStatusPlyr2[1] = '';
-  logStatusPlyr2[2] = '';
+  // Log Status for Players/Teams
+  var logStatusPT1 = new Array(3); // [0]= Status Value, [1]= Status Message, [2]= Player
+  logStatusPT1[0] = 0;
+  logStatusPT1[1] = '';
+  logStatusPT1[2] = '';
+  var logStatusPT2 = new Array(3); // [0]= Status Value, [1]= Status Message, [2]= Player
+  logStatusPT2[0] = 0;
+  logStatusPT2[1] = '';
+  logStatusPT2[2] = '';
+  
+  // Routine Variables
+  var PT1; // Player/Team 1
+  var PT2; // Player/Team 2
   
   var DuplicateRspn = -99;
   var MatchingRspn = -98;
@@ -397,28 +405,41 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
     ResponseData = shtRspn.getRange(RspnRow, 1, 1, RspnDataInputs).getValues();
     
     // Values from Response Data
-    var RspnDataPwd        = ResponseData[0][colArrRspnPwd];      // Password
-    var RspnDataRoundNum   = ResponseData[0][colArrRspnRound];    // Round Number
-    var RspnDataWinPlyr    = ResponseData[0][colArrRspnWinPlyr];  // Winning Player
-    var RspnDataWinTeam    = ResponseData[0][colArrRspnWinTeam];  // Winning Team
-    var RspnDataWinPts     = ResponseData[0][colArrRspnWinPts];   // Winning Points
-    var RspnDataLosPlyr    = ResponseData[0][colArrRspnLosPlyr];  // Losing Player
-    var RspnDataLosTeam    = ResponseData[0][colArrRspnLosTeam];  // Losing Team
-    var RspnDataLosPts     = ResponseData[0][colArrRspnLosPts];   // Losing Points
-    var RspnDataTie        = ResponseData[0][colArrRspnTie];      // Tie
-    var RspnDataLocation   = ResponseData[0][colArrRspnLoc];      // Match Location (Store Yes or No)
+    var RspnDataPwd      = ResponseData[0][colArrRspnPwd];    // Password
+    var RspnDataRoundNum = ResponseData[0][colArrRspnRound];  // Round Number
+    var RspnDataPlyr1    = ResponseData[0][colArrRspnPlyr1];  // Winning Player
+    var RspnDataTeam1    = ResponseData[0][colArrRspnTeam1];  // Winning Team
+    var RspnDataPts1     = ResponseData[0][colArrRspnPts1];   // Winning Points
+    var RspnDataPlyr2    = ResponseData[0][colArrRspnPlyr2];  // Losing Player
+    var RspnDataTeam2    = ResponseData[0][colArrRspnTeam2];  // Losing Team
+    var RspnDataPts2     = ResponseData[0][colArrRspnPts2];   // Losing Points
+    var RspnDataTie      = ResponseData[0][colArrRspnTie];    // Tie
+    var RspnDataLocation = ResponseData[0][colArrRspnLoc];    // Match Location (Store Yes or No)
     
     var RspnDataPrcssd     = ResponseData[0][colArrRspnDataPrcsd];// Data Processed Status
-    
     var RspnDataPlyrSubmit = ResponseData[0][colArrRspnPlyrSub];  // Player Submitting Match Report
     
-    Logger.log('Players: %s, %s',ResponseData[0][colArrRspnWinPlyr],ResponseData[0][colArrRspnLosPlyr]);
+    // Select Player or Team Depending on Event Format (Single or Team)
+    switch(evntFormat){
+      case "Single": {
+        PT1 = RspnDataPlyr1;
+        PT2 = RspnDataPlyr2;
+        break;
+      }
+      case "Team": {
+        PT1 = RspnDataTeam1;
+        PT2 = RspnDataTeam2;
+        break;
+      }
+    }
+    
+    Logger.log('Players: %s, %s',PT1,PT2);
     
     // If Round number is not empty and Processed is empty, Response Data needs to be processed
     if (RspnDataRoundNum != '' && RspnDataPrcssd == ''){
       
       // If both Players in the response are different, continue
-      if (RspnDataWinPlyr != RspnDataLosPlyr){
+      if (PT1 != PT2){
         
         // Updates the Status while processing
         if(Status[0] >= 0){
@@ -491,32 +512,25 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
               MatchData[1][1] = evntGameSystem;      // Game System (ie Magic, Warhammer 40k etc)
               MatchData[2][0] = ResponseData[0][colArrRspnRound];  // Round Number
               
-              // If Event is Single Player
-              if(evntFormat == "Single"){
-                MatchData[3][0] = ResponseData[0][colArrRspnWinPlyr];  // Winning Player
-                MatchData[4][0] = ResponseData[0][colArrRspnLosPlyr];  // Losing Player
-              }
-              // If Event is Team
-              if(evntFormat == "Team"){
-                MatchData[3][0] = ResponseData[0][colArrRspnWinTeam];  // Winning Team
-                MatchData[4][0] = ResponseData[0][colArrRspnLosTeam];  // Losing Team
-              }
-              // If Event uses Points Gained per Match
+              MatchData[3][0] = PT1;  // Player/Team 1
+              MatchData[4][0] = PT2;  // Player/Team 2
+
+                // If Event uses Points Gained per Match
               if(evntPtsGainedMatch == "Enabled"){
-                MatchData[3][1] = ResponseData[0][colArrRspnWinPts];  // Winning Points
-                MatchData[4][1] = ResponseData[0][colArrRspnLosPts];  // Losing Points
+                MatchData[3][1] = ResponseData[0][colArrRspnPts1];  // Player/Team 1 Points
+                MatchData[4][1] = ResponseData[0][colArrRspnPts2];  // Player/Team 2 Points
               }
               // If Event doesn't use Points Gained per Match
               if(evntPtsGainedMatch == "Disabled"){
-                MatchData[3][1] = "-";  // Winning Points
-                MatchData[4][1] = "-";  // Losing Points
+                MatchData[3][1] = "-";  // Player/Team 1 Points
+                MatchData[4][1] = "-";  // Player/Team 2 Points
               }
               
               if(evntTiePossible == "Enabled")   MatchData[5][0] = ResponseData[0][colArrRspnTie];  // Game is a Tie
               if(evntLocationBonus == "Enabled") MatchData[6][0] = ResponseData[0][colArrRspnLoc];  // Location (Store Y/N)
               
               // Execute function to populate Match Result Sheet from Response Sheet
-              MatchData = fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExecData, cfgColMatchRep, ResponseData, MatchingRspnData, MatchID, MatchData);
+              MatchData = fcnPostMatchResultsWG(ss, shtConfig, ResponseData, MatchingRspnData, MatchID, MatchData);
               MatchPostStatus = MatchData[25][0];
               
               shtTest.getRange(2, 2, 26, 4).setValues(MatchData);
@@ -531,15 +545,15 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
                 Logger.log('Match Posted ID: %s',MatchID);
                 
                 // Log Players Match Data
-                logStatusPlyr1[2] = RspnDataWinPlyr;
-                logStatusPlyr1 = fcnLogEventMatch(ss, shtConfig, logStatusPlyr1, MatchData);
-                if(exeMemberProfileLink == "Enabled") fcnLogMemberMatch(ss, shtConfig, logStatusPlyr1, MatchData);
-                Logger.log('Event Player Record Status for %s : %s',logStatusPlyr1[2],logStatusPlyr1[1]);
+                logStatusPT1[2] = PT1;
+                logStatusPT1 = fcnLogEventMatch(ss, shtConfig, cfgEvntParam, logStatusPT1, MatchData);
+                if(exeMemberProfileLink == "Enabled") fcnLogMemberMatch(ss, shtConfig, logStatusPT1, MatchData);
+                Logger.log('Event Player Record Status for %s : %s',logStatusPT1[2],logStatusPT1[1]);
                 
-                logStatusPlyr2[2] = RspnDataLosPlyr;
-                logStatusPlyr2 = fcnLogEventMatch(ss, shtConfig, logStatusPlyr2, MatchData);
-                if(exeMemberProfileLink == "Enabled") fcnLogMemberMatch(ss, shtConfig, logStatusPlyr2, MatchData);
-                Logger.log('Event Player Record Status for %s : %s',logStatusPlyr2[2],logStatusPlyr2[1]);
+                logStatusPT2[2] = PT2;
+                logStatusPT2 = fcnLogEventMatch(ss, shtConfig, cfgEvntParam, logStatusPT2, MatchData);
+                if(exeMemberProfileLink == "Enabled") fcnLogMemberMatch(ss, shtConfig, logStatusPT2, MatchData);
+                Logger.log('Event Player Record Status for %s : %s',logStatusPT2[2],logStatusPT2[1]);
                 
                 // If Event Game Type is Wargame
                 if(evntGameType == 'Wargame'){
@@ -549,7 +563,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
                     Status[1] = subUpdateStatus(shtRspn, RspnRow, colStatus, colStatusMsg, Status[0]);
                   }
                   // Update Player Army DB and Army List
-                  if(exeUpdatePlyrDB == 'Enabled' && evntBalanceBonus == 'Enabled') fcnUpdateArmyDB(ss, shtConfig, cfgColRndSht, RspnDataLosPlyr);
+                  if(exeUpdatePlyrDB == 'Enabled' && evntBalanceBonus == 'Enabled') fcnUpdateArmyDB(ss, shtConfig, cfgColRndSht, PT2);
                   Logger.log("Routine: fcnAnalyzeResultsWG");
                 }
               }
@@ -635,7 +649,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
       } 
       
       // If Both Players are the same, report error
-      if (RspnDataWinPlyr == RspnDataLosPlyr){
+      if (PT1 == PT2){
         
         // Updates the Match ID to an empty value 
         MatchID = '';
@@ -658,7 +672,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
           Status[1] = subUpdateStatus(shtRspn, RspnRow, colStatus, colStatusMsg, Status[0]);
         }
         // Get Email addresses from Config File
-        EmailAddresses = subGetEmailAddressDbl(ss, EmailAddresses, RspnDataWinPlyr, RspnDataLosPlyr);
+        EmailAddresses = subGetEmailAddressDbl(ss, EmailAddresses, PT1, PT2);
         Logger.log("Routine: fcnAnalyzeResultsWG");
         
         // Send email to players. Each function analyzes language preferences
@@ -670,7 +684,7 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
       if(Status[0] < 0 && exeSendEmail == 'Enabled') {
       
         // Get Email addresses from Config File
-        EmailAddresses = subGetEmailAddressDbl(ss, EmailAddresses, RspnDataWinPlyr, RspnDataLosPlyr);
+        EmailAddresses = subGetEmailAddressDbl(ss, EmailAddresses, PT1, PT2);
         
         // Send Error Message, each function analyzes language preferences
         fcnSendErrorEmail(shtConfig, EmailAddresses, MatchData, MatchID, Status);

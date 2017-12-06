@@ -6,7 +6,7 @@
 //
 // **********************************************
 
-function fcnLogEventMatch(ss, shtConfig, logStatusPlyr, MatchData){
+function fcnLogEventMatch(ss, shtConfig, cfgEvntParam, logStatusPlyr, MatchData){
 
   Logger.log("Routine: fcnLogEventMatch: %s",logStatusPlyr[2]);
  
@@ -14,7 +14,11 @@ function fcnLogEventMatch(ss, shtConfig, logStatusPlyr, MatchData){
   var StatusVal  = logStatusPlyr[0];
   var StatusMsg  = logStatusPlyr[1];
   var PlayerName = logStatusPlyr[2];
-    
+  
+  
+  // Event Parameters
+  var evntPtsGainedMatch = cfgEvntParam[32][0];
+  
   // Get Players Sheet
   var shtPlayers = ss.getSheetByName("Players");
   
@@ -59,29 +63,49 @@ function fcnLogEventMatch(ss, shtConfig, logStatusPlyr, MatchData){
   // Update Player Matches Played
   evntRecPlyr[0][0] = evntRecPlyr[0][0] + 1;
   
-  // Update Player Wins
-  if(MatchResult == "" && matchPlyr1 == PlayerName) {
-    evntRecPlyr[0][1] = evntRecPlyr[0][1] + 1;
-    MatchResult = "Win";
+  // If Points Gained in Match Options is not Used
+  if(MatchResult == "" && evntPtsGainedMatch == "Disabled"){
+    // Update Player Wins
+    if(PlayerName == matchPlyr1) {
+      evntRecPlyr[0][1] = evntRecPlyr[0][1] + 1;
+      MatchResult = "Win";
+    }
+    // Update Player Loss
+    if(PlayerName == matchPlyr2) {
+      evntRecPlyr[0][2] = evntRecPlyr[0][2] + 1;
+      MatchResult = "Loss";
+    }
   }
-  // Update Player Loss
-  if(MatchResult == "" && matchPlyr2 == PlayerName){
-    evntRecPlyr[0][2] = evntRecPlyr[0][2] + 1;
-    MatchResult = "Loss";
+
+  // If Points Gained in Match Options is Used
+  if(MatchResult == "" && evntPtsGainedMatch == "Enabled"){
+    // Update Player Wins
+    if((PlayerName == matchPlyr1 && matchPlyr1Pts > matchPlyr2Pts) || (PlayerName == matchPlyr2 && matchPlyr2Pts > matchPlyr1Pts)) {
+      evntRecPlyr[0][1] = evntRecPlyr[0][1] + 1;
+      MatchResult = "Win";
+    }
+    // Update Player Loss
+    if((PlayerName == matchPlyr1 && matchPlyr1Pts < matchPlyr2Pts) || (PlayerName == matchPlyr2 && matchPlyr2Pts < matchPlyr1Pts)) {
+      evntRecPlyr[0][2] = evntRecPlyr[0][2] + 1;
+      MatchResult = "Loss";
+    }
   }
-  // Update Player Tie
-  if(MatchResult == "Tie") evntRecPlyr[0][3] = evntRecPlyr[0][3] + 1;
   
-   // Update Points
+  // Update Player Tie
+  if(MatchResult == "Tie" || (evntPtsGainedMatch == "Enabled" && matchPlyr1Pts == matchPlyr2Pts)) {
+    evntRecPlyr[0][3] = evntRecPlyr[0][3] + 1;
+  }
+  
+  // Update Points
   // If Player 1
-  if(matchPlyr1 == PlayerName && matchPlyr1Pts != "-") {
-    evntRecPlyr[0][4] = evntRecPlyr[0][4] + matchPlyr1Pts;
-    evntRecPlyr[0][5] = evntRecPlyr[0][5] + matchPlyr2Pts;
+  if(PlayerName == matchPlyr1 && evntPtsGainedMatch == "Enabled") {
+    evntRecPlyr[0][4] = evntRecPlyr[0][4] + matchPlyr1Pts; // Points Scored
+    evntRecPlyr[0][5] = evntRecPlyr[0][5] + matchPlyr2Pts; // Points Allowed
   }
   // If Player 2
-  if(matchPlyr2 == PlayerName && matchPlyr2Pts != "-") {
-    evntRecPlyr[0][4] = evntRecPlyr[0][4] + matchPlyr2Pts;
-    evntRecPlyr[0][5] = evntRecPlyr[0][5] + matchPlyr1Pts;
+  if(PlayerName == matchPlyr2 && evntPtsGainedMatch == "Enabled") {
+    evntRecPlyr[0][4] = evntRecPlyr[0][4] + matchPlyr2Pts; // Points Scored
+    evntRecPlyr[0][5] = evntRecPlyr[0][5] + matchPlyr1Pts; // Points Allowed
   }
   
   // Update Win Percentage
@@ -92,6 +116,7 @@ function fcnLogEventMatch(ss, shtConfig, logStatusPlyr, MatchData){
   
   // Update Points Allowed / Match
   if(evntRecPlyr[0][0] > 0) evntRecPlyr[0][8] = evntRecPlyr[0][5] / evntRecPlyr[0][0];  
+  
   // Post New Record
   shtEvntPlyrRec.getRange(rngRecord).setValues(evntRecPlyr);
   
@@ -146,7 +171,7 @@ function fcnLogEventMatch(ss, shtConfig, logStatusPlyr, MatchData){
     }
   }
   // If Player is Player 1
-  if(matchPlyr1 == PlayerName){
+  if(PlayerName == matchPlyr1){
     // Played Against
     values[0][5]= matchPlyr2;
     // Points Scored
@@ -156,7 +181,7 @@ function fcnLogEventMatch(ss, shtConfig, logStatusPlyr, MatchData){
   }
 
   // If Player is Player 2
-  if(matchPlyr2 == PlayerName){
+  if(PlayerName == matchPlyr2){
     // Played Against
     values[0][5]= matchPlyr1;
     // Points Scored

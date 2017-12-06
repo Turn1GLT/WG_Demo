@@ -7,11 +7,17 @@
 //
 // **********************************************
 
-function fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExecData, cfgColMatchRep, ResponseData, MatchingRspnData, MatchID, MatchData) {
+function fcnPostMatchResultsWG(ss, shtConfig, ResponseData, MatchingRspnData, MatchID, MatchData) {
   
   Logger.log("Routine: fcnPostMatchResultsWG");
   
-  var cfgColMatchRslt = ss.getSheetByName("Config").getRange(21,18,32,1).getValues();
+  // Config Sheet to get options
+  var cfgEvntParam =    shtConfig.getRange( 4, 4,48,1).getValues();
+  var cfgColRspSht =    shtConfig.getRange( 4,18,16,1).getValues();
+  var cfgColRndSht =    shtConfig.getRange( 4,21,16,1).getValues();
+  var cfgExecData  =    shtConfig.getRange( 4,24,16,1).getValues();
+  var cfgColMatchRep =  shtConfig.getRange( 4,31,20,1).getValues();
+  var cfgColMatchRslt = shtConfig.getRange(21,18,32,1).getValues();
   
   // Code Execution Options
   var exeDualSubmission =      cfgExecData[0][0]; // If Dual Submission is disabled, look for duplicate instead
@@ -39,33 +45,33 @@ function fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfg
   var ResultData = RsltRng.getValues();
   
   // Routine Variables
-  var MatchValidWinr = new Array(2); // [0] = Status, [1] = Matches Played by Player used for Error Validation
-  var MatchValidLosr = new Array(2); // [0] = Status, [1] = Matches Played by Player used for Error Validation
-  var RsltPlyrDataA;
-  var RsltPlyrDataB;
+  var MatchValidPT1 = new Array(2); // [0] = Status, [1] = Matches Played by Player/Team 1 used for Error Validation
+  var MatchValidPT2 = new Array(2); // [0] = Status, [1] = Matches Played by Player/Team 2 used for Error Validation
+  var RsltPlyrData1;
+  var RsltPlyrData2;
   
   // Column Values for Data in Response Sheet
-  var colArrRspnPwd =       cfgColMatchRep[ 1][0]-1;
-  var colArrRspnRound =     cfgColMatchRep[ 2][0]-1;
-  var colArrRspnWinPlyr =   cfgColMatchRep[ 3][0]-1;
-  var colArrRspnWinTeam =   cfgColMatchRep[ 4][0]-1;
-  var colArrRspnWinPts =    cfgColMatchRep[ 5][0]-1;
-  var colArrRspnLosPlyr =   cfgColMatchRep[ 6][0]-1;
-  var colArrRspnLosTeam =   cfgColMatchRep[ 7][0]-1;
-  var colArrRspnLosPts =    cfgColMatchRep[ 8][0]-1;
-  var colArrRspnTie =       cfgColMatchRep[ 9][0]-1;
-  var colArrRspnLoc =       cfgColMatchRep[10][0]-1;
-  var colArrRspnPlyrSub =   cfgColMatchRep[19][0]-1;
+  var colArrRspnPwd =     cfgColMatchRep[ 1][0]-1;
+  var colArrRspnRound =   cfgColMatchRep[ 2][0]-1;
+  var colArrRspnPlyr1 =   cfgColMatchRep[ 3][0]-1;
+  var colArrRspnTeam1 =   cfgColMatchRep[ 4][0]-1;
+  var colArrRspnPts1 =    cfgColMatchRep[ 5][0]-1;
+  var colArrRspnPlyr2 =   cfgColMatchRep[ 6][0]-1;
+  var colArrRspnTeam2 =   cfgColMatchRep[ 7][0]-1;
+  var colArrRspnPts2 =    cfgColMatchRep[ 8][0]-1;
+  var colArrRspnTie =     cfgColMatchRep[ 9][0]-1;
+  var colArrRspnLoc =     cfgColMatchRep[10][0]-1;
+  var colArrRspnPlyrSub = cfgColMatchRep[19][0]-1;
 
   // Column Values for Data in Match Result Sheet
   var colArrRsltResultID = cfgColMatchRslt[ 0][0]-1;
   var colArrRsltMatchCnt = cfgColMatchRslt[ 1][0]-1;
   var colArrRsltMatchID =  cfgColMatchRslt[ 2][0]-1;
   var colArrRsltRound =    cfgColMatchRslt[ 3][0]-1;
-  var colArrRsltWinPT =    cfgColMatchRslt[ 4][0]-1;
-  var colArrRsltWinPts =   cfgColMatchRslt[ 5][0]-1;
-  var colArrRsltLosPT =    cfgColMatchRslt[ 6][0]-1;
-  var colArrRsltLosPts =   cfgColMatchRslt[ 7][0]-1;
+  var colArrRsltPT1 =      cfgColMatchRslt[ 4][0]-1;
+  var colArrRsltPts1 =     cfgColMatchRslt[ 5][0]-1;
+  var colArrRsltPT2 =      cfgColMatchRslt[ 6][0]-1;
+  var colArrRsltPts2 =     cfgColMatchRslt[ 7][0]-1;
   var colArrRsltTie =      cfgColMatchRslt[ 8][0]-1;
   var colArrRsltLoc =      cfgColMatchRslt[ 9][0]-1;
   var colArrRsltBal =      cfgColMatchRslt[10][0]-1;  
@@ -74,18 +80,18 @@ function fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfg
   var colRndBalBonus = cfgColRndSht[ 9][0];
   
   var MatchPostedStatus = 0;
-  var Winr;
-  var Losr;
+  var PT1;
+  var PT2;
   
   // Sets which Data set is Player A and Player B. Data[0][1] = Player who posted the data
   if (exeDualSubmission == 'Enabled' && ResponseData[0][1] == ResponseData[0][2]) {
-    RsltPlyrDataA = ResponseData;
-    RsltPlyrDataB = MatchingRspnData;
+    RsltPlyrData1 = ResponseData;
+    RsltPlyrData2 = MatchingRspnData;
   }
   
   if (exeDualSubmission == 'Enabled' && ResponseData[0][1] == ResponseData[0][3]) {
-    RsltPlyrDataA = ResponseData;
-    RsltPlyrDataB = MatchingRspnData;
+    RsltPlyrData1 = ResponseData;
+    RsltPlyrData2 = MatchingRspnData;
   }
   
   // Copy Players Data
@@ -93,28 +99,28 @@ function fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfg
   
   // If Single Event
   if(evntFormat == "Single"){
-    ResultData[0][colArrRsltWinPT] = ResponseData[0][colArrRspnWinPlyr];  // Winning Player
-    ResultData[0][colArrRsltLosPT] = ResponseData[0][colArrRspnLosPlyr];  // Losing Player
+    ResultData[0][colArrRsltPT1] = ResponseData[0][colArrRspnPlyr1];  // Player 1
+    ResultData[0][colArrRsltPT2] = ResponseData[0][colArrRspnPlyr2];  // Player 2
   }
   // If Team Event
   if(evntFormat == "Team"){
-    ResultData[0][colArrRsltWinPT] = ResponseData[0][colArrRspnWinTeam];  // Winning Team
-    ResultData[0][colArrRsltLosPT] = ResponseData[0][colArrRspnLosTeam];  // Losing Team
+    ResultData[0][colArrRsltPT1] = ResponseData[0][colArrRspnTeam1];  // Team 1
+    ResultData[0][colArrRsltPT2] = ResponseData[0][colArrRspnTeam2];  // Team 2
   }
   
   // Points
   if(evntPtsGainedMatch == "Enabled"){
-    ResultData[0][colArrRsltWinPts] = ResponseData[0][colArrRspnWinPts]; // Winning Player Points
-    ResultData[0][colArrRsltLosPts] = ResponseData[0][colArrRspnLosPts]; // Losing Player Points
+    ResultData[0][colArrRsltPts1] = ResponseData[0][colArrRspnPts1]; // Player 1 Points
+    ResultData[0][colArrRsltPts2] = ResponseData[0][colArrRspnPts2]; // Player 2 Points
   }
   else{
-    ResultData[0][colArrRsltWinPts] = "-"; // Winning Player Points
-    ResultData[0][colArrRsltLosPts] = "-"; // Losing Player Points
+    ResultData[0][colArrRsltPts1] = "-"; // Winning Player Points
+    ResultData[0][colArrRsltPts2] = "-"; // Losing Player Points
   }
   
-  // Winner and Loser Names
-  Winr = ResultData[0][colArrRsltWinPT];
-  Losr = ResultData[0][colArrRsltLosPT];
+  // Player/Team 1 and 2 Names
+  PT1 = ResultData[0][colArrRsltPT1];
+  PT2 = ResultData[0][colArrRsltPT2];
   
   if(evntTiePossible == "Enabled")   ResultData[0][colArrRsltTie] = ResponseData[0][colArrRspnTie];  // Game is Tie
   if(evntLocationBonus == "Enabled") ResultData[0][colArrRsltLoc] = ResponseData[0][colArrRspnLoc];  // Location
@@ -122,48 +128,25 @@ function fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfg
   // If option is enabled, Validate if players are allowed to post results (look for number of games played versus total amount of games allowed
   if (exePlyrMatchValidation == 'Enabled'){
     // Call subroutine to check if players match are valid
-    MatchValidWinr = subPlayerMatchValidation(ss, Winr, MatchValidWinr);
-    Logger.log('%s Match Validation: %s',Winr, MatchValidWinr[0]);
+    // subPlayerMatchValidation(ss, shtConfig, ParticipantName, MatchValidation)
+    MatchValidPT1 = subPlayerMatchValidation(ss, shtConfig, PT1, MatchValidPT1);
+    Logger.log('%s Match Validation: %s',PT1, MatchValidPT1[0]);
     
-    MatchValidLosr = subPlayerMatchValidation(ss, Losr, MatchValidLosr);
-    Logger.log('%s Match Validation: %s',Losr, MatchValidLosr[0]);
+    MatchValidPT2 = subPlayerMatchValidation(ss, shtConfig, PT2, MatchValidPT2);
+    Logger.log('%s Match Validation: %s',PT2, MatchValidPT2[0]);
   }
 
   // If option is disabled, Consider Matches are valid
   if (exePlyrMatchValidation == 'Disabled'){
-    MatchValidWinr[0] = 1;
-    MatchValidLosr[0] = 1;
+    MatchValidPT1[0] = 1;
+    MatchValidPT2[0] = 1;
   }
   
   // If both players have played a valid match
-  if (MatchValidWinr[0] == 1 && MatchValidLosr[0] == 1){
+  if (MatchValidPT1[0] == 1 && MatchValidPT2[0] == 1){
     
     // Copies Match ID
     ResultData[0][colArrRsltMatchID] = MatchID; // Match ID
-    
-    // Reserved for TCG
-    // Reserved for TCG
-    // Reserved for TCG
-    // Reserved for TCG
-    // Reserved for TCG
-    // Reserved for TCG
-    // Reserved for TCG
-    // Reserved for TCG
-    // Reserved for TCG
-    // Reserved for TCG
-    // Reserved for TCG
-    // Reserved for TCG
-    // Reserved for TCG
-    // Reserved for TCG
-    // Reserved for TCG
-    // Reserved for TCG
-    // Reserved for TCG
-    // Reserved for TCG
-    // Reserved for TCG
-    // Reserved for TCG
-    // Reserved for TCG
-    // Reserved for TCG
-        
     
     // Sets Data in Match Result Tab
     ResultData[0][colArrRsltMatchCnt] = '= if(INDIRECT("R[0]C[1]",FALSE)<>"",1,"")';
@@ -182,28 +165,28 @@ function fcnPostMatchResultsWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfg
   // If Match Validation was not successful, generate Error Status
   
   // returns Error that Winning Player is Eliminated from the League
-  if (MatchValidWinr[0] == -1 && MatchValidLosr[0] == 1)  MatchPostedStatus = -11;
+  if (MatchValidPT1[0] == -1 && MatchValidPT2[0] == 1)  MatchPostedStatus = -11;
   
   // returns Error that Winning Player has played too many matches
-  if (MatchValidWinr[0] == -2 && MatchValidLosr[0] == 1)  MatchPostedStatus = -12;  
+  if (MatchValidPT1[0] == -2 && MatchValidPT2[0] == 1)  MatchPostedStatus = -12;  
   
   // returns Error that Losing Player is Eliminated from the League
-  if (MatchValidLosr[0] == -1 && MatchValidWinr[0] == 1)  MatchPostedStatus = -21;
+  if (MatchValidPT2[0] == -1 && MatchValidPT1[0] == 1)  MatchPostedStatus = -21;
   
   // returns Error that Losing Player has played too many matches
-  if (MatchValidLosr[0] == -2 && MatchValidWinr[0] == 1)  MatchPostedStatus = -22;
+  if (MatchValidPT2[0] == -2 && MatchValidPT1[0] == 1)  MatchPostedStatus = -22;
   
   // returns Error that Both Players are Eliminated from the League
-  if (MatchValidWinr[0] == -1 && MatchValidLosr[0] == -1) MatchPostedStatus = -31;
+  if (MatchValidPT1[0] == -1 && MatchValidPT2[0] == -1) MatchPostedStatus = -31;
   
   // returns Error that Winning Player is Eliminated from the League and Losing Player has played too many matches
-  if (MatchValidWinr[0] == -1 && MatchValidLosr[0] == -2) MatchPostedStatus = -32;
+  if (MatchValidPT1[0] == -1 && MatchValidPT2[0] == -2) MatchPostedStatus = -32;
 
   // returns Error that Winning Player has player too many matches and Losing Player is Eliminated from the League
-  if (MatchValidWinr[0] == -2 && MatchValidLosr[0] == -1) MatchPostedStatus = -33;
+  if (MatchValidPT1[0] == -2 && MatchValidPT2[0] == -1) MatchPostedStatus = -33;
   
   // returns Error that Both Players have played too many matches
-  if (MatchValidWinr[0] == -2 && MatchValidLosr[0] == -2) MatchPostedStatus = -34;
+  if (MatchValidPT1[0] == -2 && MatchValidPT2[0] == -2) MatchPostedStatus = -34;
   
   // Populates Match Data for Main Routine
   MatchData[4][3] = BalanceBonusLosr;     // Player/Team 2 Balance Bonus Value
@@ -228,7 +211,7 @@ function fcnPostRoundResultWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgC
 
   // Column Values for Rounds Sheets
   var colRndPlyr =     cfgColRndSht[ 0][0];
-  var colRndTeam =     cfgColRndSht[ 1][0];
+  var colRndStatus =   cfgColRndSht[ 1][0];
   var colRndMP =       cfgColRndSht[ 2][0];
   var colRndLocation = cfgColRndSht[ 8][0];
   var colRndBalBonus = cfgColRndSht[ 9][0];
@@ -236,10 +219,10 @@ function fcnPostRoundResultWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgC
   
   // Column Values for Data in Match Result Sheet
   var colArrRsltRound =    cfgColMatchRslt[ 3][0]-1;
-  var colArrRsltWinPT =    cfgColMatchRslt[ 4][0]-1;
-  var colArrRsltWinPts =   cfgColMatchRslt[ 5][0]-1;
-  var colArrRsltLosPT =    cfgColMatchRslt[ 6][0]-1;
-  var colArrRsltLosPts =   cfgColMatchRslt[ 7][0]-1;
+  var colArrRsltPT1 =      cfgColMatchRslt[ 4][0]-1;
+  var colArrRsltPT1Pts =   cfgColMatchRslt[ 5][0]-1;
+  var colArrRsltPT2 =      cfgColMatchRslt[ 6][0]-1;
+  var colArrRsltPT2Pts =   cfgColMatchRslt[ 7][0]-1;
   var colArrRsltTie =      cfgColMatchRslt[ 8][0]-1;
   var colArrRsltLoc =      cfgColMatchRslt[ 9][0]-1;  
   
@@ -248,30 +231,34 @@ function fcnPostRoundResultWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgC
   var evntBalBonus =       cfgEvntParam[21][0];
   var evntBalBonusVal =    cfgEvntParam[22][0];
   var evntLocationBonus =  cfgEvntParam[23][0];  
+  var evntPtsGainedMatch = cfgEvntParam[32][0];
   
   // function variables
   var shtRndRslt;
   var shtRndMaxCol;
-  var RndRecPlyr1;
-  var RndLocPlyr1
-  var RndRecPlyr2;
-  var RndLocPlyr2;
+  var RndRecPT1;
+  var RndLocPT1
+  var RndRecPT2;
+  var RndLocPT2;
   var RndPackData;
-  var RndPlyr1Matchup;
-  var RndPlyr2Matchup;
+  var RndPT1Matchup;
+  var RndPT2Matchup;
   
-  var RndPlyr1Row = 0;
-  var RndPlyr2Row = 0;
+  var RndPT1Row = 0;
+  var RndPT2Row = 0;
   var RndMatchTie = 0; // Match is not a Tie by default
   
-  var Plyr2BalBonusVal;
+  var WinrPT;
+  var LosrPT;
+  var LosrRow;
+  var BalBonusVal;
   
   // Match Values
   var MatchRound =      ResultData[0][colArrRsltRound];
-  var MatchDataPT1 =    ResultData[0][colArrRsltWinPT];
-  var MatchDataPT1Pts = ResultData[0][colArrRsltWinPts];
-  var MatchDataPT2 =    ResultData[0][colArrRsltLosPT];
-  var MatchDataPT2Pts = ResultData[0][colArrRsltLosPts];
+  var MatchDataPT1 =    ResultData[0][colArrRsltPT1];
+  var MatchDataPT1Pts = ResultData[0][colArrRsltPT1Pts];
+  var MatchDataPT2 =    ResultData[0][colArrRsltPT2];
+  var MatchDataPT2Pts = ResultData[0][colArrRsltPT2Pts];
   var MatchDataTie  =   ResultData[0][colArrRsltTie];
   var MatchLoc =        ResultData[0][colArrRsltLoc];
   
@@ -281,71 +268,98 @@ function fcnPostRoundResultWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgC
   shtRndMaxCol = shtRndRslt.getMaxColumns();
 
   // Find Player Rows : subFindPlayerRow(sheet, rowStart, colPlyr, length, PlayerName)
-  RndPlyr1Row = subFindPlayerRow(shtRndRslt, 5, colRndPlyr, 32, MatchDataPT1);
-  RndPlyr2Row = subFindPlayerRow(shtRndRslt, 5, colRndPlyr, 32, MatchDataPT2);
+  RndPT1Row = subFindPlayerRow(shtRndRslt, 5, colRndPlyr, 32, MatchDataPT1);
+  RndPT2Row = subFindPlayerRow(shtRndRslt, 5, colRndPlyr, 32, MatchDataPT2);
   
-  // Get Winner and Loser Records when both rows have been found
-  // Get Winner (Player 1) and Loser (Player 2) Match Record, 6 values: Matches Played, Wins, Loss, Ties, Points, Win%
-  RndRecPlyr1 = shtRndRslt.getRange(RndPlyr1Row,colRndMP,1,6).getValues();
-  RndRecPlyr2 = shtRndRslt.getRange(RndPlyr2Row,colRndMP,1,6).getValues();
+  // Get Player/Team 1 and 2 Records when both rows have been found
+  // Get Player/Team 1 and 2 Match Record, 6 values: Matches Played, Wins, Loss, Ties, Points, Win%
+  RndRecPT1 = shtRndRslt.getRange(RndPT1Row,colRndMP,1,6).getValues();
+  RndRecPT2 = shtRndRslt.getRange(RndPT2Row,colRndMP,1,6).getValues();
   
-  // Update Winner and Loser Location Bonus if Applicable
+  // Update Player/Team 1 and 2 Location Bonus if Applicable
   if(evntLocationBonus == "Enabled" && (MatchLoc == 'Yes' || MatchLoc == 'Oui')){
-    RndLocPlyr1 = shtRndRslt.getRange(RndPlyr1Row,colRndLocation).getValue() + 1;
-    RndLocPlyr2 = shtRndRslt.getRange(RndPlyr2Row,colRndLocation).getValue() + 1;
+    RndLocPT1 = shtRndRslt.getRange(RndPT1Row,colRndLocation).getValue() + 1;
+    RndLocPT2 = shtRndRslt.getRange(RndPT2Row,colRndLocation).getValue() + 1;
     
-    shtRndRslt.getRange(RndPlyr1Row,colRndLocation).setValue(RndLocPlyr1);
-    shtRndRslt.getRange(RndPlyr2Row,colRndLocation).setValue(RndLocPlyr2);
+    shtRndRslt.getRange(RndPT1Row,colRndLocation).setValue(RndLocPT1);
+    shtRndRslt.getRange(RndPT2Row,colRndLocation).setValue(RndLocPT2);
   }
   
   // Match Tie Result
-  if((MatchDataPT1Pts == MatchDataPT2Pts) || (ResultData[0][colArrRsltTie] == 'Yes' || ResultData[0][colArrRsltTie] == 'Oui')){
+  if((evntPtsGainedMatch == "Enabled" && MatchDataPT1Pts == MatchDataPT2Pts) || (ResultData[0][colArrRsltTie] == 'Yes' || ResultData[0][colArrRsltTie] == 'Oui')){
     RndMatchTie = 1;  
     // Update Player 1
-    RndRecPlyr1 = subUpdatePlyrEvntRecord(cfgEvntParam, RndRecPlyr1, "Tie", MatchDataPT1Pts);
+    RndRecPT1 = subUpdatePlyrEvntRecord(cfgEvntParam, RndRecPT1, "Tie", MatchDataPT1Pts);
     // Update Player 2
-    RndRecPlyr2 = subUpdatePlyrEvntRecord(cfgEvntParam, RndRecPlyr2, "Tie", MatchDataPT2Pts);
+    RndRecPT2 = subUpdatePlyrEvntRecord(cfgEvntParam, RndRecPT2, "Tie", MatchDataPT2Pts);
   }
+  // If Match is not Tie
   if(RndMatchTie == 0) {
-    // Update Player 1
-    RndRecPlyr1 = subUpdatePlyrEvntRecord(cfgEvntParam, RndRecPlyr1, "Win", MatchDataPT1Pts);
-    // Update Player 2
-    RndRecPlyr2 = subUpdatePlyrEvntRecord(cfgEvntParam, RndRecPlyr2, "Loss", MatchDataPT2Pts);
+    
+    // If Option Points Gained in Match is Enabled
+    if(evntPtsGainedMatch == "Disabled"){
+      RndRecPT1 = subUpdatePlyrEvntRecord(cfgEvntParam, RndRecPT1, "Win" , MatchDataPT1Pts);
+      RndRecPT2 = subUpdatePlyrEvntRecord(cfgEvntParam, RndRecPT2, "Loss", MatchDataPT2Pts);
+      WinrPT = MatchDataPT1;
+      LosrPT = MatchDataPT2;
+    }
+    
+    // If Option Points Gained in Match is Enabled
+    if(evntPtsGainedMatch == "Enabled"){
+      // Player/Team 1 Points > Player/Team 2 Points
+      if(MatchDataPT1Pts > MatchDataPT2Pts) {
+        RndRecPT1 = subUpdatePlyrEvntRecord(cfgEvntParam, RndRecPT1, "Win" , MatchDataPT1Pts);
+        RndRecPT2 = subUpdatePlyrEvntRecord(cfgEvntParam, RndRecPT2, "Loss", MatchDataPT2Pts);
+        WinrPT = MatchDataPT1;
+        LosrPT = MatchDataPT2;
+      }
+      // Player/Team 2 Points > Player/Team 1 Points
+      if(MatchDataPT2Pts > MatchDataPT1Pts) {
+        RndRecPT1 = subUpdatePlyrEvntRecord(cfgEvntParam, RndRecPT1, "Loss", MatchDataPT1Pts);
+        RndRecPT2 = subUpdatePlyrEvntRecord(cfgEvntParam, RndRecPT2, "Win" , MatchDataPT2Pts);
+        WinrPT = MatchDataPT2;
+        LosrPT = MatchDataPT1;
+      }
+    }
   }
 
   // Update Round Matchups
-  // Winning Player
-  RndPlyr1Matchup = shtRndRslt.getRange(RndPlyr1Row,colRndMatchup).getValue();
-  if(RndPlyr1Matchup == '') RndPlyr1Matchup = MatchDataPT2;
-  else RndPlyr1Matchup += ', ' + MatchDataPT2;
+  // Player/Team 1
+  RndPT1Matchup = shtRndRslt.getRange(RndPT1Row,colRndMatchup).getValue();
+  if(RndPT1Matchup == '') RndPT1Matchup = MatchDataPT2;
+  else RndPT1Matchup += ', ' + MatchDataPT2;
   
-  // Losing Player
-  RndPlyr2Matchup = shtRndRslt.getRange(RndPlyr2Row,colRndMatchup).getValue();
-  if(RndPlyr2Matchup == '') RndPlyr2Matchup = MatchDataPT1;
-  else RndPlyr2Matchup += ', ' + MatchDataPT1;
+  // Player/Team 2
+  RndPT2Matchup = shtRndRslt.getRange(RndPT2Row,colRndMatchup).getValue();
+  if(RndPT2Matchup == '') RndPT2Matchup = MatchDataPT1;
+  else RndPT2Matchup += ', ' + MatchDataPT1;
   
   // Update the Round Results Sheet
-  shtRndRslt.getRange(RndPlyr1Row,colRndMP,1,6).setValues(RndRecPlyr1);
-  shtRndRslt.getRange(RndPlyr2Row,colRndMP,1,6).setValues(RndRecPlyr2);
-  shtRndRslt.getRange(RndPlyr1Row,colRndMatchup).setValue(RndPlyr1Matchup);
-  shtRndRslt.getRange(RndPlyr2Row,colRndMatchup).setValue(RndPlyr2Matchup);
+  shtRndRslt.getRange(RndPT1Row,colRndMP,1,6).setValues(RndRecPT1);
+  shtRndRslt.getRange(RndPT2Row,colRndMP,1,6).setValues(RndRecPT2);
+  shtRndRslt.getRange(RndPT1Row,colRndMatchup).setValue(RndPT1Matchup);
+  shtRndRslt.getRange(RndPT2Row,colRndMatchup).setValue(RndPT2Matchup);
 
+  
   // If Match is not a Tie and Balance Bonus is Enabled
   if (RndMatchTie == 0 && evntBalBonus == 'Enabled'){
+    // Get Row for Losing Player/Team
+    if(LosrPT == MatchDataPT1) LosrRow = RndPT1Row;
+    if(LosrPT == MatchDataPT2) LosrRow = RndPT2Row;
     // Get Loser Amount of Balance Bonus Points and Increase by value from Config file
-    Plyr2BalBonusVal = shtRndRslt.getRange(RndPlyr2Row,colRndBalBonus).getValue() + evntBalBonusVal;
-    shtRndRslt.getRange(RndPlyr2Row,colRndBalBonus).setValue(Plyr2BalBonusVal);
+    BalBonusVal = shtRndRslt.getRange(LosrRow,colRndBalBonus).getValue() + evntBalBonusVal;
+    shtRndRslt.getRange(LosrRow,colRndBalBonus).setValue(BalBonusVal);
   }
   
   // Update Match Data
   // Player/Team 1
   MatchData[3][1]= MatchDataPT1Pts;  // Points
-  MatchData[3][2]= RndRecPlyr1[0][0];  // Matches Played this Event
+  MatchData[3][2]= RndRecPT1[0][0];  // Matches Played this Event
   
   // Player/Team 2
   MatchData[4][1]= MatchDataPT2Pts;  // Points
-  MatchData[4][2]= RndRecPlyr2[0][0];  // Matches Played this Event
-  MatchData[4][3]= Plyr2BalBonusVal;
+  MatchData[4][2]= RndRecPT2[0][0];  // Matches Played this Event
+  MatchData[4][3]= BalBonusVal;
   
   
   return MatchData;
@@ -377,17 +391,17 @@ function fcnFindDuplicateData(ss, shtRspn, cfgEvntParam, cfgColRspSht, cfgColMat
   var colArrRspnPrcsd =   cfgColRspSht[2][0]-1;
   
   // Column Values for Data in Response Sheet
-  var colArrRspnPwd =       cfgColMatchRep[ 1][0]-1;
-  var colArrRspnRound =     cfgColMatchRep[ 2][0]-1;
-  var colArrRspnWinPlyr =   cfgColMatchRep[ 3][0]-1;
-  var colArrRspnWinTeam =   cfgColMatchRep[ 4][0]-1;
-  var colArrRspnWinPts =    cfgColMatchRep[ 4][0]-1;
-  var colArrRspnLosPlyr =   cfgColMatchRep[ 6][0]-1;
-  var colArrRspnLosTeam =   cfgColMatchRep[ 7][0]-1;
-  var colArrRspnLosPts =    cfgColMatchRep[ 8][0]-1;
-  var colArrRspnTie =       cfgColMatchRep[ 9][0]-1;
-  var colArrRspnLoc =       cfgColMatchRep[10][0]-1;
-  var colArrRspnPlyrSub =   cfgColMatchRep[19][0]-1;
+  var colArrRspnPwd =     cfgColMatchRep[ 1][0]-1;
+  var colArrRspnRound =   cfgColMatchRep[ 2][0]-1;
+  var colArrRspnPlyr1 =   cfgColMatchRep[ 3][0]-1;
+  var colArrRspnTeam1 =   cfgColMatchRep[ 4][0]-1;
+  var colArrRspnPts1 =    cfgColMatchRep[ 5][0]-1;
+  var colArrRspnPlyr2 =   cfgColMatchRep[ 6][0]-1;
+  var colArrRspnTeam2 =   cfgColMatchRep[ 7][0]-1;
+  var colArrRspnPts2 =    cfgColMatchRep[ 8][0]-1;
+  var colArrRspnTie =     cfgColMatchRep[ 9][0]-1;
+  var colArrRspnLoc =     cfgColMatchRep[10][0]-1;
+  var colArrRspnPlyrSub = cfgColMatchRep[19][0]-1;
    
   // Values from Response Data
   var RspnDataRound =     ResponseData[0][colArrRspnRound];   // Round Number
@@ -395,19 +409,19 @@ function fcnFindDuplicateData(ss, shtRspn, cfgEvntParam, cfgColRspSht, cfgColMat
   // Winning and Losing Player/Team
   // If Single Event
   if(evntFormat == "Single"){
-    var RspnDataWinPlyr = ResponseData[0][colArrRspnWinPlyr];  // Winning Player
-    var RspnDataLosPlyr = ResponseData[0][colArrRspnLosPlyr];  // Losing Player
+    var RspnDataPT1 = ResponseData[0][colArrRspnPlyr1];  // Winning Player
+    var RspnDataPT2 = ResponseData[0][colArrRspnPlyr2];  // Losing Player
   }
   // If Team Event
   if(evntFormat == "Team"){
-    var RspnDataWinPlyr = ResponseData[0][colArrRspnWinTeam];  // Winning Team
-    var RspnDataLosPlyr = ResponseData[0][colArrRspnLosTeam];  // Losing Team
+    var RspnDataPT1 = ResponseData[0][colArrRspnTeam1];  // Winning Team
+    var RspnDataPT2 = ResponseData[0][colArrRspnTeam2];  // Losing Team
   }
   
   // Entry Data
   var EntryRound;
-  var EntryWinr;
-  var EntryLosr;
+  var EntryPT1;
+  var EntryPT2;
   var EntryData;
   var EntryPrcssd;
   var EntryMatchID;
@@ -428,13 +442,13 @@ function fcnFindDuplicateData(ss, shtRspn, cfgEvntParam, cfgColRspSht, cfgColMat
       // Winning and Losing Player/Team
       // If Single Event
       if(evntFormat == "Single"){
-        EntryWinr = EntryData[EntryRow][colArrRspnWinPlyr];  // Winning Player
-        EntryLosr = EntryData[EntryRow][colArrRspnLosPlyr];  // Losing Player
+        EntryPT1 = EntryData[EntryRow][colArrRspnPlyr1];  // Winning Player
+        EntryPT2 = EntryData[EntryRow][colArrRspnPlyr2];  // Losing Player
       }
       // If Team Event
       if(evntFormat == "Team"){
-        EntryWinr = EntryData[EntryRow][colArrRspnWinTeam];  // Winning Team
-        EntryLosr = EntryData[EntryRow][colArrRspnLosTeam];  // Losing Team
+        EntryPT1 = EntryData[EntryRow][colArrRspnTeam1];  // Winning Team
+        EntryPT2 = EntryData[EntryRow][colArrRspnTeam2];  // Losing Team
       }
       
       EntryMatchID = EntryData[EntryRow][colArrRspnMatchID]; // Match ID
@@ -443,7 +457,7 @@ function fcnFindDuplicateData(ss, shtRspn, cfgEvntParam, cfgColRspSht, cfgColMat
       // If both rows are different, the Data Entry was processed and was compiled in the Match Results (Match as a Match ID), Look for player entry combination
       if (EntryRow != RspnRow && EntryPrcssd == 1 && EntryMatchID != ''){
         // If combination of players are the same between the entry data and the new response data, duplicate entry was found. Save Row index
-        if ((RspnDataWinPlyr == EntryWinr && RspnDataLosPlyr == EntryLosr) || (RspnDataWinPlyr == EntryLosr && RspnDataLosPlyr == EntryWinr)){
+        if ((RspnDataPT1 == EntryPT1 && RspnDataPT2 == EntryPT2) || (RspnDataPT1 == EntryPT1 && RspnDataPT2 == EntryPT2)){
           DuplicateRow = EntryRow + 1;
           EntryRow = RspnMaxRows + 1;
         }
@@ -488,17 +502,17 @@ function fcnFindMatchingData(ss, cfgEvntParam, cfgColRspSht, cfgColMatchRep, cfg
   var colArrRspnPrcsd =   cfgColRspSht[2][0]-1;
   
   // Column Values for Data in Response Sheet
-  var colArrRspnPwd =       cfgColMatchRep[ 1][0]-1;
-  var colArrRspnRound =     cfgColMatchRep[ 2][0]-1;
-  var colArrRspnWinPlyr =   cfgColMatchRep[ 3][0]-1;
-  var colArrRspnWinTeam =   cfgColMatchRep[ 4][0]-1;
-  var colArrRspnWinPts =    cfgColMatchRep[ 4][0]-1;
-  var colArrRspnLosPlyr =   cfgColMatchRep[ 6][0]-1;
-  var colArrRspnLosTeam =   cfgColMatchRep[ 7][0]-1;
-  var colArrRspnLosPts =    cfgColMatchRep[ 8][0]-1;
-  var colArrRspnTie =       cfgColMatchRep[ 9][0]-1;
-  var colArrRspnLoc =       cfgColMatchRep[10][0]-1;
-  var colArrRspnPlyrSub =   cfgColMatchRep[19][0]-1;
+  var colArrRspnPwd =     cfgColMatchRep[ 1][0]-1;
+  var colArrRspnRound =   cfgColMatchRep[ 2][0]-1;
+  var colArrRspnPlyr1 =   cfgColMatchRep[ 3][0]-1;
+  var colArrRspnTeam1 =   cfgColMatchRep[ 4][0]-1;
+  var colArrRspnPts1 =    cfgColMatchRep[ 5][0]-1;
+  var colArrRspnPlyr2 =   cfgColMatchRep[ 6][0]-1;
+  var colArrRspnTeam2 =   cfgColMatchRep[ 7][0]-1;
+  var colArrRspnPts2 =    cfgColMatchRep[ 8][0]-1;
+  var colArrRspnTie =     cfgColMatchRep[ 9][0]-1;
+  var colArrRspnLoc =     cfgColMatchRep[10][0]-1;
+  var colArrRspnPlyrSub = cfgColMatchRep[19][0]-1;
   
   // Response Data
   var RspnDataPlyrSubmit = ResponseData[0][colArrRspnPlyrSub]; // Player Submitting
@@ -507,20 +521,20 @@ function fcnFindMatchingData(ss, cfgEvntParam, cfgColRspSht, cfgColMatchRep, cfg
   // Winning and Losing Player/Team
   // If Single Event
   if(evntFormat == "Single"){
-    var RspnDataWinr = ResponseData[0][colArrRspnWinPlyr];  // Winning Player
-    var RspnDataLosr = ResponseData[0][colArrRspnLosPlyr];  // Losing Player
+    var RspnDataPT1 = ResponseData[0][colArrRspnPlyr1];  // Winning Player
+    var RspnDataPT2 = ResponseData[0][colArrRspnPlyr2];  // Losing Player
   }
   // If Team Event
   if(evntFormat == "Team"){
-    var RspnDataWinr = ResponseData[0][colArrRspnWinTeam];  // Winning Team
-    var RspnDataLosr = ResponseData[0][colArrRspnLosTeam];  // Losing Team
+    var RspnDataPT1 = ResponseData[0][colArrRspnTeam1];  // Winning Team
+    var RspnDataPT2 = ResponseData[0][colArrRspnTeam2];  // Losing Team
   }
 
   var EntryData;
   var EntryPlyrSubmit;
   var EntryRound;
-  var EntryWinr;
-  var EntryLosr;
+  var EntryPT1;
+  var EntryPT2;
   var EntryPrcssd;
   var EntryMatchID;
   
@@ -542,20 +556,20 @@ function fcnFindMatchingData(ss, cfgEvntParam, cfgColRspSht, cfgColMatchRep, cfg
       // Winning and Losing Player/Team
       // If Single Event
       if(evntFormat == "Single"){
-        EntryWinr = EntryData[EntryRow][colArrRspnWinPlyr];  // Winning Player
-        EntryLosr = EntryData[EntryRow][colArrRspnLosPlyr];  // Losing Player
+        EntryPT1 = EntryData[EntryRow][colArrRspnPlyr1];  // Winning Player
+        EntryPT2 = EntryData[EntryRow][colArrRspnPlyr2];  // Losing Player
       }
       // If Team Event
       if(evntFormat == "Team"){
-        EntryWinr = EntryData[EntryRow][colArrRspnWinTeam];  // Winning Team
-        EntryLosr = EntryData[EntryRow][colArrRspnLosTeam];  // Losing Team
+        EntryPT1 = EntryData[EntryRow][colArrRspnTeam1];  // Winning Team
+        EntryPT2 = EntryData[EntryRow][colArrRspnTeam2];  // Losing Team
       }
       
       EntryMatchID = EntryData[EntryRow][colArrRspnMatchID]; // Match ID
       EntryPrcssd =  EntryData[EntryRow][colArrRspnPrcsd];   // Entry Processed Flag
       
       // If both rows are different, Round Number, Player A and Player B are matching, we found the other match to compare data to
-      if (EntryRow != RspnRow && EntryPrcssd == 1 && EntryMatchID == '' && RspnDataRound == EntryRound && RspnDataWinr == EntryWinr && RspnDataLosr == EntryLosr){
+      if (EntryRow != RspnRow && EntryPrcssd == 1 && EntryMatchID == '' && RspnDataRound == EntryRound && RspnDataPT1 == EntryPT1 && RspnDataPT2 == EntryPT2){
         
         // If Dual Submission is Enabled, look for Player Submitting, if they are different, continue          
         if ((exeDualSubmission == 'Enabled' && RspnDataPlyrSubmit != EntryPlyrSubmit) || exeDualSubmission == 'Disabled'){ 

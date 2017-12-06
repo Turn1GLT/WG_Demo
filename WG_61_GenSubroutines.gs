@@ -361,31 +361,49 @@ function subCheckDataConflict(DataArray1, DataArray2, ColStart, ColEnd) {
 //
 // **********************************************
 
-function subPlayerMatchValidation(ss, PlayerName, MatchValidation) {
+function subPlayerMatchValidation(ss, shtConfig, ParticipantName, MatchValidation) {
+  
+  // Get Configuration Data
+  var cfgEventData = shtConfig.getRange(4, 2,16,1).getValues();
+  var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
+  
+  // Column Values for Rounds Sheets
+  var colRndPlyr =     cfgColRndSht[ 0][0];
+  var colRndStatus =   cfgColRndSht[ 1][0];
+  var colRndMP =       cfgColRndSht[ 2][0];
   
   // Opens Cumulative Results tab
   var shtCumul = ss.getSheetByName('Cumulative Results');
     
   // Get Data from Cumulative Results
-  var CumulMaxMatch = shtCumul.getRange(4,3).getValue();
-  var CumulPlyrData = shtCumul.getRange(5,1,32,11).getValues();
-  var RoundNum = shtCumul.getRange(2,3).getValue();
+  var RoundNum =      cfgEventData[ 3][0];
+  var CumulMaxMatch = cfgEventData[ 8][0];
+  var NbPlyrs =       cfgEventData[ 9][0];
+  var NbTeams =       cfgEventData[10][0];
+  var EvntFormat =    cfgEventData[11][0];
   var shtRound = ss.getSheetByName('Round' + RoundNum);
-  var RoundPlyrData = shtRound.getRange(5,1,32,11).getValues(); // Data[i][j] i = Player List 1-32, j = ID(0), Name(1), Initials(2), MP(3), W(4), L(5), %(6), Penalty(7), Matches in Store(8) Packs(9), Status(10)
   
   var PlayerStatus;
   var PlayerMatchPlayed;
+  var Participants;
+  var NbParticipants;
   
-  // Look for Player Row and if Player is still Active or Eliminated
-  for (var i = 0; i < 32; i++) {
-    // Player Found, Number of Match Played and Status memorized
-    if (PlayerName == RoundPlyrData[i][1]){
-      PlayerMatchPlayed = RoundPlyrData[i][3];
-      PlayerStatus = CumulPlyrData[i][10];
-      MatchValidation[1] = PlayerMatchPlayed;
-      i = 32; // Exit Loop
-    }
+  // Select Participant if Single Players or Teams  
+  if(EvntFormat == "Single"){
+    Participants =   "Players";
+    NbParticipants = NbPlyrs;
   }
+  if(EvntFormat == "Team"){
+    Participants =   "Teams";
+    NbParticipants = NbTeams;
+  }  
+  // Look for Player Row and if Player is still Active or Eliminated
+  //subFindPlayerRow(sheet, rowStart, colPlyr, length, PlayerName)
+  var PlyrRow = subFindPlayerRow(shtCumul,5,colRndPlyr,NbParticipants,ParticipantName);
+  
+  PlayerMatchPlayed = shtRound.getRange(PlyrRow,colRndMP).getValue();
+  PlayerStatus =      shtRound.getRange(PlyrRow,colRndStatus).getValue();
+  MatchValidation[1] = PlayerMatchPlayed;
 
   // If Player is Active and Number of Matches Played is below or equal to the maximum permitted
   if (PlayerStatus == 'Active' && PlayerMatchPlayed + 1 <= CumulMaxMatch) MatchValidation[0] = 1;
