@@ -32,6 +32,7 @@ function fcnProcessMatchWG() {
   var RspnDataInputs =      cfgColRspSht[0][0]; // from Time Stamp to Data Processed
   var colMatchID =          cfgColRspSht[1][0];
   var colDataPrcsd =        cfgColRspSht[2][0];
+  var colMatchIDLastVal =   cfgColRspSht[6][0];
   var colNextEmptyRow =     cfgColRspSht[7][0];
   var colNbUnprcsdEntries = cfgColRspSht[8][0];
   
@@ -145,7 +146,7 @@ function fcnProcessMatchWG() {
           DataCopiedStatus = 'Data Copied';
           shtRspnEN.getRange(RspnRow, colDataPrcsd).setValue(DataCopiedStatus);
           // Creates formula to update Last Entry Processed
-          shtRspnEN.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchID +']",FALSE)<>"",1,"")');
+          shtRspnEN.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchIDLastVal +']",FALSE)<>"",1,"")');
         }
         
         // If Password is not Valid, update Data Copied and Next Empty Row Cells
@@ -154,7 +155,7 @@ function fcnProcessMatchWG() {
           DataCopiedStatus = 'Password Not Valid';
           shtRspnEN.getRange(RspnRow, colDataPrcsd).setValue(DataCopiedStatus);
           // Creates formula to update Last Entry Processed
-          shtRspnEN.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchID +']",FALSE)<>"",1,"")');
+          shtRspnEN.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchIDLastVal +']",FALSE)<>"",1,"")');
         }
         // If Data is copied or Password is not Valid or TimeStamp is null, Exit loop MatchResp EN and Loop through MatchResp FR
         if (DataCopiedStatus == 'Data Copied' || DataCopiedStatus == 'Password Not Valid' || (TimeStamp == '' && RspnRow >= RspnMaxRowsEN)) {
@@ -196,7 +197,7 @@ function fcnProcessMatchWG() {
             DataCopiedStatus = 'Data Copied';
             shtRspnFR.getRange(RspnRow, colDataPrcsd).setValue(DataCopiedStatus);
             // Creates formula to update Last Entry Processed
-            shtRspnFR.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchID +']",FALSE)<>"",1,"")');
+            shtRspnFR.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchIDLastVal +']",FALSE)<>"",1,"")');
           }
           
           // If Password is not Valid, update Data Copied and Next Empty Row Cells
@@ -205,7 +206,7 @@ function fcnProcessMatchWG() {
             DataCopiedStatus = 'Password Not Valid';
             shtRspnFR.getRange(RspnRow, colDataPrcsd).setValue(DataCopiedStatus);
             // Creates formula to update Last Entry Processed
-            shtRspnFR.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchID +']",FALSE)<>"",1,"")');
+            shtRspnFR.getRange(RspnRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchIDLastVal +']",FALSE)<>"",1,"")');
           }
           // If Data is copied or Password is not Valid or TimeStamp is null, Exit loop MatchResp FR to process data
           if (DataCopiedStatus == 'Data Copied' || DataCopiedStatus == 'Password Not Valid' || (TimeStamp == '' && RspnRow >= RspnMaxRowsFR)) {
@@ -224,7 +225,7 @@ function fcnProcessMatchWG() {
       Logger.log('Match Data Copied for Players: %s, %s',PT1,PT2);
       
       // Copy Formula to detect if an entry is currently processing
-      shtRspn.getRange(RspnNextRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchID +']",FALSE)<>"",1,"")');
+      shtRspn.getRange(RspnNextRow, colNextEmptyRow).setValue('=IF(INDIRECT("R[0]C[-'+ colMatchIDLastVal +']",FALSE)<>"",1,"")');
       shtRspn.getRange(RspnNextRow, colNbUnprcsdEntries).setValue('=IF(AND(INDIRECT("R[0]C[-'+ colNextEmptyRow +']",FALSE)<>"",INDIRECT("R[0]C[-4]",FALSE)<>2),1,"")');
       
       // Troubleshoot

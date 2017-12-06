@@ -29,15 +29,15 @@ function fcnLogEventMatch(ss, shtConfig, cfgEvntParam, logStatusPlyr, MatchData)
   var rngRecord = "A4:I4";
   
   // Match Data Variables
-  var matchEventEN =  MatchData[0][1];
-  var matchEventFR =  MatchData[0][2];
-  var matchGameSys =  MatchData[1][1];
-  var matchRound =    MatchData[2][0];
-  var matchPlyr1 =    MatchData[3][0];
-  var matchPlyr1Pts = MatchData[3][1];
-  var matchPlyr2 =    MatchData[4][0];
-  var matchPlyr2Pts = MatchData[4][1];
-  var matchTie =      MatchData[5][0];
+  var matchEventEN = MatchData[0][1];
+  var matchEventFR = MatchData[0][2];
+  var matchGameSys = MatchData[1][1];
+  var matchRound =   MatchData[2][0];
+  var matchPT1 =     MatchData[3][0];
+  var matchPT1Pts =  MatchData[3][1];
+  var matchPT2 =     MatchData[4][0];
+  var matchPT2Pts =  MatchData[4][1];
+  var matchTie =     MatchData[5][0];
   
   // Routine Variables
   var MatchResult = "";
@@ -56,7 +56,7 @@ function fcnLogEventMatch(ss, shtConfig, cfgEvntParam, logStatusPlyr, MatchData)
   if (evntRecPlyr[0][5] == '') evntRecPlyr[0][8] = 0; // Pts Allowed / Match
   
   // Checks if Match is a Tie
-  if((matchPlyr1Pts == matchPlyr2Pts) || (matchTie == "Yes" || matchTie == "Oui")) MatchResult = "Tie";
+  if((evntPtsGainedMatch == "Enabled" && matchPT1Pts == matchPT2Pts) || (matchTie == "Yes" || matchTie == "Oui")) MatchResult = "Tie";
   
   // Update Player Record
   
@@ -66,12 +66,12 @@ function fcnLogEventMatch(ss, shtConfig, cfgEvntParam, logStatusPlyr, MatchData)
   // If Points Gained in Match Options is not Used
   if(MatchResult == "" && evntPtsGainedMatch == "Disabled"){
     // Update Player Wins
-    if(PlayerName == matchPlyr1) {
+    if(PlayerName == matchPT1) {
       evntRecPlyr[0][1] = evntRecPlyr[0][1] + 1;
       MatchResult = "Win";
     }
     // Update Player Loss
-    if(PlayerName == matchPlyr2) {
+    if(PlayerName == matchPT2) {
       evntRecPlyr[0][2] = evntRecPlyr[0][2] + 1;
       MatchResult = "Loss";
     }
@@ -80,32 +80,32 @@ function fcnLogEventMatch(ss, shtConfig, cfgEvntParam, logStatusPlyr, MatchData)
   // If Points Gained in Match Options is Used
   if(MatchResult == "" && evntPtsGainedMatch == "Enabled"){
     // Update Player Wins
-    if((PlayerName == matchPlyr1 && matchPlyr1Pts > matchPlyr2Pts) || (PlayerName == matchPlyr2 && matchPlyr2Pts > matchPlyr1Pts)) {
+    if((PlayerName == matchPT1 && matchPT1Pts > matchPT2Pts) || (PlayerName == matchPT2 && matchPT2Pts > matchPT1Pts)) {
       evntRecPlyr[0][1] = evntRecPlyr[0][1] + 1;
       MatchResult = "Win";
     }
     // Update Player Loss
-    if((PlayerName == matchPlyr1 && matchPlyr1Pts < matchPlyr2Pts) || (PlayerName == matchPlyr2 && matchPlyr2Pts < matchPlyr1Pts)) {
+    if((PlayerName == matchPT1 && matchPT1Pts < matchPT2Pts) || (PlayerName == matchPT2 && matchPT2Pts < matchPT1Pts)) {
       evntRecPlyr[0][2] = evntRecPlyr[0][2] + 1;
       MatchResult = "Loss";
     }
   }
   
   // Update Player Tie
-  if(MatchResult == "Tie" || (evntPtsGainedMatch == "Enabled" && matchPlyr1Pts == matchPlyr2Pts)) {
+  if(MatchResult == "Tie" || (evntPtsGainedMatch == "Enabled" && matchPT1Pts == matchPT2Pts)) {
     evntRecPlyr[0][3] = evntRecPlyr[0][3] + 1;
   }
   
   // Update Points
   // If Player 1
-  if(PlayerName == matchPlyr1 && evntPtsGainedMatch == "Enabled") {
-    evntRecPlyr[0][4] = evntRecPlyr[0][4] + matchPlyr1Pts; // Points Scored
-    evntRecPlyr[0][5] = evntRecPlyr[0][5] + matchPlyr2Pts; // Points Allowed
+  if(PlayerName == matchPT1 && evntPtsGainedMatch == "Enabled") {
+    evntRecPlyr[0][4] = evntRecPlyr[0][4] + matchPT1Pts; // Points Scored
+    evntRecPlyr[0][5] = evntRecPlyr[0][5] + matchPT2Pts; // Points Allowed
   }
   // If Player 2
-  if(PlayerName == matchPlyr2 && evntPtsGainedMatch == "Enabled") {
-    evntRecPlyr[0][4] = evntRecPlyr[0][4] + matchPlyr2Pts; // Points Scored
-    evntRecPlyr[0][5] = evntRecPlyr[0][5] + matchPlyr1Pts; // Points Allowed
+  if(PlayerName == matchPT2 && evntPtsGainedMatch == "Enabled") {
+    evntRecPlyr[0][4] = evntRecPlyr[0][4] + matchPT2Pts; // Points Scored
+    evntRecPlyr[0][5] = evntRecPlyr[0][5] + matchPT1Pts; // Points Allowed
   }
   
   // Update Win Percentage
@@ -171,23 +171,23 @@ function fcnLogEventMatch(ss, shtConfig, cfgEvntParam, logStatusPlyr, MatchData)
     }
   }
   // If Player is Player 1
-  if(PlayerName == matchPlyr1){
+  if(PlayerName == matchPT1){
     // Played Against
-    values[0][5]= matchPlyr2;
+    values[0][5]= matchPT2;
     // Points Scored
-    values[0][7]= matchPlyr1Pts;
+    values[0][7]= matchPT1Pts;
     // Points Allowed
-    values[0][8]= matchPlyr2Pts;
+    values[0][8]= matchPT2Pts;
   }
 
   // If Player is Player 2
-  if(PlayerName == matchPlyr2){
+  if(PlayerName == matchPT2){
     // Played Against
-    values[0][5]= matchPlyr1;
+    values[0][5]= matchPT1;
     // Points Scored
-    values[0][7]= matchPlyr2Pts;
+    values[0][7]= matchPT2Pts;
     // Points Allowed
-    values[0][8]= matchPlyr1Pts;
+    values[0][8]= matchPT1Pts;
   }
       
   // Get Last Row

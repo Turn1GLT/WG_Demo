@@ -107,7 +107,7 @@ function subDelPlayerSheets(shtID){
 // **********************************************
 
 function subFindPlayerRow(sheet, rowStart, colPlyr, length, PlayerName){
-  Logger.log("Routine: subFindPlayerRow: %s",PlayerName);
+  // Logger.log("Routine: subFindPlayerRow: %s",PlayerName);
   var RsltRow = 0;
   
   var RndPlyrList = sheet.getRange(rowStart,colPlyr,length,1).getValues();
@@ -119,7 +119,6 @@ function subFindPlayerRow(sheet, rowStart, colPlyr, length, PlayerName){
       row = 37;
     }
   }
-  Logger.log("Player Row Found for %s : %s",PlayerName,RsltRow);
   return RsltRow;
 }
 

@@ -42,6 +42,7 @@ function fcnCrtMatchReportForm_WG_S() {
   var evntMatchPtsMin =    0;
   var evntMatchPtsMax =    cfgEvntParam[28][0];
   var evntPtsGainedMatch = cfgEvntParam[32][0];
+  var evntTiePossible =    cfgEvntParam[34][0];
   
   var RoundNum = shtConfig.getRange(7,2).getValue();
   var RoundArray = new Array(1); RoundArray[0] = RoundNum;
@@ -90,13 +91,19 @@ function fcnCrtMatchReportForm_WG_S() {
   
   var Players;
   var PlayerList;
-  var PlayerWinList;
-  var PlayerLosList;
+  var Player1List;
+  var Player2List;
   var Teams;
   var TeamList;
+  var Team1List;
+  var Team2List;
   var TeamListLength;
-  var TeamWinList;
-  var TeamLosList;
+  
+  var shtResp1;
+  var shtResp2;
+  var shtRespName1;
+  var shtRespName2;
+  var IndexResponses = ss.getSheetByName("Responses").getIndex();
   
   var ErrorVal = '';
   
@@ -108,10 +115,50 @@ function fcnCrtMatchReportForm_WG_S() {
 
   // If Form Exists, Log Error Message
   if(FormIdEN != '' || FormIdFR != ''){
-    ErrorVal = 1;
-    title = "Match Report Forms Error";
-    msg = "The Match Report Forms already exist. Unlink their response sheets then delete the forms and their ID in the configuration file.";
-    var uiResponse = ui.alert(title, msg, ui.ButtonSet.OK_CANCEL);
+//    ErrorVal = 1;
+//    title = "Match Report Forms Overwrite";
+//    msg = "The Match Report Forms already exist. Click OK to overwrite.";
+//    var uiResponse = ui.alert(title, msg, ui.ButtonSet.OK_CANCEL);
+//    
+//    if(uiResponse == "OK"){
+    // Clear IDs and URLs
+    shtConfig.getRange(rowFormEN, colFormID).clearContent();
+    shtConfig.getRange(rowFormFR, colFormID).clearContent();
+    shtConfig.getRange(rowFormEN, colFormURL).clearContent(); 
+    shtConfig.getRange(rowFormFR, colFormURL).clearContent();
+    
+    // If Responses Sheets exist, Unlink and Delete them
+    shtResp1 = ss.getSheets()[IndexResponses];
+    shtRespName1 = shtResp1.getName();
+    shtResp2 = ss.getSheets()[IndexResponses+1];
+    shtRespName2 = shtResp2.getName();
+    
+    // First Sheet After Responses is MatchResp EN
+    if(shtRespName1 == "MatchResp EN"){
+      FormApp.openById(FormIdEN).removeDestination();
+      ss.deleteSheet(shtResp1);
+    }
+    
+    // Second Sheet After Responses is MatchResp EN
+    if(shtRespName2 == "MatchResp EN"){
+      FormApp.openById(FormIdEN).removeDestination();
+      ss.deleteSheet(shtResp2);
+    }
+    
+    // First Sheet After Responses is MatchResp EN
+    if(shtRespName1 == "MatchResp FR"){
+      FormApp.openById(FormIdFR).removeDestination();
+      ss.deleteSheet(shtResp1);
+    }
+    
+    // Second Sheet After Responses is MatchResp FR
+    if(shtRespName2 == "MatchResp FR"){
+      FormApp.openById(FormIdFR).removeDestination();
+      ss.deleteSheet(shtResp2);
+    }
+    
+    var OldFormsDeleted = 1;
+//    }
   }
 
   // CREATE UNIT VALIDATIONS
@@ -127,7 +174,7 @@ function fcnCrtMatchReportForm_WG_S() {
   .build();
   
   // Create Forms
-  if (FormIdEN == '' && FormIdFR == ''){
+  if ((FormIdEN == "" && FormIdFR == "") || OldFormsDeleted == 1){
     
     //---------------------------------------------
     // TITLE SECTION
@@ -201,96 +248,168 @@ function fcnCrtMatchReportForm_WG_S() {
             
             //---------------------------------------------
             // PLAYERS
-            // Winning Player List
-          case 'Winning Player':{ 
-            // English
-            PlayerWinList = formEN.addListItem()
-            .setTitle("Winning Player")
-            .setHelpText("If Game is a Tie, select your name")
-            .setRequired(true);
-            if (NbPlyr > 0) PlayerWinList.setChoiceValues(PlayerList);
-            
-            // French
-            PlayerWinList = formFR.addListItem()
-            .setTitle("Joueur Gagnant")
-            .setHelpText("Si la partie est nulle, sélectionnez votre nom")
-            .setRequired(true);
-            if (NbPlyr > 0) PlayerWinList.setChoiceValues(PlayerList);
-            
+            // Player 1 List
+          case 'Player 1':{ 
+            // If Points Gained in Match are used
+            if(evntPtsGainedMatch == "Enabled"){
+              // English
+              Player1List = formEN.addListItem()
+              .setTitle("Player 1")
+              .setHelpText("Select your name")
+              .setRequired(true);
+              if (NbPlyr > 0) Player1List.setChoiceValues(PlayerList);
+              
+              // French
+              Player1List = formFR.addListItem()
+              .setTitle("Joueur 1")
+              .setHelpText("Sélectionnez votre nom")
+              .setRequired(true);
+              if (NbPlyr > 0) Player1List.setChoiceValues(PlayerList);
+            }
+            // If Points Gained in Match are not used
+            if(evntPtsGainedMatch == "Disabled"){
+              // English
+              Player1List = formEN.addListItem()
+              .setTitle("Winning Player")
+              .setHelpText("If Game is a Tie, select your name")
+              .setRequired(true);
+              if (NbPlyr > 0) Player1List.setChoiceValues(PlayerList);
+              
+              // French
+              Player1List = formFR.addListItem()
+              .setTitle("Joueur Gagnant")
+              .setHelpText("Si la partie est nulle, sélectionnez votre nom")
+              .setRequired(true);
+              if (NbPlyr > 0) Player1List.setChoiceValues(PlayerList);
+            }
             break;
           }
-            // Losing Player List
-          case 'Losing Player':{ 
-            // English
-            PlayerLosList = formEN.addListItem()
-            .setTitle("Losing Player")
-            .setHelpText("If Game is a Tie, select your opponent")
-            .setRequired(true);
-            if (NbPlyr > 0) PlayerLosList.setChoiceValues(PlayerList); 
-            
-            // French
-            PlayerLosList = formFR.addListItem()
-            .setTitle("Joueur Perdant")
-            .setHelpText("Si la partie est nulle, sélectionnez votre adversaire")
-            .setRequired(true);
-            if (NbPlyr > 0) PlayerLosList.setChoiceValues(PlayerList);
-            
+            // Player 2 List
+          case 'Player 2':{ 
+            // If Points Gained in Match are used
+            if(evntPtsGainedMatch == "Enabled"){
+              // English
+              Player2List = formEN.addListItem()
+              .setTitle("Player 2")
+              .setHelpText("Select your opponent")
+              .setRequired(true);
+              if (NbPlyr > 0) Player2List.setChoiceValues(PlayerList); 
+              
+              // French
+              Player2List = formFR.addListItem()
+              .setTitle("Joueur 2")
+              .setHelpText("Sélectionnez votre adversaire")
+              .setRequired(true);
+              if (NbPlyr > 0) Player2List.setChoiceValues(PlayerList);
+            }
+            // If Points Gained in Match are not used
+            if(evntPtsGainedMatch == "Disabled"){
+              // English
+              Player2List = formEN.addListItem()
+              .setTitle("Losing Player")
+              .setHelpText("If Game is a Tie, select your opponent")
+              .setRequired(true);
+              if (NbPlyr > 0) Player2List.setChoiceValues(PlayerList); 
+              
+              // French
+              Player2List = formFR.addListItem()
+              .setTitle("Joueur Perdant")
+              .setHelpText("Si la partie est nulle, sélectionnez votre adversaire")
+              .setRequired(true);
+              if (NbPlyr > 0) Player2List.setChoiceValues(PlayerList);
+            }
             break;
           }
             
             //---------------------------------------------
             // TEAMS
-            // Winning Player List
-          case 'Winning Team':{ 
-            // English
-            TeamWinList = formEN.addListItem()
-            .setTitle("Winning Team")
-            .setHelpText("If Game is a Tie, select your team")
-            .setRequired(true);
-            if (NbTeam > 0) TeamWinList.setChoiceValues(TeamList);
-            
-            // French
-            TeamWinList = formFR.addListItem()
-            .setTitle("Équipe Gagnante")
-            .setHelpText("Si la partie est nulle, sélectionnez votre équipe")
-            .setRequired(true);
-            if (NbTeam > 0) TeamWinList.setChoiceValues(TeamList);
-            
+            // Team 1 List
+          case 'Team 1':{ 
+            // If Points Gained in Match are used
+            if(evntPtsGainedMatch == "Enabled"){
+              // English
+              Team1List = formEN.addListItem()
+              .setTitle("Team 1")
+              .setHelpText("Select your team")
+              .setRequired(true);
+              if (NbTeam > 0) Team1List.setChoiceValues(TeamList);
+              
+              // French
+              Team1List = formFR.addListItem()
+              .setTitle("Équipe 1")
+              .setHelpText("Sélectionnez votre équipe")
+              .setRequired(true);
+              if (NbTeam > 0) Team1List.setChoiceValues(TeamList);
+            }
+            // If Points Gained in Match are not used
+            if(evntPtsGainedMatch == "Disabled"){
+              // English
+              Team1List = formEN.addListItem()
+              .setTitle("Winning Team")
+              .setHelpText("If Game is a Tie, select your team")
+              .setRequired(true);
+              if (NbTeam > 0) Team1List.setChoiceValues(TeamList);
+              
+              // French
+              Team1List = formFR.addListItem()
+              .setTitle("Équipe Gagnante")
+              .setHelpText("Si la partie est nulle, sélectionnez votre équipe")
+              .setRequired(true);
+              if (NbTeam > 0) Team1List.setChoiceValues(TeamList);
+            }
             break;
           }
-            // Losing Player List
-          case 'Losing Team':{ 
-            // English
-            TeamLosList = formEN.addListItem()
-            .setTitle("Losing Team")
-            .setHelpText("If Game is a Tie, select the opposing team")
-            .setRequired(true);
-            if (NbTeam > 0) TeamLosList.setChoiceValues(TeamList); 
-            
-            // French
-            TeamLosList = formFR.addListItem()
-            .setTitle("Équipe Perdante")
-            .setHelpText("Si la partie est nulle, sélectionnez l'équipe adverse")
-            .setRequired(true);
-            if (NbTeam > 0) TeamLosList.setChoiceValues(TeamList);
-            
+            // Team 2 List
+          case 'Team 2':{ 
+            // If Points Gained in Match are used
+            if(evntPtsGainedMatch == "Enabled"){ 
+              // English
+              Team2List = formEN.addListItem()
+              .setTitle("Team 2")
+              .setHelpText("Select the opposing team")
+              .setRequired(true);
+              if (NbTeam > 0) Team2List.setChoiceValues(TeamList); 
+              
+              // French
+              Team2List = formFR.addListItem()
+              .setTitle("Équipe 2")
+              .setHelpText("Sélectionnez l'équipe adverse")
+              .setRequired(true);
+              if (NbTeam > 0) Team2List.setChoiceValues(TeamList);
+            } 
+            // If Points Gained in Match are not used
+            if(evntPtsGainedMatch == "Disabled"){ 
+              // English
+              Team2List = formEN.addListItem()
+              .setTitle("Losing Team")
+              .setHelpText("If Game is a Tie, select the opposing team")
+              .setRequired(true);
+              if (NbTeam > 0) Team2List.setChoiceValues(TeamList); 
+              
+              // French
+              Team2List = formFR.addListItem()
+              .setTitle("Équipe Perdante")
+              .setHelpText("Si la partie est nulle, sélectionnez l'équipe adverse")
+              .setRequired(true);
+              if (NbTeam > 0) Team2List.setChoiceValues(TeamList);
+            } 
             break;
           }
             //---------------------------------------------
             // WINNING POINTS
-          case 'Winning Points':{ 
+          case 'P/T Points 1':{ 
             if(evntPtsGainedMatch == 'Enabled'){
               // English
               formEN.addTextItem()
               .setTitle("Points Scored")
-              .setHelpText("Enter the points scored by the Winning Player or Team")
+              .setHelpText("Enter the points scored by Player 1 or Team 1")
               .setValidation(PointsValidationEN)
               .setRequired(true);
               
               // French
               formFR.addTextItem()
               .setTitle("Points Marqués")
-              .setHelpText("Entrez les points accumulés par le joueur ou l'équipe gagnante")
+              .setHelpText("Entrez les points accumulés par le joueur 1 ou l'équipe 1")
               .setValidation(PointsValidationFR)
               .setRequired(true);
             }
@@ -299,19 +418,19 @@ function fcnCrtMatchReportForm_WG_S() {
             
             //---------------------------------------------
             // LOSING POINTS
-          case 'Losing Points':{ 
+          case 'P/T Points 2':{ 
             if(evntPtsGainedMatch == 'Enabled'){
               // English
               formEN.addTextItem()
               .setTitle("Points Scored")
-              .setHelpText("Enter the points scored by the Losing Player or Team")
+              .setHelpText("Enter the points scored by Player 2 or Team 2")
               .setValidation(PointsValidationEN)
               .setRequired(true);
               
               // French
               formFR.addTextItem()
               .setTitle("Points Marqués")
-              .setHelpText("Entrez les points accumulés par le joueur ou l'équipe perdante")
+              .setHelpText("Entrez les points accumulés par le joueur 2 ou l'équipe 2")
               .setValidation(PointsValidationFR)
               .setRequired(true);
             }
@@ -320,17 +439,19 @@ function fcnCrtMatchReportForm_WG_S() {
             //---------------------------------------------
             // GAME TIE
           case 'Game is Tie':{
-            // English
-            formEN.addMultipleChoiceItem()
-            .setTitle("Game is a Tie?")
-            .setHelpText("OPTIONAL")
-            .setChoiceValues(["No","Yes"]);
-            
-            // French
-            formFR.addMultipleChoiceItem()
-            .setTitle("Partie est Nulle?")
-            .setHelpText("OPTIONNEL")
-            .setChoiceValues(["Non","Oui"]);
+            if(evntTiePossible == "Enabled"){
+              // English
+              formEN.addMultipleChoiceItem()
+              .setTitle("Game is a Tie?")
+              .setHelpText("OPTIONAL")
+              .setChoiceValues(["No","Yes"]);
+              
+              // French
+              formFR.addMultipleChoiceItem()
+              .setTitle("Partie est Nulle?")
+              .setHelpText("OPTIONNEL")
+              .setChoiceValues(["Non","Oui"]);
+            }
             break;
           }
 
@@ -378,7 +499,7 @@ function fcnCrtMatchReportForm_WG_S() {
     // Create Response Sheet in Main File and Rename
     if(exeGnrtResp == 'Enabled'){
       Logger.log("Generating Response Sheets and Form Links");
-      var IndexResponses = ss.getSheetByName("Responses").getIndex();
+      IndexResponses = ss.getSheetByName("Responses").getIndex();
       
       // English Form
       formEN.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
@@ -386,10 +507,10 @@ function fcnCrtMatchReportForm_WG_S() {
       // Find and Rename Response Sheet
       ss = SpreadsheetApp.openById(ssID);
       ssSheets = ss.getSheets();
-      ssSheets[0].setName('New MatchResp EN');
+      ssSheets[0].setName('MatchResp EN');
       
       // Move Response Sheet to appropriate spot in file
-      shtResp = ss.getSheetByName('New MatchResp EN');
+      shtResp = ss.getSheetByName('MatchResp EN');
       ss.moveActiveSheet(IndexResponses+1);
       shtRespMaxRow = shtResp.getMaxRows();
       shtRespMaxCol = shtResp.getMaxColumns();
@@ -412,10 +533,10 @@ function fcnCrtMatchReportForm_WG_S() {
       // Find and Rename Response Sheet
       ss = SpreadsheetApp.openById(ssID);
       ssSheets = ss.getSheets();
-      ssSheets[0].setName('New MatchResp FR');
+      ssSheets[0].setName('MatchResp FR');
       
       // Move Response Sheet to appropriate spot in file
-      shtResp = ss.getSheetByName('New MatchResp FR');
+      shtResp = ss.getSheetByName('MatchResp FR');
       ss.moveActiveSheet(IndexResponses+2);
       shtRespMaxRow = shtResp.getMaxRows();
       shtRespMaxCol = shtResp.getMaxColumns();
@@ -443,6 +564,7 @@ function fcnCrtMatchReportForm_WG_S() {
       shtConfig.getRange(rowFormFR, colFormURL).setValue(formFR.getPublishedUrl());
       
       Logger.log("Response Sheets and Form Links Generated");
+      
     }
   }
 
@@ -470,12 +592,9 @@ function fcnSetupMatchResponseSht(){
   var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
   
   // Open Responses Sheets
-  var shtOldRespEN = ss.getSheetByName('MatchResp EN');
-  var shtOldRespFR = ss.getSheetByName('MatchResp FR');
-  var shtNewRespEN = ss.getSheetByName('New MatchResp EN');
-  var shtNewRespFR = ss.getSheetByName('New MatchResp FR');
-    
-  var NewRespMaxRow = shtNewRespEN.getMaxRows();
+  var shtNewRespEN = ss.getSheetByName('MatchResp EN');
+  var shtNewRespFR = ss.getSheetByName('MatchResp FR');
+  
   var ColWidth;
   
   // Columns Values and Parameters
@@ -642,7 +761,7 @@ function fcnSetupMatchResponseSht(){
   ss.deleteSheet(shtResponses);
   shtNewRespEN.activate();
   ss.duplicateActiveSheet();
-  ss.getSheetByName("Copy of New MatchResp EN").setName("Responses").activate();
+  ss.getSheetByName("Copy of MatchResp EN").setName("Responses").activate();
   ss.moveActiveSheet(IndexResponses);
   
   // Hides Columns 
@@ -658,12 +777,7 @@ function fcnSetupMatchResponseSht(){
   shtNewRespFR.hideColumns(colStatusMsg);
   shtNewRespFR.hideColumns(colMatchIDLastVal);
   
-  // Delete Old Sheets
-  ss.deleteSheet(shtOldRespEN);
-  ss.deleteSheet(shtOldRespFR);
+  Logger.log("Match Response Sheet Setup Complete");
   
-  // Rename New Sheets
-  shtNewRespEN.setName('MatchResp EN');
-  shtNewRespFR.setName('MatchResp FR');
 
 }
