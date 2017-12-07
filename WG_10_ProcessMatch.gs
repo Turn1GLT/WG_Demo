@@ -51,9 +51,9 @@ function fcnProcessMatchWG() {
   var colArrRspnPlyrSub = cfgColMatchRep[19][0]-1;
   
   // Event Parameters
-  var evntFormat = cfgEvntParam[9][0];
+  var evntFormat =        cfgEvntParam[ 9][0];
+  var evntPassword =      cfgEvntParam[12][0];
   var evntRoundDuration = cfgEvntParam[13][0];
-  var evntPassword = cfgEvntParam[27][0];
   
   // Get Sheet IDs
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
@@ -327,8 +327,8 @@ function fcnAnalyzeResultsWG(ss, shtConfig, cfgEvntParam, cfgColRspSht, cfgColRn
   var evntLocationBonus =  cfgEvntParam[23][0];
   var evntBalanceBonus =   cfgEvntParam[21][0];
   var evntNbCardPack =     cfgEvntParam[25][0];
-  var evntPtsGainedMatch = cfgEvntParam[32][0];
-  var evntTiePossible =    cfgEvntParam[34][0];
+  var evntPtsGainedMatch = cfgEvntParam[27][0];
+  var evntTiePossible =    cfgEvntParam[31][0];
     
   // Form Responses Sheet Variables
   var RspnMaxRows = shtRspn.getMaxRows();

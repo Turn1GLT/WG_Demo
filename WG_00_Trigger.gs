@@ -26,13 +26,13 @@ function onSubmitWG_Demo40K(e) {
   }
   
   // If Form Submitted is a Player Subscription, Register Player
-  if(ShtName == "Reg Plyr EN" || ShtName == "Reg Plyr FR"){
+  if(ShtName == "RegPlyr EN" || ShtName == "RegPlyr FR"){
     Logger.log("Player Registration Received");
     fcnRegistrationPlyrWG(shtResponse, RowResponse);
   }
 
   // If Form Submitted is a Team Subscription, Register Team
-  if(ShtName == "Reg Team EN" || ShtName == "Reg Team FR"){
+  if(ShtName == "RegTeam EN" || ShtName == "RegTeam FR"){
     Logger.log("Team Registration Received");
     fcnRegistrationTeamWG(shtResponse, RowResponse);
   }
@@ -68,8 +68,8 @@ function onOpenWG_Demo40K() {
   LeagueMenu.push({name:"Update Config ID & Links", functionName:"fcnUpdateLinksIDs"});
   LeagueMenu.push({name:"Create Match Report Forms", functionName:"fcnCrtMatchReportForm_WG_S"});
   LeagueMenu.push({name:"Setup Match Response Sheets",functionName:"fcnSetupMatchResponseSht"});
-  LeagueMenu.push({name:"Create Player Registration Forms", functionName:"fcnCrtRegstnFormPlyr_WG"});
-  if(evntFormat == "Team")   LeagueMenu.push({name:"Create Team Registration Forms", functionName:"fcnCrtRegstnFormTeam_WG"});
+  if(evntFormat == "Single" || evntFormat == "Team+Players") LeagueMenu.push({name:"Create Player Registration Forms", functionName:"fcnCrtRegstnFormPlyr_WG"});
+  if(evntFormat == "Team" || evntFormat == "Team+Players") LeagueMenu.push({name:"Create Team Registration Forms", functionName:"fcnCrtRegstnFormTeam_WG"});
   if(evntEscalation == "Enabled") LeagueMenu.push({name:"Create Escalation Bonus Forms", functionName:"fcnCrtEscltForm_WG"});
   LeagueMenu.push(null);
   LeagueMenu.push({name:"Create Players Army DBs", functionName:"fcnCrtPlayerArmyDB"});

@@ -40,9 +40,9 @@ function fcnCrtMatchReportForm_WG_S() {
   var evntTeamMatch =      cfgEvntParam[11][0];
   var evntLocationBonus =  cfgEvntParam[23][0];
   var evntMatchPtsMin =    0;
+  var evntPtsGainedMatch = cfgEvntParam[27][0];
   var evntMatchPtsMax =    cfgEvntParam[28][0];
-  var evntPtsGainedMatch = cfgEvntParam[32][0];
-  var evntTiePossible =    cfgEvntParam[34][0];
+  var evntTiePossible =    cfgEvntParam[31][0];
   
   var RoundNum = shtConfig.getRange(7,2).getValue();
   var RoundArray = new Array(1); RoundArray[0] = RoundNum;
@@ -104,9 +104,9 @@ function fcnCrtMatchReportForm_WG_S() {
   var shtRespName1;
   var shtRespName2;
   var IndexResponses = ss.getSheetByName("Responses").getIndex();
-  
-  var ErrorVal = '';
-  
+  var FormsCreated = 0;
+  var FormsDeleted = 0;
+    
   // Insert ui to confirm
   var ui = SpreadsheetApp.getUi();
   var title;
@@ -115,50 +115,49 @@ function fcnCrtMatchReportForm_WG_S() {
 
   // If Form Exists, Log Error Message
   if(FormIdEN != '' || FormIdFR != ''){
-//    ErrorVal = 1;
-//    title = "Match Report Forms Overwrite";
-//    msg = "The Match Report Forms already exist. Click OK to overwrite.";
-//    var uiResponse = ui.alert(title, msg, ui.ButtonSet.OK_CANCEL);
-//    
-//    if(uiResponse == "OK"){
-    // Clear IDs and URLs
-    shtConfig.getRange(rowFormEN, colFormID).clearContent();
-    shtConfig.getRange(rowFormFR, colFormID).clearContent();
-    shtConfig.getRange(rowFormEN, colFormURL).clearContent(); 
-    shtConfig.getRange(rowFormFR, colFormURL).clearContent();
+    title = "Match Report Forms Overwrite";
+    msg = "The Match Report Forms already exist. Click OK to overwrite.";
+    var uiResponse = ui.alert(title, msg, ui.ButtonSet.OK_CANCEL);
     
-    // If Responses Sheets exist, Unlink and Delete them
-    shtResp1 = ss.getSheets()[IndexResponses];
-    shtRespName1 = shtResp1.getName();
-    shtResp2 = ss.getSheets()[IndexResponses+1];
-    shtRespName2 = shtResp2.getName();
-    
-    // First Sheet After Responses is MatchResp EN
-    if(shtRespName1 == "MatchResp EN"){
-      FormApp.openById(FormIdEN).removeDestination();
-      ss.deleteSheet(shtResp1);
+    if(uiResponse == "OK"){
+      // Clear IDs and URLs
+      shtConfig.getRange(rowFormEN, colFormID).clearContent();
+      shtConfig.getRange(rowFormFR, colFormID).clearContent();
+      shtConfig.getRange(rowFormEN, colFormURL).clearContent(); 
+      shtConfig.getRange(rowFormFR, colFormURL).clearContent();
+      
+      // If Responses Sheets exist, Unlink and Delete them
+      shtResp1 = ss.getSheets()[IndexResponses];
+      shtRespName1 = shtResp1.getName();
+      shtResp2 = ss.getSheets()[IndexResponses+1];
+      shtRespName2 = shtResp2.getName();
+      
+      // First Sheet After Responses is MatchResp EN
+      if(shtRespName1 == "MatchResp EN"){
+        FormApp.openById(FormIdEN).removeDestination();
+        ss.deleteSheet(shtResp1);
+      }
+      
+      // Second Sheet After Responses is MatchResp EN
+      if(shtRespName2 == "MatchResp EN"){
+        FormApp.openById(FormIdEN).removeDestination();
+        ss.deleteSheet(shtResp2);
+      }
+      
+      // First Sheet After Responses is MatchResp EN
+      if(shtRespName1 == "MatchResp FR"){
+        FormApp.openById(FormIdFR).removeDestination();
+        ss.deleteSheet(shtResp1);
+      }
+      
+      // Second Sheet After Responses is MatchResp FR
+      if(shtRespName2 == "MatchResp FR"){
+        FormApp.openById(FormIdFR).removeDestination();
+        ss.deleteSheet(shtResp2);
+      }
+      // Forms Deleted Flag
+      FormsDeleted = 1;
     }
-    
-    // Second Sheet After Responses is MatchResp EN
-    if(shtRespName2 == "MatchResp EN"){
-      FormApp.openById(FormIdEN).removeDestination();
-      ss.deleteSheet(shtResp2);
-    }
-    
-    // First Sheet After Responses is MatchResp EN
-    if(shtRespName1 == "MatchResp FR"){
-      FormApp.openById(FormIdFR).removeDestination();
-      ss.deleteSheet(shtResp1);
-    }
-    
-    // Second Sheet After Responses is MatchResp FR
-    if(shtRespName2 == "MatchResp FR"){
-      FormApp.openById(FormIdFR).removeDestination();
-      ss.deleteSheet(shtResp2);
-    }
-    
-    var OldFormsDeleted = 1;
-//    }
   }
 
   // CREATE UNIT VALIDATIONS
@@ -174,7 +173,7 @@ function fcnCrtMatchReportForm_WG_S() {
   .build();
   
   // Create Forms
-  if ((FormIdEN == "" && FormIdFR == "") || OldFormsDeleted == 1){
+  if ((FormIdEN == "" && FormIdFR == "") || FormsDeleted == 1){
     
     //---------------------------------------------
     // TITLE SECTION
@@ -482,22 +481,24 @@ function fcnCrtMatchReportForm_WG_S() {
         // Reset Loop if new question was added
         i = -1;
       }
+      
+      //---------------------------------------------
+      // CONFIRMATION MESSAGE
+      
+      // English
+      formEN.setConfirmationMessage(ConfirmMsgEN);
+      
+      // French
+      formFR.setConfirmationMessage(ConfirmMsgFR);
+      
+      // Forms Created Flag
+      FormsCreated = 1;
+    
     }
 
-
-    
-    //---------------------------------------------
-    // CONFIRMATION MESSAGE
-    
-    // English
-    formEN.setConfirmationMessage(ConfirmMsgEN);
-    
-    // French
-    formFR.setConfirmationMessage(ConfirmMsgFR);
-    
     // RESPONSE SHEETS
     // Create Response Sheet in Main File and Rename
-    if(exeGnrtResp == 'Enabled'){
+    if(exeGnrtResp == "Enabled" && FormsCreated == 1){
       Logger.log("Generating Response Sheets and Form Links");
       IndexResponses = ss.getSheetByName("Responses").getIndex();
       

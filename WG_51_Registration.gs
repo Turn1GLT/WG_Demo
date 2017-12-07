@@ -22,7 +22,7 @@ function fcnRegistrationPlyrWG(shtResponse, RowResponse){
   var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
   var cfgArmyBuild = shtConfig.getRange(4,33,20,1).getValues();
   
-  // Registration Form Construction 
+  // Player Registration Form Construction 
   // Column 1 = Category Name
   // Column 2 = Category Order in Form
   // Column 3 = Column Value in Player/Team Sheet
@@ -44,14 +44,14 @@ function fcnRegistrationPlyrWG(shtResponse, RowResponse){
   // Create Member 
   var Member = subCreateArray(16,1);
   //  Member[ 0] = Member ID
-  //  Member[ 1] = Member Full Name
-  //  Member[ 2] = Member First Name
-  //  Member[ 3] = Member Last Name
-  //  Member[ 4] = Member Email
-  //  Member[ 5] = Member Language
-  //  Member[ 6] = Member Phone Number
-  //  Member[ 7] = Member Record File ID
-  //  Member[ 8] = Member Record File Link
+  //  Member[ 1] = Member Record File ID
+  //  Member[ 2] = Member Record File Link
+  //  Member[ 3] = Member Full Name
+  //  Member[ 4] = Member First Name
+  //  Member[ 5] = Member Last Name
+  //  Member[ 6] = Member Email
+  //  Member[ 7] = Member Language
+  //  Member[ 8] = Member Phone Number
   //  Member[ 9] = Member Spare
   //  Member[10] = Member Spare
   //  Member[11] = Member Spare
@@ -59,6 +59,9 @@ function fcnRegistrationPlyrWG(shtResponse, RowResponse){
   //  Member[13] = Member Spare
   //  Member[14] = Member Spare
   //  Member[15] = Member Spare
+  
+  var memberFullName;
+  var memberFileID;
   
   // Log new Registration
   Logger.log( "------- New Player Registration -------");
@@ -69,20 +72,24 @@ function fcnRegistrationPlyrWG(shtResponse, RowResponse){
   
   // Add Player to Player List
   Member = fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam, cfgRegFormCnstrVal, Member);
+  memberFullName = Member[3];
   
   // If Player was succesfully added, the Full Name will be created, then execute the following
-  if(Member[1] != "") {
+  if(memberFullName != "") {
     
     // If Link to Membership is Enabled
     if(exeMemberLink == "Enabled"){
       // Search if Player is Member of Turn1 GLT
       Member = fcnSearchMember(Member);
-      if(Member[7] != "Member Not Found") Logger.log("Member %s already existing",Member[1]);
-      Logger.log("Member File ID: %s",Member[7]);
+      memberFileID = Member[1];
+      
+      if(memberFileID != "Member Not Found") Logger.log("Member %s already exists",memberFullName);
+      Logger.log("Member File ID: %s",memberFileID);
       // If the Member Record File does not exist, the Player is not a member, create it 
-      if(Member[7] == "Member Not Found") {
+      if(memberFileID == "Member Not Found") {
         Member = fcnCreateMember(Member);
-        if(Member[7] != "Member Not Found") Logger.log("Member %s Created",Member[1]);
+        memberFileID = Member[1];
+        if(memberFileID != "Member Not Found") Logger.log("Member %s created",memberFullName);
       }
       // Update Player File ID in Player Sheet
       subUpdatePlayerMember(shtConfig, shtPlayers, Member);
@@ -169,7 +176,7 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
   var colRspLanguage =     cfgRegFormCnstrVal[ 5][1];
   var colRspPhone =        cfgRegFormCnstrVal[ 6][1];
   var colRspTeamName =     cfgRegFormCnstrVal[ 7][1];
-  var colRspTeamMembers =  cfgRegFormCnstrVal[ 8][1];
+  var colRspSpare =        cfgRegFormCnstrVal[ 8][1];
   var colRspArmyName =     cfgRegFormCnstrVal[10][1];
   var colRspArmyFaction1 = cfgRegFormCnstrVal[11][1];
   var colRspArmyFaction2 = cfgRegFormCnstrVal[12][1];
@@ -184,7 +191,7 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
   var colTblLanguage =     cfgRegFormCnstrVal[ 5][2];
   var colTblPhone =        cfgRegFormCnstrVal[ 6][2];
   var colTblTeamName =     cfgRegFormCnstrVal[ 7][2];
-  var colTblTeamMembers =  cfgRegFormCnstrVal[ 8][2];
+  var colTblSpare =        cfgRegFormCnstrVal[ 8][2];
   var colTblArmyName =     cfgRegFormCnstrVal[10][2];
   var colTblArmyFaction1 = cfgRegFormCnstrVal[11][2];
   var colTblArmyFaction2 = cfgRegFormCnstrVal[12][2];
@@ -236,14 +243,6 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
   
   // Team Name
   if(colRspTeamName != "") PlyrTeamName = RegRspnVal[0][colRspTeamName-1];
-  
-  // Team Members
-  if(colRspTeamMembers != "") {
-    PlyrTeamMember1 = RegRspnVal[0][colRspTeamMembers-1];
-    if(evntNbPlyrTeam >= 2) PlyrTeamMember2 = RegRspnVal[0][colRspTeamMembers+1-1];
-    if(evntNbPlyrTeam >= 3) PlyrTeamMember3 = RegRspnVal[0][colRspTeamMembers+2-1];
-    if(evntNbPlyrTeam >= 4) PlyrTeamMember4 = RegRspnVal[0][colRspTeamMembers+3-1];
-  }
   
   // Player Army Definition
   // Army Name
@@ -348,13 +347,6 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
       Logger.log("Army List: %s",PlyrArmyList);  Logger.log("-----------------------------");
     }
 
-    // Team Members
-    if(PlyrTeamMember1 != ""){
-      shtPlayers.getRange(NextPlayerRow, colTblTeamMembers).setValue(PlyrTeamMember1);
-      shtExtPlayers.getRange(NextPlayerRow, colTblTeamMembers).setValue(PlyrTeamMember1);
-      Logger.log("Team Name: %s",PlyrTeamMember1);  Logger.log("-----------------------------");
-	}    
-
     // Set Player Contact Info 
     PlyrContactInfo[0]= PlyrFrstName;
     PlyrContactInfo[1]= PlyrLastName;
@@ -382,14 +374,14 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
   
   // Update Member Data
   Member[ 0] = "";           // Member ID
-  Member[ 1] = PlyrFullName; // Member Full Name
-  Member[ 2] = PlyrFrstName; // Member First Name
-  Member[ 3] = PlyrLastName; // Member Last Name
-  Member[ 4] = PlyrEmail;    // Member Email
-  Member[ 5] = PlyrLanguage; // Member Language
-  Member[ 6] = PlyrPhone;    // Member Phone Number
-  Member[ 7] = "";           // Member Record File ID
-  Member[ 8] = "";           // Member Record File Link
+  Member[ 1] = "";           // Member Record File ID
+  Member[ 2] = "";           // Member Record File Link
+  Member[ 3] = PlyrFullName; // Member Full Name
+  Member[ 4] = PlyrFrstName; // Member First Name
+  Member[ 5] = PlyrLastName; // Member Last Name
+  Member[ 6] = PlyrEmail;    // Member Email
+  Member[ 7] = PlyrLanguage; // Member Language
+  Member[ 8] = PlyrPhone;    // Member Phone Number
   Member[ 9] = "";           // Member Spare
   Member[10] = "";           // Member Spare
   Member[11] = "";           // Member Spare
@@ -426,7 +418,7 @@ function fcnRegistrationTeamWG(shtResponse, RowResponse){
   var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
   var cfgArmyBuild = shtConfig.getRange(4,33,20,1).getValues();
   
-  // Registration Form Construction 
+  // Team Registration Form Construction 
   // Column 1 = Category Name
   // Column 2 = Category Order in Form
   // Column 3 = Column Value in Player/Team Sheet
@@ -445,17 +437,44 @@ function fcnRegistrationTeamWG(shtResponse, RowResponse){
   var MatchFormIdEN = shtIDs[7][0];
   var MatchFormIdFR = shtIDs[8][0];
   
+  // Create Team 
+  var Team = subCreateArray(24,1);
+  //  Team[ 0] = Team ID
+  //  Team[ 1] = Team Record File ID
+  //  Team[ 2] = Team Record File Link
+  //  Team[ 3] = Team Name
+  //  Team[ 4] = Team Member 1
+  //  Team[ 5] = Team Member 2
+  //  Team[ 6] = Team Member 3
+  //  Team[ 7] = Team Member 4
+  //  Team[ 8] = Team Member 5
+  //  Team[ 9] = Team Member 6
+  //  Team[10] = Team Member 7
+  //  Team[11] = Team Member 8
+  //  Team[12] = Team Contact First Name
+  //  Team[13] = Team Contact Last Name 
+  //  Team[14] = Team Contact Email 
+  //  Team[15] = Team Contact Language 
+  //  Team[16] = Team Contact Phone Number 
+  //  Team[17] = Team Spare
+  //  Team[18] = Team Spare
+  //  Team[19] = Team Spare
+  //  Team[20] = Team Spare
+  //  Team[21] = Team Spare
+  //  Team[22] = Team Spare
+  //  Team[23] = Team Spare
+
   // Create Member 
   var Member = subCreateArray(16,1);
   //  Member[ 0] = Member ID
-  //  Member[ 1] = Member Full Name
-  //  Member[ 2] = Member First Name
-  //  Member[ 3] = Member Last Name
-  //  Member[ 4] = Member Email
-  //  Member[ 5] = Member Language
-  //  Member[ 6] = Member Phone Number
-  //  Member[ 7] = Member Record File ID
-  //  Member[ 8] = Member Record File Link
+  //  Member[ 1] = Member Record File ID
+  //  Member[ 2] = Member Record File Link
+  //  Member[ 3] = Member Full Name
+  //  Member[ 4] = Member First Name
+  //  Member[ 5] = Member Last Name
+  //  Member[ 6] = Member Email
+  //  Member[ 7] = Member Language
+  //  Member[ 8] = Member Phone Number
   //  Member[ 9] = Member Spare
   //  Member[10] = Member Spare
   //  Member[11] = Member Spare
@@ -463,6 +482,9 @@ function fcnRegistrationTeamWG(shtResponse, RowResponse){
   //  Member[13] = Member Spare
   //  Member[14] = Member Spare
   //  Member[15] = Member Spare
+  
+  var teamName;
+  var teamID;
   
   // Log new Registration
   Logger.log( "------- New Team Registration -------");
@@ -472,14 +494,15 @@ function fcnRegistrationTeamWG(shtResponse, RowResponse){
   var RegRspnVal = shtResponse.getRange(RowResponse,1,1,shtRespMaxCol).getValues();
   
   // Add Team to Team List
-  Member = fcnAddTeamWG(shtIDs, shtConfig, shtTeams, RegRspnVal, cfgEvntParam, cfgRegFormCnstrVal, Member);
-  
+  Team = fcnAddTeamWG(shtIDs, shtConfig, shtTeams, RegRspnVal, cfgEvntParam, cfgRegFormCnstrVal, Team);
+  teamName = Team[3];
+    
   // If Player was succesfully added, the Full Name will be created, then execute the following
-  if(Member[1] != "") {
+  if(teamName != "") {
     
     // Create Team Event Record (Player Access)
     fcnCrtTeamRecord();
-    Logger.log("Player Record Generated");  
+    Logger.log("Team Record Generated");  
     
     // If Escalation is Enabled, Create Player Escalation Bonus sheet 
     if(evntEscalation == "Enabled"){

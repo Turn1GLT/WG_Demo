@@ -28,8 +28,8 @@ function fcnPostMatchResultsWG(ss, shtConfig, ResponseData, MatchingRspnData, Ma
   var evntGameType =       cfgEvntParam[4][0];
   var evntFormat =         cfgEvntParam[9][0];
   var evntLocationBonus =  cfgEvntParam[23][0];
-  var evntPtsGainedMatch = cfgEvntParam[32][0];
-  var evntTiePossible =    cfgEvntParam[34][0];
+  var evntPtsGainedMatch = cfgEvntParam[27][0];
+  var evntTiePossible =    cfgEvntParam[31][0];
   
   // Cumulative Results sheet variables
   var shtCumul;
@@ -231,7 +231,7 @@ function fcnPostRoundResultWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgC
   var evntBalBonus =       cfgEvntParam[21][0];
   var evntBalBonusVal =    cfgEvntParam[22][0];
   var evntLocationBonus =  cfgEvntParam[23][0];  
-  var evntPtsGainedMatch = cfgEvntParam[32][0];
+  var evntPtsGainedMatch = cfgEvntParam[27][0];
   
   // function variables
   var shtRndRslt;

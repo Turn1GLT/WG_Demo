@@ -17,7 +17,7 @@ function fcnLogEventMatch(ss, shtConfig, cfgEvntParam, logStatusPlyr, MatchData)
   
   
   // Event Parameters
-  var evntPtsGainedMatch = cfgEvntParam[32][0];
+  var evntPtsGainedMatch = cfgEvntParam[27][0];
   
   // Get Players Sheet
   var shtPlayers = ss.getSheetByName("Players");

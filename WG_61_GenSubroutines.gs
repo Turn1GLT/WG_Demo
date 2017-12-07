@@ -779,11 +779,14 @@ function subUpdatePlayerMember(shtConfig, shtPlayers, Member){
   // Column 1 = Category Name
   // Column 2 = Category Order in Form
   // Column 3 = Column Value in Player/Team Sheet
+  
+  //  Member[1] = Member Record File ID
+  
   var cfgRegFormCnstrVal = shtConfig.getRange(4,26,20,3).getValues();
   var colTblMemberFileID = cfgRegFormCnstrVal[17][2];
   var NbPlayers = shtPlayers.getRange(2,1).getValue();
   
-  shtPlayers.getRange(NbPlayers+2,colTblMemberFileID).setValue(Member[7]);
+  shtPlayers.getRange(NbPlayers+2,colTblMemberFileID).setValue(Member[1]);
 
 }
 
@@ -796,10 +799,11 @@ function subUpdatePlayerMember(shtConfig, shtPlayers, Member){
 
 function subUpdatePlyrEvntRecord(cfgEvntParam, RndRecPlyr, GameResult, MatchDataPts){
   
+
+  var evntPtsGainedMatch = cfgEvntParam[27][0];
   var evntPtsPerWin =      cfgEvntParam[29][0];
   var evntPtsPerLoss =     cfgEvntParam[30][0];
   var evntPtsPerTie =      cfgEvntParam[31][0];
-  var evntPtsGainedMatch = cfgEvntParam[32][0];
   
   // Initializes Player Round Record
   if (RndRecPlyr[0][0] == '') RndRecPlyr[0][0] = 0; // MP

@@ -11,8 +11,9 @@ function fcnCrtRegstnFormTeam_WG() {
   Logger.log("Routine: fcnCreateRegForm_WG");
   
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var shtConfig = ss.getSheetByName('Config');
+  var shtConfig =  ss.getSheetByName('Config');
   var shtPlayers = ss.getSheetByName('Players');
+  var shtTeams =   ss.getSheetByName('Teams');
     
   // Configuration Data
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
@@ -72,224 +73,296 @@ function fcnCrtRegstnFormTeam_WG() {
   var FormNameFR;
   var FormItemsFR;
   var urlFormFR;
-
+  
+  var shtResp1;
+  var shtResp2;
+  var shtRespName1;
+  var shtRespName2;
+  var IndexTeams = ss.getSheetByName("Teams").getIndex();
+  var FormsCreated = 0;
+  var FormsDeleted = 0;
+  
   var TestCol = 1;
   
-  // If Form Exists, Log Error Message
-  if(FormIdEN != '' || FormIdFR != ''){
-    ErrorVal = 1;
-    var ui = SpreadsheetApp.getUi();
-    var title = "Registration Forms Error";
-    var msg = "The Registration Forms already exist. Unlink and delete their response sheets then delete the forms and their ID in the configuration file.";
-    var uiResponse = ui.alert(title, msg, ui.ButtonSet.OK);
-  }
+  var ui;
+  var title;
+  var msg;
+  var uiResponse;
   
-  // If Form does not exist, create it
-  if(FormIdEN == '' && FormIdFR == ''){
-    // Create Forms
-    FormNameEN = evntLocation + " " + evntName + " Team Registration EN";
-    formEN = FormApp.create(FormNameEN).setTitle(FormNameEN);
-    
-    FormNameFR = evntLocation + " " + evntName + " Team Registration FR";
-    formFR = FormApp.create(FormNameFR).setTitle(FormNameFR);
-    
-    // Loops in Response Columns Values and Create Appropriate Question
-    for(var i = 1; i < cfgRegFormCnstrVal.length; i++){
-      // Check for Question Order in Response Column Value in Configuration File
-      if(QuestionOrder == cfgRegFormCnstrVal[i][1]){
+  // If Event Format is not Team or Team+Players, Pop up Error Message
+  if(evntFormat != "Team" && evntFormat != "Team+Players"){
+    ui = SpreadsheetApp.getUi();
+    title = "Registration Forms Error";
+    msg = "The Event does not support Teams Registration. Please review Event configuration";
+    uiResponse = ui.alert(title, msg, ui.ButtonSet.OK);
+  }
+
+  // Checks if Event Format is Team or Team+Players
+  if(evntFormat == "Team" || evntFormat == "Team+Players"){
+    // If Form Exists, Log Error Message
+    if(FormIdEN != '' || FormIdFR != ''){
+      ErrorVal = 1;
+      ui = SpreadsheetApp.getUi();
+      title = "Team Registration Forms";
+      msg = "The Registration Forms already exist. Click OK to overwrite.";
+      uiResponse = ui.alert(title, msg, ui.ButtonSet.OK_CANCEL);
+      
+      if(uiResponse == "OK"){
+        // Clear IDs and URLs
+        shtConfig.getRange(rowFormEN, colFormID).clearContent();
+        shtConfig.getRange(rowFormFR, colFormID).clearContent();
+        shtConfig.getRange(rowFormEN, colFormURL).clearContent(); 
+        shtConfig.getRange(rowFormFR, colFormURL).clearContent();
         
-        switch(cfgRegFormCnstrVal[i][0]){
-           
-            // EMAIL
-          case 'Contact Email': {
-            // Set Registration Email collection
-            formEN.setCollectEmail(true);
-            formFR.setCollectEmail(true);
-            break;
-          }
-            // FULL NAME
-          case 'Full Name': {
-            // ENGLISH
-            formEN.addTextItem()
-            .setTitle("Name")
-            .setHelpText("Please, Remove any space at the beginning or end of the name")
-            .setRequired(true);
-            
-            // FRENCH
-            formFR.addTextItem()
-            .setTitle("Nom")
-            .setHelpText("SVP, enlevez les espaces au début ou à la fin du nom")
-            .setRequired(true);
-            break;
-          }
-            // FIRST NAME
-          case 'Contact First Name': {
-            // ENGLISH
-            formEN.addTextItem()
-            .setTitle("Team Contact First Name")
-            .setHelpText("Please, Remove any space at the beginning or end of the name")
-            .setRequired(true);
-            
-            // FRENCH
-            formFR.addTextItem()
-            .setTitle("Prénom du Contact de l'équipe")
-            .setHelpText("SVP, enlevez les espaces au début ou à la fin du nom")
-            .setRequired(true);
-            break;
-          }
-            // LAST NAME
-          case 'Contact Last Name': {
-            // ENGLISH
-            formEN.addTextItem()
-            .setTitle("Team Contact Last Name")
-            .setHelpText("Please, Remove any space at the beginning or end of the name")
-            .setRequired(true);
-            
-            // FRENCH
-            formFR.addTextItem()
-            .setTitle("Nom de Famille du Contact de l'équipe")
-            .setHelpText("SVP, enlevez les espaces au début ou à la fin du nom")
-            .setRequired(true);
-            break;
-          }
-            // LANGUAGE
-          case 'Contact Language': {
-            // ENGLISH
-            formEN.addMultipleChoiceItem()
-            .setTitle("Team Contact Language Preference")
-            .setHelpText("Which Language do you prefer to use? The application is available in English and French")
-            .setRequired(true)
-            .setChoiceValues(["English","Français"]);
-            
-            // FRENCH
-            formFR.addMultipleChoiceItem()
-            .setTitle("Préférence de Langue du Contact de l'équipe")
-            .setHelpText("Quelle langue préférez-vous utiliser? L'application est disponible en anglais et en français.")
-            .setRequired(true)
-            .setChoiceValues(["English","Français"]);
-            break;
-          }
-          // PHONE NUMBER
-          case 'Contact Phone Number': {
-            // ENGLISH
-            formEN.addTextItem()
-            .setTitle("Team Contact Phone Number")
-            .setRequired(true);
-            
-            // FRENCH
-            formFR.addTextItem()
-            .setTitle("Numéro de téléphone du Contact de l'équipe")
-            .setRequired(true);
-            break;
-          }
-            // TEAM NAME & MEMBERS
-          case 'Team Name': {
-            if(evntFormat == 'Team'){
-              // ENGLISH
-              formEN.addPageBreakItem().setTitle("Team");
-              formEN.addTextItem()
-              .setTitle("Team Name")
-              .setRequired(true);
-              
-              // FRENCH
-              formFR.addPageBreakItem().setTitle("Équipe");
-              formFR.addTextItem()
-              .setTitle("Nom d'équipe")
-              .setRequired(true);
-              
-              for(var member = 1; member <= evntNbPlyrTeam; member++){
-                // ENGLISH
-                formEN.addTextItem()
-                .setTitle("Team Member " + member + " Name")
-                .setRequired(true);
-                
-                // FRENCH
-                formFR.addTextItem()
-                .setTitle("Nom Membre d'équipe " + member)
-                .setRequired(true);
-              }
-            }
-            break;
-          }   
+        // If Responses Sheets exist, Unlink and Delete them
+        shtResp1 = ss.getSheets()[IndexTeams];
+        shtRespName1 = shtResp1.getName();
+        shtResp2 = ss.getSheets()[IndexTeams+1];
+        shtRespName2 = shtResp2.getName();
+        
+        // First Sheet After Responses is MatchResp EN
+        if(shtRespName1 == "RegTeam EN"){
+          FormApp.openById(FormIdEN).removeDestination();
+          ss.deleteSheet(shtResp1);
         }
-        // Increment to Next Question
-        QuestionOrder++;
-        // Reset Loop if new question was added
-        i = -1;
+        
+        // Second Sheet After Responses is MatchResp EN
+        if(shtRespName2 == "RegTeam EN"){
+          FormApp.openById(FormIdEN).removeDestination();
+          ss.deleteSheet(shtResp2);
+        }
+        
+        // First Sheet After Responses is MatchResp EN
+        if(shtRespName1 == "RegTeam FR"){
+          FormApp.openById(FormIdFR).removeDestination();
+          ss.deleteSheet(shtResp1);
+        }
+        
+        // Second Sheet After Responses is MatchResp FR
+        if(shtRespName2 == "RegTeam FR"){
+          FormApp.openById(FormIdFR).removeDestination();
+          ss.deleteSheet(shtResp2);
+        }
+        // Forms Deleted Flag
+        FormsDeleted = 1;
       }
     }
     
-    // RESPONSE SHEETS
-    // Create Response Sheet in Main File and Rename
-    if(exeGnrtResp == 'Enabled'){
-      Logger.log("Generating Response Sheets and Form Links");
-      var IndexTeams = ss.getSheetByName("Teams").getIndex();
+    // Create Forms
+    if ((FormIdEN == "" && FormIdFR == "") || FormsDeleted == 1){
+      // Create Forms
+      FormNameEN = evntLocation + " " + evntName + " Team Registration EN";
+      formEN = FormApp.create(FormNameEN).setTitle(FormNameEN);
       
-      // English Form
-      formEN.setDestination(FormApp.DestinationType.SPREADSHEET, ssID);
+      FormNameFR = evntLocation + " " + evntName + " Team Registration FR";
+      formFR = FormApp.create(FormNameFR).setTitle(FormNameFR);
       
-      // Find and Rename Response Sheet
-      ss = SpreadsheetApp.openById(ssID);
-      ssSheets = ss.getSheets();
-      ssSheets[0].setName('Reg Team EN');
-      // Move Response Sheet to appropriate spot in file
-      shtResp = ss.getSheetByName('Reg Team EN');
-      ss.moveActiveSheet(IndexTeams+1);
-      shtRespMaxRow = shtResp.getMaxRows();
-      shtRespMaxCol = shtResp.getMaxColumns();
-      
-      // Delete All Empty Rows
-      shtResp.deleteRows(3, shtRespMaxRow - 2);
-      
-      // Delete All Empty Columns
-      for(var c = 1;  c <= shtRespMaxCol; c++){
-        FirstCellVal = shtResp.getRange(1, c).getValue();
-        if(FirstCellVal == '') {
-          shtResp.deleteColumns(c,shtRespMaxCol-c+1);
-          c = shtRespMaxCol + 1;
+      // Loops in Response Columns Values and Create Appropriate Question
+      for(var i = 1; i < cfgRegFormCnstrVal.length; i++){
+        // Check for Question Order in Response Column Value in Configuration File
+        if(QuestionOrder == cfgRegFormCnstrVal[i][1]){
+          
+          switch(cfgRegFormCnstrVal[i][0]){
+              
+              // EMAIL
+            case 'Contact Email': {
+              // Set Registration Email collection
+              formEN.setCollectEmail(true);
+              formFR.setCollectEmail(true);
+              break;
+            }
+              // FULL NAME
+            case 'Full Name': {
+              // ENGLISH
+              formEN.addTextItem()
+              .setTitle("Name")
+              .setHelpText("Please, Remove any space at the beginning or end of the name")
+              .setRequired(true);
+              
+              // FRENCH
+              formFR.addTextItem()
+              .setTitle("Nom")
+              .setHelpText("SVP, enlevez les espaces au début ou à la fin du nom")
+              .setRequired(true);
+              break;
+            }
+              // FIRST NAME
+            case 'Contact First Name': {
+              // ENGLISH
+              formEN.addTextItem()
+              .setTitle("Team Contact First Name")
+              .setHelpText("Please, Remove any space at the beginning or end of the name")
+              .setRequired(true);
+              
+              // FRENCH
+              formFR.addTextItem()
+              .setTitle("Prénom du Contact de l'équipe")
+              .setHelpText("SVP, enlevez les espaces au début ou à la fin du nom")
+              .setRequired(true);
+              break;
+            }
+              // LAST NAME
+            case 'Contact Last Name': {
+              // ENGLISH
+              formEN.addTextItem()
+              .setTitle("Team Contact Last Name")
+              .setHelpText("Please, Remove any space at the beginning or end of the name")
+              .setRequired(true);
+              
+              // FRENCH
+              formFR.addTextItem()
+              .setTitle("Nom de Famille du Contact de l'équipe")
+              .setHelpText("SVP, enlevez les espaces au début ou à la fin du nom")
+              .setRequired(true);
+              break;
+            }
+              // LANGUAGE
+            case 'Contact Language': {
+              // ENGLISH
+              formEN.addMultipleChoiceItem()
+              .setTitle("Team Contact Language Preference")
+              .setHelpText("Which Language do you prefer to use? The application is available in English and French")
+              .setRequired(true)
+              .setChoiceValues(["English","Français"]);
+              
+              // FRENCH
+              formFR.addMultipleChoiceItem()
+              .setTitle("Préférence de Langue du Contact de l'équipe")
+              .setHelpText("Quelle langue préférez-vous utiliser? L'application est disponible en anglais et en français.")
+              .setRequired(true)
+              .setChoiceValues(["English","Français"]);
+              break;
+            }
+              // PHONE NUMBER
+            case 'Contact Phone Number': {
+              // ENGLISH
+              formEN.addTextItem()
+              .setTitle("Team Contact Phone Number")
+              .setRequired(true);
+              
+              // FRENCH
+              formFR.addTextItem()
+              .setTitle("Numéro de téléphone du Contact de l'équipe")
+              .setRequired(true);
+              break;
+            }
+              // TEAM NAME & MEMBERS
+            case 'Team Name': {
+              if(evntFormat == 'Team'){
+                // ENGLISH
+                formEN.addPageBreakItem().setTitle("Team");
+                formEN.addTextItem()
+                .setTitle("Team Name")
+                .setRequired(true);
+                
+                // FRENCH
+                formFR.addPageBreakItem().setTitle("Équipe");
+                formFR.addTextItem()
+                .setTitle("Nom d'équipe")
+                .setRequired(true);
+                
+                for(var member = 1; member <= evntNbPlyrTeam; member++){
+                  // ENGLISH
+                  formEN.addTextItem()
+                  .setTitle("Team Member " + member + " Name")
+                  .setRequired(true);
+                  
+                  // FRENCH
+                  formFR.addTextItem()
+                  .setTitle("Nom Membre d'équipe " + member)
+                  .setRequired(true);
+                }
+              }
+              break;
+            }   
+          }
+          // Increment to Next Question
+          QuestionOrder++;
+          // Reset Loop if new question was added
+          i = -1;
         }
+        // Forms Created Flag
+        FormsCreated = 1;
       }
       
-      // French Form
-      formFR.setDestination(FormApp.DestinationType.SPREADSHEET, ssID);
-      
-      // Find and Rename Response Sheet
-      ss = SpreadsheetApp.openById(ssID);
-      ssSheets = ss.getSheets();
-      ssSheets[0].setName('Reg Team FR');
-      
-      // Move Response Sheet to appropriate spot in file
-      shtResp = ss.getSheetByName('Reg Team FR');
-      ss.moveActiveSheet(IndexTeams+2);
-      shtRespMaxRow = shtResp.getMaxRows();
-      shtRespMaxCol = shtResp.getMaxColumns();
-      
-      // Delete All Empty Rows
-      shtResp.deleteRows(3, shtRespMaxRow - 2);
-      
-      // Delete All Empty Columns
-      for(var c = 1;  c <= shtRespMaxCol; c++){
-        FirstCellVal = shtResp.getRange(1, c).getValue();
-        if(FirstCellVal == '') {
-          shtResp.deleteColumns(c,shtRespMaxCol-c+1);
-          c = shtRespMaxCol + 1;
+      // RESPONSE SHEETS
+      // Create Response Sheet in Main File and Rename
+      if(exeGnrtResp == "Enabled" && FormsCreated == 1){
+        Logger.log("Generating Response Sheets and Form Links");
+        var IndexTeams = ss.getSheetByName("Teams").getIndex();
+        
+        // English Form
+        formEN.setDestination(FormApp.DestinationType.SPREADSHEET, ssID);
+        
+        // Find and Rename Response Sheet
+        ss = SpreadsheetApp.openById(ssID);
+        ssSheets = ss.getSheets();
+        ssSheets[0].setName('RegTeam EN');
+        // Move Response Sheet to appropriate spot in file
+        shtResp = ss.getSheetByName('RegTeam EN');
+        ss.moveActiveSheet(IndexTeams+1);
+        shtRespMaxRow = shtResp.getMaxRows();
+        shtRespMaxCol = shtResp.getMaxColumns();
+        
+        // Delete All Empty Rows
+        shtResp.deleteRows(3, shtRespMaxRow - 2);
+        
+        // Delete All Empty Columns
+        for(var c = 1;  c <= shtRespMaxCol; c++){
+          FirstCellVal = shtResp.getRange(1, c).getValue();
+          if(FirstCellVal == '') {
+            shtResp.deleteColumns(c,shtRespMaxCol-c+1);
+            c = shtRespMaxCol + 1;
+          }
         }
+        
+        // French Form
+        formFR.setDestination(FormApp.DestinationType.SPREADSHEET, ssID);
+        
+        // Find and Rename Response Sheet
+        ss = SpreadsheetApp.openById(ssID);
+        ssSheets = ss.getSheets();
+        ssSheets[0].setName('RegTeam FR');
+        
+        // Move Response Sheet to appropriate spot in file
+        shtResp = ss.getSheetByName('RegTeam FR');
+        ss.moveActiveSheet(IndexTeams+2);
+        shtRespMaxRow = shtResp.getMaxRows();
+        shtRespMaxCol = shtResp.getMaxColumns();
+        
+        // Delete All Empty Rows
+        shtResp.deleteRows(3, shtRespMaxRow - 2);
+        
+        // Delete All Empty Columns
+        for(var c = 1;  c <= shtRespMaxCol; c++){
+          FirstCellVal = shtResp.getRange(1, c).getValue();
+          if(FirstCellVal == '') {
+            shtResp.deleteColumns(c,shtRespMaxCol-c+1);
+            c = shtRespMaxCol + 1;
+          }
+        }
+        
+        // Set Match Report IDs in Config File
+        FormIdEN = formEN.getId();
+        shtConfig.getRange(rowFormEN, colFormID).setValue(FormIdEN);
+        FormIdFR = formFR.getId();
+        shtConfig.getRange(rowFormFR, colFormID).setValue(FormIdFR);
+        
+        // Create Links to add to Config File  
+        urlFormEN = formEN.getPublishedUrl();
+        shtConfig.getRange(rowFormEN, colFormURL).setValue(urlFormEN); 
+        
+        urlFormFR = formFR.getPublishedUrl();
+        shtConfig.getRange(rowFormFR, colFormURL).setValue(urlFormFR);
+        
+        Logger.log("Response Sheets and Form Links Generated");
+        
+        // Format Team Sheet
+        // Hide Unused Columns
+        // Loop through RespCol and Hide Matching Table Column if RespCol == ""
+        
+        
       }
-      
-      // Set Match Report IDs in Config File
-      FormIdEN = formEN.getId();
-      shtConfig.getRange(rowFormEN, colFormID).setValue(FormIdEN);
-      FormIdFR = formFR.getId();
-      shtConfig.getRange(rowFormFR, colFormID).setValue(FormIdFR);
-      
-      // Create Links to add to Config File  
-      urlFormEN = formEN.getPublishedUrl();
-      shtConfig.getRange(rowFormEN, colFormURL).setValue(urlFormEN); 
-      
-      urlFormFR = formFR.getPublishedUrl();
-      shtConfig.getRange(rowFormFR, colFormURL).setValue(urlFormFR);
-      
-      Logger.log("Response Sheets and Form Links Generated");
     }
   }
   // Post Log to Log Sheet

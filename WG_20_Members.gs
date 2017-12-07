@@ -12,14 +12,14 @@ function fcnSearchMember(Member){
   Logger.log("Routine: fcnSearchMember");
   
   //  Member[ 0] = Member ID
-  //  Member[ 1] = Member Full Name
-  //  Member[ 2] = Member First Name
-  //  Member[ 3] = Member Last Name
-  //  Member[ 4] = Member Email
-  //  Member[ 5] = Member Language
-  //  Member[ 6] = Member Phone Number
-  //  Member[ 7] = Member Record File ID
-  //  Member[ 8] = Member Record File Link
+  //  Member[ 1] = Member Record File ID
+  //  Member[ 2] = Member Record File Link
+  //  Member[ 3] = Member Full Name
+  //  Member[ 4] = Member First Name
+  //  Member[ 5] = Member Last Name
+  //  Member[ 6] = Member Email
+  //  Member[ 7] = Member Language
+  //  Member[ 8] = Member Phone Number
   //  Member[ 9] = Member Spare
   //  Member[10] = Member Spare
   //  Member[11] = Member Spare
@@ -29,7 +29,7 @@ function fcnSearchMember(Member){
   //  Member[15] = Member Spare
   
   // Defines the Search
-  var searchFor ='title contains "' + Member[1] + '"';
+  var searchFor ='title contains "' + Member[3] + '"';
   var names =   [];
   var fileIds = [];
   
@@ -47,14 +47,14 @@ function fcnSearchMember(Member){
 
   // If Member is Not Found
   if(fileIds.length == 0){
-    Member[7] = 'Member Not Found';
-    Member[8] = '';
+    Member[1] = 'Member Not Found';
+    Member[2] = '';
   }
   
   // If Member is Found
   if(fileIds.length > 0){
-    Member[7] = fileIds[0];
-    Member[8] = 'https://docs.google.com/spreadsheets/d/' + fileIds[0];
+    Member[1] = fileIds[0];
+    Member[2] = 'https://docs.google.com/spreadsheets/d/' + fileIds[0];
   }
   return Member;
 }
@@ -73,14 +73,14 @@ function fcnCreateMember(Member) {
   Logger.log("Routine: fcnCreateMember");
   
   //  Member[ 0] = Member ID
-  //  Member[ 1] = Member Full Name
-  //  Member[ 2] = Member First Name
-  //  Member[ 3] = Member Last Name
-  //  Member[ 4] = Member Email
-  //  Member[ 5] = Member Language
-  //  Member[ 6] = Member Phone Number
-  //  Member[ 7] = Member Record File ID
-  //  Member[ 8] = Member Record File Link
+  //  Member[ 1] = Member Record File ID
+  //  Member[ 2] = Member Record File Link
+  //  Member[ 3] = Member Full Name
+  //  Member[ 4] = Member First Name
+  //  Member[ 5] = Member Last Name
+  //  Member[ 6] = Member Email
+  //  Member[ 7] = Member Language
+  //  Member[ 8] = Member Phone Number
   //  Member[ 9] = Member Spare
   //  Member[10] = Member Spare
   //  Member[11] = Member Spare
@@ -90,7 +90,7 @@ function fcnCreateMember(Member) {
   //  Member[15] = Member Spare
   
   // Create Player Record Spreadsheet
-  var ss = SpreadsheetApp.create(Member[1]);
+  var ss = SpreadsheetApp.create(Member[3]);
   var id = ss.getId();
   // Get File
   var file = DriveApp.getFileById(id);
@@ -118,14 +118,14 @@ function fcnCreateMember(Member) {
   // Copy Templates to Member Spreadsheet
   var ssTemplates = SpreadsheetApp.openById("1HPnrUdIen2X0YeV1R2eNf5CEOZ9Yq_GYJEWTfAuIAMU");
   // English Files
-  if(Member[5] == "English"){
+  if(Member[7] == "English"){
     ssTemplates.getSheetByName("Member Info EN").copyTo(ssMember);
     ssTemplates.getSheetByName("WG Record Template EN").copyTo(ssMember);
     ssTemplates.getSheetByName("TCG Record Template EN").copyTo(ssMember);
     ssTemplates.getSheetByName("BG Record Template EN").copyTo(ssMember);
   }
   //  French Files
-  if(Member[5] == "Français"){
+  if(Member[7] == "Français"){
     ssTemplates.getSheetByName("Member Info FR").copyTo(ssMember);
     ssTemplates.getSheetByName("WG Record Template FR").copyTo(ssMember);
     ssTemplates.getSheetByName("TCG Record Template FR").copyTo(ssMember);
@@ -159,8 +159,8 @@ function fcnCreateMember(Member) {
   
   // Update Member Info with New Data
   Member[0] = NewMemberID;
-  Member[7] = id;
-  Member[8] = 'https://docs.google.com/spreadsheets/d/' + id;
+  Member[1] = id;
+  Member[2] = 'https://docs.google.com/spreadsheets/d/' + id;
   
   
   // Write Member Values in _Member List
