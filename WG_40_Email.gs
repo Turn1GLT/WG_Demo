@@ -704,14 +704,14 @@ function fcnSendNewPlayerConf(shtConfig, PlayerData){
 // NEW PLAYER CONFIRMATION FOR LOCATION ----------------------------------------------------------------------------------------------------------
 
 // **********************************************
-// function fcnSendNewPlayerConfLocation()
+// function fcnSendNewPlayerConfOrgnzr()
 //
 // This function sends a confirmation to the
 // New Player with Appropriate Links
 //
 // **********************************************
 
-function fcnSendNewPlayerConfLoc(shtConfig, PlayerData){
+function fcnSendNewPlayerConfOrgnzr(shtConfig, PlayerData){
   
   // Configuration Parameters
   var shtIDs = shtConfig.getRange(4,7,20,1).getValues();

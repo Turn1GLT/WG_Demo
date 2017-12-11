@@ -135,8 +135,8 @@ function fcnRegistrationPlyrWG(shtResponse, RowResponse){
     //fcnSendNewPlayerConf(shtConfig, PlayerData);
     //Logger.log("Confirmation Email Sent");
     
-    // Send Confirmation to Location
-    // fcnSendNewPlayerConfLocation(shtConfig, PlayerData)
+    // Send Confirmation to Organizer
+    // fcnSendNewPlayerConfOrgnzr(shtConfig, PlayerData)
   }
 
   // Post Log to Log Sheet
@@ -155,8 +155,8 @@ function fcnRegistrationPlyrWG(shtResponse, RowResponse){
 function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam, cfgRegFormCnstrVal, Member) {
 
   // Opens External Players List File
-  var ssExtPlayers = SpreadsheetApp.openById(shtIDs[14][0]);
-  var shtExtPlayers = ssExtPlayers.getSheetByName("Players");
+  var ssExtPlyrTeam = SpreadsheetApp.openById(shtIDs[14][0]);
+  var shtExtPlayers = ssExtPlyrTeam.getSheetByName("Players");
   
   // Current Player List
   var NbPlayers = shtPlayers.getRange(2,1).getValue();
@@ -176,14 +176,14 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
   var colRspLanguage =     cfgRegFormCnstrVal[ 5][1];
   var colRspPhone =        cfgRegFormCnstrVal[ 6][1];
   var colRspTeamName =     cfgRegFormCnstrVal[ 7][1];
-  var colRspSpare =        cfgRegFormCnstrVal[ 8][1];
-  var colRspArmyName =     cfgRegFormCnstrVal[10][1];
-  var colRspArmyFaction1 = cfgRegFormCnstrVal[11][1];
-  var colRspArmyFaction2 = cfgRegFormCnstrVal[12][1];
-  var colRspArmyWarlord =  cfgRegFormCnstrVal[13][1];
-  var colRspArmyList =     cfgRegFormCnstrVal[14][1];
+  var colRspArmyDef =      cfgRegFormCnstrVal[ 8][1];
+  var colRspArmyWarlord =  cfgRegFormCnstrVal[ 9][1];
+  var colRspArmyFaction1 = cfgRegFormCnstrVal[10][1];
+  var colRspArmyFaction2 = cfgRegFormCnstrVal[11][1];
+  var colRspArmyName =     cfgRegFormCnstrVal[12][1];
+  var colRspArmyList =     cfgRegFormCnstrVal[13][1];
   
-  // Player Table Columns
+  // Team Table Columns
   var colTblEmail =        cfgRegFormCnstrVal[ 1][2];
   var colTblFullName =     cfgRegFormCnstrVal[ 2][2];
   var colTblFrstName =     cfgRegFormCnstrVal[ 3][2];
@@ -191,17 +191,17 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
   var colTblLanguage =     cfgRegFormCnstrVal[ 5][2];
   var colTblPhone =        cfgRegFormCnstrVal[ 6][2];
   var colTblTeamName =     cfgRegFormCnstrVal[ 7][2];
-  var colTblSpare =        cfgRegFormCnstrVal[ 8][2];
-  var colTblArmyName =     cfgRegFormCnstrVal[10][2];
-  var colTblArmyFaction1 = cfgRegFormCnstrVal[11][2];
-  var colTblArmyFaction2 = cfgRegFormCnstrVal[12][2];
-  var colTblArmyWarlord =  cfgRegFormCnstrVal[13][2];
-  var colTblArmyList =     cfgRegFormCnstrVal[14][2];
+  var colTblArmyDef =      cfgRegFormCnstrVal[ 8][2];
+  var colTblArmyWarlord =  cfgRegFormCnstrVal[ 9][2];
+  var colTblArmyFaction1 = cfgRegFormCnstrVal[10][2];
+  var colTblArmyFaction2 = cfgRegFormCnstrVal[11][2];
+  var colTblArmyName =     cfgRegFormCnstrVal[12][2];
+  var colTblArmyList =     cfgRegFormCnstrVal[13][2];
   
-  var colTblStatus =       cfgRegFormCnstrVal[16][2];
-  var colTblMemberFileID = cfgRegFormCnstrVal[17][2];
-  var colTblContact =      cfgRegFormCnstrVal[18][2];
-  var colTblContactGrp =   cfgRegFormCnstrVal[19][2];
+  var colTblStatus =          cfgRegFormCnstrVal[16][2];
+  var colTblMemberFileID =    cfgRegFormCnstrVal[17][2];
+  var colTblEmailContact =    cfgRegFormCnstrVal[18][2];
+  var colTblEmailContactGrp = cfgRegFormCnstrVal[19][2];
   
   // Routine Variables
   var PlyrEmail = "";
@@ -300,42 +300,43 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
     if(PlyrPhone != ""){
       shtPlayers.getRange(NextPlayerRow, colTblPhone).setValue(PlyrPhone);
       shtExtPlayers.getRange(NextPlayerRow, colTblPhone).setValue(PlyrPhone);
-      Logger.log("Phone: %s",PlyrPhone);  
+      Logger.log("Phone: %s",PlyrPhone); 
     }
+    Logger.log("-----------------------------");
 	
     // Team Name
     if(PlyrTeamName != ""){
       shtPlayers.getRange(NextPlayerRow, colTblTeamName).setValue(PlyrTeamName);
       shtExtPlayers.getRange(NextPlayerRow, colTblTeamName).setValue(PlyrTeamName);
-      Logger.log("Team Name: %s",PlyrTeamName);  Logger.log("-----------------------------");
+      Logger.log("Team Name: %s",PlyrTeamName);  
 	}
     
     // Army Name
     if(PlyrArmyName != ""){
       shtPlayers.getRange(NextPlayerRow, colTblArmyName).setValue(PlyrArmyName);
       shtExtPlayers.getRange(NextPlayerRow, colTblArmyName).setValue(PlyrArmyName);
-      Logger.log("Army Name: %s",PlyrArmyName);  Logger.log("-----------------------------");
+      Logger.log("Army Name: %s",PlyrArmyName);  
     }
             
     // Army Faction 1
     if(PlyrArmyFaction1 != ""){
       shtPlayers.getRange(NextPlayerRow, colTblArmyFaction1).setValue(PlyrArmyFaction1);
       shtExtPlayers.getRange(NextPlayerRow, colTblArmyFaction1).setValue(PlyrArmyFaction1);
-      Logger.log("Army Faction 1: %s",PlyrArmyFaction1);  Logger.log("-----------------------------");
+      Logger.log("Army Faction 1: %s",PlyrArmyFaction1);  
     }
                 
     // Army Faction 2
     if(PlyrArmyFaction2 != ""){
       shtPlayers.getRange(NextPlayerRow, colTblArmyFaction2).setValue(PlyrArmyFaction2);
       shtExtPlayers.getRange(NextPlayerRow, colTblArmyFaction2).setValue(PlyrArmyFaction2);
-      Logger.log("Army Faction 2: %s",PlyrArmyFaction2);  Logger.log("-----------------------------");
+      Logger.log("Army Faction 2: %s",PlyrArmyFaction2);  
     }
                
     // Army Warlord
     if(PlyrArmyWarlord != ""){
       shtPlayers.getRange(NextPlayerRow, colTblArmyWarlord).setValue(PlyrArmyWarlord);
       shtExtPlayers.getRange(NextPlayerRow, colTblArmyWarlord).setValue(PlyrArmyWarlord);
-      Logger.log("Army Warlord: %s",PlyrArmyWarlord);  Logger.log("-----------------------------");
+      Logger.log("Army Warlord: %s",PlyrArmyWarlord);  
     }
    
     // Army List
@@ -344,8 +345,9 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
       // fcnProcessArmyList();
       shtPlayers.getRange(NextPlayerRow, colTblArmyList).setValue(PlyrArmyList);
       shtExtPlayers.getRange(NextPlayerRow, colTblArmyList).setValue(PlyrArmyList);
-      Logger.log("Army List: %s",PlyrArmyList);  Logger.log("-----------------------------");
+      Logger.log("Army List: %s",PlyrArmyList);  
     }
+    Logger.log("-----------------------------");
 
     // Set Player Contact Info 
     PlyrContactInfo[0]= PlyrFrstName;
@@ -357,14 +359,14 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
     var PlyrCntctStatus = subCrtPlayerContact(PlyrContactInfo);
     if(PlyrCntctStatus == "Player Contact Created" || PlyrCntctStatus == "Player Contact Updated") {
       // Set Contact Created in Players Sheet
-      shtPlayers.getRange(NextPlayerRow, colTblContact).setValue("X");
-      shtExtPlayers.getRange(NextPlayerRow, colTblContact).setValue("X");
+      shtPlayers.getRange(NextPlayerRow, colTblEmailContact).setValue("X");
+      shtExtPlayers.getRange(NextPlayerRow, colTblEmailContact).setValue("X");
       // Add to Contact Group   
       var CntctGrpStatus = subAddPlayerContactGroup(shtConfig, PlyrContactInfo);
       if(CntctGrpStatus == "Player added to Contact Group") {
         // Set Added in Contact Group in Players Sheet
-        shtPlayers.getRange(NextPlayerRow, colTblContactGrp).setValue("X");
-        shtExtPlayers.getRange(NextPlayerRow, colTblContactGrp).setValue("X");
+        shtPlayers.getRange(NextPlayerRow, colTblEmailContactGrp).setValue("X");
+        shtExtPlayers.getRange(NextPlayerRow, colTblEmailContactGrp).setValue("X");
       }
       else Logger.log("Player Added to Contact Group");
     }
@@ -463,25 +465,6 @@ function fcnRegistrationTeamWG(shtResponse, RowResponse){
   //  Team[21] = Team Spare
   //  Team[22] = Team Spare
   //  Team[23] = Team Spare
-
-  // Create Member 
-  var Member = subCreateArray(16,1);
-  //  Member[ 0] = Member ID
-  //  Member[ 1] = Member Record File ID
-  //  Member[ 2] = Member Record File Link
-  //  Member[ 3] = Member Full Name
-  //  Member[ 4] = Member First Name
-  //  Member[ 5] = Member Last Name
-  //  Member[ 6] = Member Email
-  //  Member[ 7] = Member Language
-  //  Member[ 8] = Member Phone Number
-  //  Member[ 9] = Member Spare
-  //  Member[10] = Member Spare
-  //  Member[11] = Member Spare
-  //  Member[12] = Member Spare
-  //  Member[13] = Member Spare
-  //  Member[14] = Member Spare
-  //  Member[15] = Member Spare
   
   var teamName;
   var teamID;
@@ -497,7 +480,7 @@ function fcnRegistrationTeamWG(shtResponse, RowResponse){
   Team = fcnAddTeamWG(shtIDs, shtConfig, shtTeams, RegRspnVal, cfgEvntParam, cfgRegFormCnstrVal, Team);
   teamName = Team[3];
     
-  // If Player was succesfully added, the Full Name will be created, then execute the following
+  // If Team was succesfully added, the Team Name will be created, then execute the following
   if(teamName != "") {
     
     // Create Team Event Record (Player Access)
@@ -523,16 +506,239 @@ function fcnRegistrationTeamWG(shtResponse, RowResponse){
     fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, cfgColRndSht, 0, 1);
       Logger.log("Standing Sheets Updated");  
     
-    // Send Confirmation to New Player
+    // Send Confirmation to Team Contact
     //fcnSendNewPlayerConf(shtConfig, PlayerData);
     //Logger.log("Confirmation Email Sent");
     
-    // Send Confirmation to Location
-    // fcnSendNewPlayerConfLocation(shtConfig, PlayerData)
+    // Send Confirmation to Organizer
+    // fcnSendNewPlayerConfOrgnzr(shtConfig, PlayerData)
   }
 
   // Post Log to Log Sheet
   subPostLog(shtLog, Logger.getLog());
+}
+
+// **********************************************
+// function fcnAddTeamWG
+//
+// This function adds the new Team to
+// the Team's List
+//
+// **********************************************
+
+function fcnAddTeamWG(shtIDs, shtConfig, shtTeams, RegRspnVal, cfgEvntParam, cfgRegFormCnstrVal, Team) {
+
+  // Opens External Players/Teams List File
+  var ssExtPlyrTeam = SpreadsheetApp.openById(shtIDs[14][0]);
+  var shtExtPlayers = ssExtPlyrTeam.getSheetByName("Players");
+  var shtExtTeams = ssExtPlyrTeam.getSheetByName("Teams");
+  
+  // Current Team List
+  var NbTeams = shtTeams.getRange(2,1).getValue();
+  var NextTeamRow = NbTeams + 3;
+  var CurrTeams = shtTeams.getRange(2, 2, NbTeams+1, 1).getValues();
+  var Status = "New Team";
+  
+  // Event Properties
+  var evntFormat = cfgEvntParam[9][0];      // Single, Team or Team+Players
+  var evntNbPlyrTeam = cfgEvntParam[10][0]; // Nb Player per Team
+  
+  // Response Columns
+  var colRspCntctEmail =    cfgRegFormCnstrVal[ 1][1];
+  var colRspCntctFullName = cfgRegFormCnstrVal[ 2][1];
+  var colRspCntctFrstName = cfgRegFormCnstrVal[ 3][1];
+  var colRspCntctLastName = cfgRegFormCnstrVal[ 4][1];
+  var colRspCntctLanguage = cfgRegFormCnstrVal[ 5][1];
+  var colRspCntctPhone =    cfgRegFormCnstrVal[ 6][1];
+  var colRspTeamName =      cfgRegFormCnstrVal[ 7][1];
+  var colRspNameP1 =        cfgRegFormCnstrVal[ 8][1];
+  var colRspNameP2 =        cfgRegFormCnstrVal[ 9][1];
+  var colRspNameP3 =        cfgRegFormCnstrVal[10][1];
+  var colRspNameP4 =        cfgRegFormCnstrVal[11][1];
+  var colRspNameP5 =        cfgRegFormCnstrVal[12][1];
+  var colRspNameP6 =        cfgRegFormCnstrVal[13][1];
+  var colRspNameP7 =        cfgRegFormCnstrVal[14][1];
+  var colRspNameP8 =        cfgRegFormCnstrVal[15][1];
+  
+  // Team Table Columns
+  var colTblCntctEmail =    cfgRegFormCnstrVal[ 1][2];
+  var colTblCntctFullName = cfgRegFormCnstrVal[ 2][2];
+  var colTblCntctFrstName = cfgRegFormCnstrVal[ 3][2];
+  var colTblCntctLastName = cfgRegFormCnstrVal[ 4][2];
+  var colTblCntctLanguage = cfgRegFormCnstrVal[ 5][2];
+  var colTblCntctPhone =    cfgRegFormCnstrVal[ 6][2];
+  var colTblTeamName =      cfgRegFormCnstrVal[ 7][2];
+  var colTblNameP1 =        cfgRegFormCnstrVal[ 8][2];
+  var colTblNameP2 =        cfgRegFormCnstrVal[ 9][2];
+  var colTblNameP3 =        cfgRegFormCnstrVal[10][2];
+  var colTblNameP4 =        cfgRegFormCnstrVal[11][2];
+  var colTblNameP5 =        cfgRegFormCnstrVal[12][2];
+  var colTblNameP6 =        cfgRegFormCnstrVal[13][2];
+  var colTblNameP7 =        cfgRegFormCnstrVal[14][2];
+  var colTblNameP8 =        cfgRegFormCnstrVal[15][2];
+  
+  var colTblStatus =       cfgRegFormCnstrVal[16][2];
+  var colTblMemberFileID = cfgRegFormCnstrVal[17][2];
+  var colTblContact =      cfgRegFormCnstrVal[18][2];
+  var colTblContactGrp =   cfgRegFormCnstrVal[19][2];
+  
+  // Routine Variables
+  var TeamCntctEmail = "";
+  var TeamCntctFullName = "";
+  var TeamCntctFrstName = "";
+  var TeamCntctLastName = "";
+  var TeamCntctLanguage = "";
+  var TeamCntctPhone = "";
+  var TeamName =  "";
+  var TeamPlyr = new Array(evntNbPlyrTeam);
+  
+  var colRspTeamPlyr;
+  var colTblTeamPlyr = new Array(evntNbPlyrTeam);
+  
+  var ArmyDefOffset = 2;
+  
+  var TeamCntctInfo = new Array(4); // [0]= First Name, [1]= Last Name, [2]= Email Address, [3]= Language Preference
+  
+  // Email
+  TeamCntctEmail = RegRspnVal[0][colRspCntctEmail-1];
+  
+  // Team Contact First and Last Name
+  TeamCntctFrstName = RegRspnVal[0][colRspCntctFrstName-1];
+  TeamCntctLastName = RegRspnVal[0][colRspCntctLastName-1];
+  
+  // Create Team Contact Full Name
+  TeamCntctFullName = TeamCntctFrstName + " " + TeamCntctLastName;
+  
+  // Team Contact Language Preference
+  TeamCntctLanguage = RegRspnVal[0][colRspCntctLanguage-1];
+  
+  // Team Contact Phone Number
+  if(colRspCntctPhone != "") TeamCntctPhone = RegRspnVal[0][colRspCntctPhone-1];
+  
+  // Team Name
+  TeamName = RegRspnVal[0][colRspTeamName-1];
+  
+  // Team Player 1-8
+  for(var x = 0; x < evntNbPlyrTeam; x++){
+    // Copies colTeamPx Value (colTeamP1 starts at [8][1] )
+    colRspTeamPlyr = cfgRegFormCnstrVal[x+8][1];
+    if(colRspTeamPlyr != "") {
+      colTblTeamPlyr[x] = cfgRegFormCnstrVal[x+8][2];
+      TeamPlyr[x] = RegRspnVal[0][colTblTeamPlyr[x]-1];
+      Logger.log("x= %s, Player: %s",TeamPlyr[x])
+    }
+  }
+  
+  // Check if Team exists in List
+  for(var i = 1; i <= NbTeams; i++){
+    if(TeamName == CurrTeams[i][0]){
+      Status = "Cannot complete registration for " + TeamName + ", Duplicate Team Found in List";
+      Logger.log(Status)
+    }
+  }
+  // If New Team
+  // Copy Values to Teams Sheet at the Next Empty Spot (Number of Teams + 3)
+  // Copy Values to Teams List for Organizer Access
+  if(Status == "New Team"){
+    
+    // Team Contact Full Name
+    shtTeams.getRange(NextTeamRow, colTblCntctFullName).setValue(TeamCntctFullName);
+    shtExtTeams.getRange(NextTeamRow, colTblCntctFullName).setValue(TeamCntctFullName);
+    Logger.log("Team Name: %s",TeamCntctFullName);
+    
+    // Team Contact Email Address
+    shtTeams.getRange(NextTeamRow, colTblCntctEmail).setValue(TeamCntctEmail);
+    shtExtTeams.getRange(NextTeamRow, colTblCntctEmail).setValue(TeamCntctEmail);
+    Logger.log("Email Address: %s",TeamCntctEmail);
+    
+    // Team Contact Language
+    shtTeams.getRange(NextTeamRow, colTblCntctLanguage).setValue(TeamCntctLanguage);
+    shtExtTeams.getRange(NextTeamRow, colTblCntctLanguage).setValue(TeamCntctLanguage);
+    Logger.log("Language: %s",TeamCntctLanguage); 
+    
+    // Team Contact Phone Number
+    if(TeamCntctPhone != ""){
+      shtTeams.getRange(NextTeamRow, colTblCntctPhone).setValue(TeamCntctPhone);
+      shtExtTeams.getRange(NextTeamRow, colTblCntctPhone).setValue(TeamCntctPhone);
+      Logger.log("Phone: %s",TeamCntctPhone); 
+    }
+    Logger.log("-----------------------------");
+	
+    // Team Name
+    shtTeams.getRange(NextTeamRow, colTblTeamName).setValue(TeamName);
+    shtExtTeams.getRange(NextTeamRow, colTblTeamName).setValue(TeamName);
+    Logger.log("Team Name: %s",TeamName); 
+
+    // Team Player 1-8
+    for(x = 0; x < evntNbPlyrTeam; x++){
+      if(TeamPlyr[x] != "") {
+        shtTeams.getRange(NextTeamRow, colTblTeamPlyr[x]).setValue(TeamPlyr[x]);
+        shtExtTeams.getRange(NextTeamRow, colTblTeamPlyr[x]).setValue(TeamPlyr[x]);
+        Logger.log("Team Player %s: %s",x,TeamPlyr[x]);  
+      }
+    }
+    Logger.log("-----------------------------");
+    
+    // Set Team Contact Info 
+    TeamCntctInfo[0]= TeamCntctFrstName;
+    TeamCntctInfo[1]= TeamCntctLastName;
+    TeamCntctInfo[2]= TeamCntctEmail;
+    TeamCntctInfo[3]= TeamCntctLanguage;
+    
+    // Add Team Info to Contact List and Contact Group
+    var TeamCntctStatus = subCrtPlayerContact(TeamCntctInfo);
+    if(TeamCntctStatus == "Team Contact Created" || TeamCntctStatus == "Team Contact Updated") {
+      // Set Contact Created in Teams Sheet
+      shtTeams.getRange(NextTeamRow, colTblContact).setValue("X");
+      shtExtTeams.getRange(NextTeamRow, colTblContact).setValue("X");
+      // Add to Contact Group   
+      var TeamCntctGrpStatus = subAddPlayerContactGroup(shtConfig, TeamCntctInfo);
+      if(TeamCntctGrpStatus == "Team added to Contact Group") {
+        // Set Added in Contact Group in Teams Sheet
+        shtTeams.getRange(NextTeamRow, colTblContactGrp).setValue("X");
+        shtExtTeams.getRange(NextTeamRow, colTblContactGrp).setValue("X");
+      }
+      else Logger.log("Team Added to Contact Group");
+    }
+    else Logger.log("Team Contact NOT Created");
+ 
+  }
+  
+  // Update Team Data
+  Team[ 0] = ""; // Team ID
+  Team[ 1] = ""; // Team Record File ID
+  Team[ 2] = ""; // Team Record File Link
+  Team[ 3] = TeamName; // Team Name
+  Team[ 4] = TeamPlyr[0]; // Team Member 1
+  Team[ 5] = TeamPlyr[1]; // Team Member 2
+  if(evntNbPlyrTeam >= 3) Team[ 6] = TeamPlyr[2]; // Team Member 3
+  else Team[ 6] = "";
+  if(evntNbPlyrTeam >= 4) Team[ 7] = TeamPlyr[3]; // Team Member 4
+  else Team[ 7] = "";
+  if(evntNbPlyrTeam >= 5) Team[ 8] = TeamPlyr[4]; // Team Member 5
+  else Team[ 8] = "";
+  if(evntNbPlyrTeam >= 6) Team[ 9] = TeamPlyr[5]; // Team Member 6
+  else Team[ 9] = "";
+  if(evntNbPlyrTeam >= 7) Team[10] = TeamPlyr[6]; // Team Member 7
+  else Team[10] = "";
+  if(evntNbPlyrTeam >= 8) Team[11] = TeamPlyr[7]; // Team Member 8
+  else Team[11] = "";
+  Team[12] = TeamCntctFrstName; // Team Contact First Name
+  Team[13] = TeamCntctLastName; // Team Contact Last Name 
+  Team[14] = TeamCntctEmail; // Team Contact Email 
+  Team[15] = TeamCntctLanguage; // Team Contact Language 
+  Team[16] = TeamCntctPhone; // Team Contact Phone Number 
+  Team[17] = "" ;// Team Spare
+  Team[18] = "" ;// Team Spare
+  Team[19] = "" ;// Team Spare
+  Team[20] = "" ;// Team Spare
+  Team[21] = "" ;// Team Spare
+  Team[22] = "" ;// Team Spare
+  Team[23] = "" ;// Team Spare
+    
+  Logger.log(Team);
+  
+  return Team;
 }
 
 
