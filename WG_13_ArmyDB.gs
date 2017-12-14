@@ -14,7 +14,7 @@ function fcnUpdateArmyDB(ss, shtConfig, cfgColRndSht, Player){
   
   // Column Values for Rounds Sheets
   var colRndPlyr =     cfgColRndSht[ 0][0];
-  var colRndBalBonus = cfgColRndSht[ 9][0];
+  var colRndBalBonus = cfgColRndSht[10][0];
   
   // Config Spreadsheet
   var ssArmyDBID =     shtIDs[2][0];

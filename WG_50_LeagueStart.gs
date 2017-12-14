@@ -132,6 +132,8 @@ function fcnInitializeEvent(){
     // Columns from Config File
     var colRspMatchID        = cfgColRspSht[1][0];
     var colRspMatchIDLastVal = cfgColRspSht[6][0];
+    
+    // Column Round Sheets
     var colRndMP             = cfgColRndSht[2][0];
     
     var colPlyrName   = cfgRegFormCnstrVal[ 2][2];
@@ -206,7 +208,7 @@ function fcnInitializeEvent(){
     // Clear Players DB and Card Pools
     fcnDelPlayerArmyDB();
     fcnDelPlayerArmyList();
-    fcnDelEventPlayerRecord();
+    fcnDelEventRecord();
     Logger.log('Army DB and Army Lists Cleared');
         
     title = cfgEventType +" Data Cleared";
@@ -250,6 +252,8 @@ function fcnClearMatchResults(){
     // Columns from Config File
     var colRspMatchID        = cfgColRspSht[1][0];
     var colRspMatchIDLastVal = cfgColRspSht[6][0];
+    
+    // Column Round Sheets
     var colRndMP             = cfgColRndSht[2][0];
     
     // Sheets
@@ -288,13 +292,8 @@ function fcnClearMatchResults(){
       shtRound.getRange(5,colRndMP,MaxRowRndSht-4,MaxColRndSht-colRndMP+1).clearContent();
     }
     
-    // Clear Event Player Records
-    fcnClrEvntPlayerRecord();
-    
-//    fcnDelPlayerArmyDB();
-//    fcnDelPlayerArmyList();
-//    fcnCrtPlayerArmyDB();
-//    fcnCrtPlayerArmyList();
+    // Clear Event Records
+    fcnClrEvntRecord();
     
     Logger.log('Match Data Cleared');
     
@@ -307,6 +306,226 @@ function fcnClearMatchResults(){
     uiResponse = ui.alert(title, msg, ui.ButtonSet.OK);
   }
 }
+
+// **********************************************
+// function fcnCrtEvntRecord()
+//
+// This function generates all Players Records 
+// from the Config File
+//
+// **********************************************
+
+function fcnCrtEvntRecord(){
+  
+  Logger.log("Routine: fcnCrtEvntRecord");
+    
+  // Main Spreadsheet
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // Config Spreadsheet
+  var shtConfig = ss.getSheetByName('Config');
+  var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
+  var cfgEvntParam =  shtConfig.getRange( 4, 4,48,1).getValues();
+  var cfgColShtPlyr = shtConfig.getRange( 4,28,30,1).getValues();
+  var cfgColShtTeam = shtConfig.getRange(24,28,30,1).getValues();
+  
+  // Event Log Spreadsheet
+  var ssEventRecord = SpreadsheetApp.openById(shtIDs[13][0]);
+  var shtTemplate = ssEventRecord.getSheetByName('Template');
+  var shtArmyListNum;
+  
+  // Column Values
+  var colShtPlyrName = cfgColShtPlyr[2][0];
+  var colShtPlyrLang = cfgColShtPlyr[5][0];
+  
+  var colShtTeamName = cfgColShtTeam[7][0];
+  var colShtTeamLang = cfgColShtTeam[5][0];
+  
+  // Event Parameters
+  var evntFormat = cfgEvntParam[ 9][0];
+  
+  // Sheets Values
+  var NbSheet = ssEventRecord.getNumSheets();
+  var ssSheets = ssEventRecord.getSheets();
+  
+  // Players 
+  var shtPlayers = ss.getSheetByName('Players'); 
+  var NbPlayers = shtPlayers.getRange(2,1).getValue();
+  // Get Players Names and Languages 
+  var PlyrNames = shtPlayers.getRange(2,colShtTeamName, NbPlayers+1, 1).getValues();
+  var PlyrLang =  shtPlayers.getRange(2,colShtTeamLang, NbPlayers+1, 1).getValues();
+  
+  // Teams 
+  var shtTeams = ss.getSheetByName('Teams'); 
+  var NbTeams = shtTeams.getRange(2,1).getValue();
+  // Get Teams Names and Languages 
+  var TeamNames = shtTeams.getRange(2,colShtTeamName, NbTeams+1, 1).getValues();
+  var TeamLang =  shtTeams.getRange(2,colShtTeamLang, NbTeams+1, 1).getValues();
+  
+  // Routine Variables
+  var shtPT;
+  var namePT;
+  var langPT;
+  var nameSheet;
+  var GlobalHdr;
+  var HstryHdr;
+  var LoopMax;
+  var PTFound = 0;
+  
+  // Defines Loop Parameters
+  if(evntFormat == "Single") LoopMax = NbPlayers;
+  
+  if(evntFormat == "Team") LoopMax = NbTeams;
+  
+  // Loops through each player starting from the Last
+  for (var PT = LoopMax; PT > 0; PT--){
+    
+    // Gets the Player/Team Name and Language
+    if(evntFormat == "Single"){
+      namePT = PlyrNames[PT][0];
+      langPT = PlyrLang[PT][0];
+    }
+    if(evntFormat == "Team"){
+      namePT = TeamNames[PT][0];
+      langPT = TeamLang[PT][0];
+    }
+    
+    // Resets the Player/Team Found flag before searching
+    PTFound = 0;
+    // Look if Player/Team exists, if yes, skip, if not, create Player/Team
+    for(var sheet = NbSheet; sheet > 0; sheet --){
+      nameSheet = ssSheets[sheet-1].getSheetName();
+      if (nameSheet == namePT) PTFound = 1;
+    }
+          
+    // If Player/Team is not found, add a tab
+    if(PTFound == 0){
+      // Inserts Sheet before Template (Last Sheet in Spreadsheet)
+      ssEventRecord.insertSheet(namePT, NbSheet-1, {template: shtTemplate});
+      shtPT = ssEventRecord.getSheetByName(namePT);
+      shtPT.showSheet();
+      
+      // Updates the number of sheets
+      NbSheet = ssEventRecord.getNumSheets();
+      ssSheets = ssEventRecord.getSheets();
+      
+      // Opens the new sheet and modify appropriate data (Player/Team Name, Header)
+      shtPT.getRange(2,1).setValue(namePT);
+      
+      // Translate Header if Player/Team Language Preference is French
+      if(langPT == 'Français'){
+        // Set Global Header
+        GlobalHdr = shtPT.getRange(3,1,1,9).getValues();
+        GlobalHdr[0][0] = 'Joué';           // Played
+        GlobalHdr[0][1] = 'Victoires';      // Win
+        GlobalHdr[0][2] = 'Défaites';       // Loss
+        GlobalHdr[0][3] = 'Nulles';         // Tie
+        GlobalHdr[0][4] = 'Pts Marqués';    // Pts Scored
+        GlobalHdr[0][5] = 'Pts Alloués';    // Pts Allowed
+        GlobalHdr[0][6] = '% Victoire';     // Win%
+        GlobalHdr[0][7] = 'Pts Mrq/Match'; // Pts Scored / Match
+        GlobalHdr[0][8] = 'Pts All/Match'; // Pts Allowed / Match
+        shtPT.getRange(3,1,1,9).setValues(GlobalHdr);
+      
+        // Set History Header
+        HstryHdr = shtPT.getRange(6,1,1,9).getValues();
+        HstryHdr[0][0] = 'Événement';      // Event Name
+        HstryHdr[0][1] = '';               // Event Name (merged cell)
+        HstryHdr[0][2] = 'Jeu';            // Game
+        HstryHdr[0][3] = 'Ronde';          // Round
+        HstryHdr[0][4] = 'Résultat';       // Match Result
+        HstryHdr[0][5] = 'Joué contre';    // Played vs
+        HstryHdr[0][6] = '';               // Played vs (merged cell)
+        HstryHdr[0][7] = 'Points Marqués'; // Points Scored
+        HstryHdr[0][8] = 'Points Alloués'; // Points Allowed
+        shtPT.getRange(6,1,1,9).setValues(HstryHdr);
+      }
+    }
+  }
+  // English Version
+  ssEventRecord.setActiveSheet(ssEventRecord.getSheets()[0]);
+  ssEventRecord.getSheetByName('Template').hideSheet();
+}
+
+
+// **********************************************
+// function fcnDelEventRecord()
+//
+// This function deletes all Players/Teams Record Sheets
+// from the Config File
+//
+// **********************************************
+
+function fcnDelEventRecord(){
+  
+  Logger.log("Routine: fcnDelEventRecord");
+
+  // Main Spreadsheet
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // Config Spreadsheet
+  var shtConfig = ss.getSheetByName('Config');
+  
+  // Sheet IDs
+  var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
+  
+  // Template Sheet
+  var ssDel = SpreadsheetApp.openById(shtIDs[13][0]);
+  var shtTemplate = ssDel.getSheetByName('Template').showSheet();
+  
+  // Delete Event Records
+  subDelPlayerSheets(shtIDs[13][0]);
+
+}
+
+// **********************************************
+// function fcnClrEvntRecord()
+//
+// This function clears all data in Player Record Sheets
+//
+// **********************************************
+
+function fcnClrEvntRecord(){
+
+  Logger.log("Routine: fcnClrEvntRecord");
+
+  // Main Spreadsheet
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // Config Spreadsheet
+  var shtConfig = ss.getSheetByName('Config');
+  
+  // Get Player Log Spreadsheet
+  var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
+  var ssEvntPlyrRec = SpreadsheetApp.openById(shtIDs[13][0]);
+  var rngRecord = "A4:I4";
+  var evntPlyrRecNbSheets = ssEvntPlyrRec.getNumSheets();
+  var evntPlyrSheets = ssEvntPlyrRec.getSheets();
+  var evntPlyrRowStart = 7;
+  
+  // Routine Variables
+  var sheet;
+  var shtMaxCol;
+  var shtMaxRow;
+  
+  // Loop through all Players Sheets
+  for(var sht = 0; sht < evntPlyrRecNbSheets; sht++){
+    // Get Sheet
+    sheet = evntPlyrSheets[sht];
+    shtMaxCol = sheet.getMaxColumns();
+    shtMaxRow = sheet.getMaxRows();
+    
+    // Clear Player Record
+    sheet.getRange(rngRecord).clearContent();
+    
+    // Delete all History Rows from Row 8 to Max Row
+    if(shtMaxRow > evntPlyrRowStart) sheet.deleteRows(evntPlyrRowStart+1, shtMaxRow-evntPlyrRowStart);
+    
+    // Clear Player History
+    sheet.getRange(evntPlyrRowStart, 1, 1, shtMaxCol).clearContent();
+  }
+}
+
 
 
 // **********************************************
@@ -618,116 +837,6 @@ function fcnCopyArmyDBtoArmyList(shtConfig,PlyrName){
 }
 
 
-// **********************************************
-// function fcnCrtEvntPlayerRecord()
-//
-// This function generates all Players Records 
-// from the Config File
-//
-// **********************************************
-
-function fcnCrtEvntPlayerRecord(){
-  
-  Logger.log("Routine: fcnCrtEvntPlayerRecord");
-    
-  // Main Spreadsheet
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  
-  // Config Spreadsheet
-  var shtConfig = ss.getSheetByName('Config');
-  var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
-  var cfgColShtPlyr = shtConfig.getRange(4,28,30,1).getValues();
-  
-  // Player Log Spreadsheet
-  var ssPlayerRecord = SpreadsheetApp.openById(shtIDs[13][0]);
-  var shtTemplate = ssPlayerRecord.getSheetByName('Template');
-  var shtArmyListNum;
-  
-  // Column Values
-  var colShtPlyrName = cfgColShtPlyr[2][0];
-  var colShtPlyrLang = cfgColShtPlyr[5][0];
-  
-  // Sheets Values
-  var NbSheet = ssPlayerRecord.getNumSheets();
-  var ssSheets = ssPlayerRecord.getSheets();
-  
-  // Players 
-  var shtPlayers = ss.getSheetByName('Players'); 
-  var NbPlayers = shtPlayers.getRange(2,1).getValue();
-  // Get Players Data
-  // [0]= Player Name, [colShtPlyrLang - colShtPlyrName]= Language Preference 
-  var PlayerData = shtPlayers.getRange(2,colShtPlyrName, NbPlayers+1, colShtPlyrLang-colShtPlyrName+1).getValues();
-  
-  // Routine Variables
-  var shtPlyr;
-  var PlyrName;
-  var SheetName;
-  var GlobalHdr;
-  var HstryHdr;
-  var PlayerFound = 0;
-  
-  // Loops through each player starting from the first
-  for (var plyr = NbPlayers; plyr > 0; plyr--){
-    
-    // Gets the Player Name 
-    PlyrName = PlayerData[plyr][0];
-    // Resets the Player Found flag before searching
-    PlayerFound = 0;
-    // Look if player exists, if yes, skip, if not, create player
-    for(var sheet = NbSheet; sheet > 0; sheet --){
-      SheetName = ssSheets[sheet-1].getSheetName();
-      if (SheetName == PlyrName) PlayerFound = 1;
-    }
-          
-    // If Player is not found, add a tab
-    if(PlayerFound == 0){
-      // Inserts Sheet before Template (Last Sheet in Spreadsheet)
-      ssPlayerRecord.insertSheet(PlyrName, NbSheet-1, {template: shtTemplate});
-      shtPlyr = ssPlayerRecord.getSheetByName(PlyrName);
-      shtPlyr.showSheet();
-      
-      // Updates the number of sheets
-      NbSheet = ssPlayerRecord.getNumSheets();
-      ssSheets = ssPlayerRecord.getSheets();
-      
-      // Opens the new sheet and modify appropriate data (Player Name, Header)
-      shtPlyr.getRange(2,1).setValue(PlyrName);
-      
-      // Translate Header if Player's Language Preference is French
-      if(PlayerData[plyr][colShtPlyrLang - colShtPlyrName] == 'Français'){
-        // Set Global Header
-        GlobalHdr = shtPlyr.getRange(3,1,1,9).getValues();
-        GlobalHdr[0][0] = 'Joué';           // Played
-        GlobalHdr[0][1] = 'Victoires';      // Win
-        GlobalHdr[0][2] = 'Défaites';       // Loss
-        GlobalHdr[0][3] = 'Nulles';         // Tie
-        GlobalHdr[0][4] = 'Pts Marqués';    // Pts Scored
-        GlobalHdr[0][5] = 'Pts Alloués';    // Pts Allowed
-        GlobalHdr[0][6] = '% Victoire';     // Win%
-        GlobalHdr[0][7] = 'Pts Mrq/Match'; // Pts Scored / Match
-        GlobalHdr[0][8] = 'Pts All/Match'; // Pts Allowed / Match
-        shtPlyr.getRange(3,1,1,9).setValues(GlobalHdr);
-      
-        // Set Hstry Header
-        HstryHdr = shtPlyr.getRange(6,1,1,9).getValues();
-        HstryHdr[0][0] = 'Événement';      // Event Name
-        HstryHdr[0][1] = '';               // Event Name (merged cell)
-        HstryHdr[0][2] = 'Jeu';            // Game
-        HstryHdr[0][3] = 'Ronde';          // Round
-        HstryHdr[0][4] = 'Résultat';       // Match Result
-        HstryHdr[0][5] = 'Joué contre';    // Played vs
-        HstryHdr[0][6] = '';               // Played vs (merged cell)
-        HstryHdr[0][7] = 'Points Marqués'; // Points Scored
-        HstryHdr[0][8] = 'Points Alloués'; // Points Allowed
-        shtPlyr.getRange(6,1,1,9).setValues(HstryHdr);
-      }
-    }
-  }
-  // English Version
-  ssPlayerRecord.setActiveSheet(ssPlayerRecord.getSheets()[0]);
-  ssPlayerRecord.getSheetByName('Template').hideSheet();
-
-}
 
 
 // **********************************************
@@ -795,84 +904,5 @@ function fcnDelPlayerArmyList(){
   // Delete Players Army Lists FR
   subDelPlayerSheets(shtIDs[4][0]);
 }
-
-// **********************************************
-// function fcnDelEventPlayerRecord()
-//
-// This function deletes all Player Record Sheets
-// from the Config File
-//
-// **********************************************
-
-function fcnDelEventPlayerRecord(){
-  
-  Logger.log("Routine: fcnDelEventPlayerRecord");
-
-  // Main Spreadsheet
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  
-  // Config Spreadsheet
-  var shtConfig = ss.getSheetByName('Config');
-  
-  // Sheet IDs
-  var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
-  
-  // Template Sheet
-  var ssDel = SpreadsheetApp.openById(shtIDs[13][0]);
-  var shtTemplate = ssDel.getSheetByName('Template').showSheet();
-  
-  // Delete Players Records
-  subDelPlayerSheets(shtIDs[13][0]);
-
-}
-
-// **********************************************
-// function fcnClrEvntPlayerRecord()
-//
-// This function clears all data in Player Record Sheets
-//
-// **********************************************
-
-function fcnClrEvntPlayerRecord(){
-
-  Logger.log("Routine: fcnClrEvntPlayerRecord");
-
-  // Main Spreadsheet
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  
-  // Config Spreadsheet
-  var shtConfig = ss.getSheetByName('Config');
-  
-  // Get Player Log Spreadsheet
-  var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
-  var ssEvntPlyrRec = SpreadsheetApp.openById(shtIDs[13][0]);
-  var rngRecord = "A4:I4";
-  var evntPlyrRecNbSheets = ssEvntPlyrRec.getNumSheets();
-  var evntPlyrSheets = ssEvntPlyrRec.getSheets();
-  var evntPlyrRowStart = 7;
-  
-  // Routine Variables
-  var sheet;
-  var shtMaxCol;
-  var shtMaxRow;
-  
-  // Loop through all Players Sheets
-  for(var sht = 0; sht < evntPlyrRecNbSheets; sht++){
-    // Get Sheet
-    sheet = evntPlyrSheets[sht];
-    shtMaxCol = sheet.getMaxColumns();
-    shtMaxRow = sheet.getMaxRows();
-    
-    // Clear Player Record
-    sheet.getRange(rngRecord).clearContent();
-    
-    // Delete all History Rows from Row 8 to Max Row
-    if(shtMaxRow > evntPlyrRowStart) sheet.deleteRows(evntPlyrRowStart+1, shtMaxRow-evntPlyrRowStart);
-    
-    // Clear Player History
-    sheet.getRange(evntPlyrRowStart, 1, 1, shtMaxCol).clearContent();
-  }
-}
-
 
 

@@ -56,36 +56,50 @@ function onSubmitWG_Demo40K(e) {
 function onOpenWG_Demo40K() {
   
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var evntFormat = ss.getSheetByName("Config").getRange(13,4).getValue();
-  var evntEscalation = ss.getSheetByName("Config").getRange(23,4).getValue();
+  var shtConfig = ss.getSheetByName("Config");
+  var cfgEvntParam = shtConfig.getRange( 4, 4,48,1).getValues();
+  
+  // Event Parameters
+  var evntFormat =      cfgEvntParam[ 9][0];
+  var evntEscalation =  cfgEvntParam[19][0];
+  var evntLogArmyDef =  cfgEvntParam[37][0];
+  var evntLogArmyList = cfgEvntParam[38][0];
     
   var AnalyzeDataMenu  = [];
   AnalyzeDataMenu.push({name: "Analyze New Match Entry", functionName: "fcnProcessMatchWG"});
+  AnalyzeDataMenu.push({name: "Update Standings", functionName: "fcnUpdateStandings"})
   AnalyzeDataMenu.push({name: "Clear Match Results and Entries", functionName:"fcnClearMatchResults"});
   
-  var LeagueMenu = [];
-  LeagueMenu.push({name:"Initialize Event", functionName:"fcnInitializeEvent"});
-  LeagueMenu.push({name:"Update Config ID & Links", functionName:"fcnUpdateLinksIDs"});
-  LeagueMenu.push({name:"Create Match Report Forms", functionName:"fcnCrtMatchReportForm_WG_S"});
-  LeagueMenu.push({name:"Setup Match Response Sheets",functionName:"fcnSetupMatchResponseSht"});
-  if(evntFormat == "Single" || evntFormat == "Team+Players") LeagueMenu.push({name:"Create Player Registration Forms", functionName:"fcnCrtRegstnFormPlyr_WG"});
-  if(evntFormat == "Team" || evntFormat == "Team+Players") LeagueMenu.push({name:"Create Team Registration Forms", functionName:"fcnCrtRegstnFormTeam_WG"});
-  if(evntEscalation == "Enabled") LeagueMenu.push({name:"Create Escalation Bonus Forms", functionName:"fcnCrtEscltForm_WG"});
-  LeagueMenu.push(null);
-  LeagueMenu.push({name:"Create Players Army DBs", functionName:"fcnCrtPlayerArmyDB"});
-  LeagueMenu.push({name:"Create Players Army Lists", functionName:"fcnCrtPlayerArmyList"});
-  LeagueMenu.push({name:"Create Players Records", functionName:"fcnCrtEvntPlayerRecord"});
-  if(evntEscalation == "Enabled") LeagueMenu.push({name:"Create Players Escalation Bonus Sheets", functionName:"fcnCrtPlayerEscltBonus"});
-  LeagueMenu.push(null);
-  LeagueMenu.push({name:"Delete Players Army DBs", functionName:"fcnDelPlayerArmyDB"});
-  LeagueMenu.push({name:"Delete Players Army Lists", functionName:"fcnDelPlayerArmyList"});
-  LeagueMenu.push({name:"Delete Players Records", functionName:"fcnDelEventPlayerRecord"});
-  if(evntEscalation == "Enabled") LeagueMenu.push({name:"Delete Players Escalation Bonus Sheets", functionName:"fcnDelPlayerEscltBonus"});
+  var EventMenu = [];
+  EventMenu.push({name:"Refresh Menus", functionName:"onOpenWG_Demo40K"});
+  EventMenu.push({name:"Initialize Event", functionName:"fcnInitializeEvent"});
+  EventMenu.push({name:"Update Config ID & Links", functionName:"fcnUpdateLinksIDs"});
+  EventMenu.push({name:"Create Match Report Forms", functionName:"fcnCrtMatchReportForm_WG_S"});
+  EventMenu.push({name:"Setup Match Response Sheets",functionName:"fcnSetupMatchResponseSht"});
+  if(evntFormat == "Single" || evntFormat == "Team+Players") EventMenu.push({name:"Create Player Registration Forms", functionName:"fcnCrtRegstnFormPlyr_WG"});
+  if(evntFormat == "Team" || evntFormat == "Team+Players")   EventMenu.push({name:"Create Team Registration Forms", functionName:"fcnCrtRegstnFormTeam_WG"});
+  if(evntEscalation == "Enabled") EventMenu.push({name:"Create Escalation Bonus Forms", functionName:"fcnCrtEscltForm_WG"});
+  EventMenu.push(null);
+  // If Army Lists are used
+  if(evntLogArmyDef == "Enabled" || evntLogArmyList == "Enabled"){
+    EventMenu.push({name:"Create Players Army DBs", functionName:"fcnCrtPlayerArmyDB"});
+    EventMenu.push({name:"Create Players Army Lists", functionName:"fcnCrtPlayerArmyList"});
+  }
+  EventMenu.push({name:"Create Players/Teams Records", functionName:"fcnCrtEvntRecord"});
+  if(evntEscalation == "Enabled") EventMenu.push({name:"Create Players Escalation Bonus Sheets", functionName:"fcnCrtPlayerEscltBonus"});
+  EventMenu.push(null);
+  // If Army Lists are used
+  if(evntLogArmyDef == "Enabled" || evntLogArmyList == "Enabled"){
+    EventMenu.push({name:"Delete Players Army DBs", functionName:"fcnDelPlayerArmyDB"});
+    EventMenu.push({name:"Delete Players Army Lists", functionName:"fcnDelPlayerArmyList"});
+  }
+  EventMenu.push({name:"Delete Players Records", functionName:"fcnDelEventPlayerRecord"});
+  if(evntEscalation == "Enabled") EventMenu.push({name:"Delete Players Escalation Bonus Sheets", functionName:"fcnDelPlayerEscltBonus"});
   
   var TestMenu  = [];
   TestMenu.push({name: "Test Email Log", functionName: "fcnTestEmail"});
   
-  ss.addMenu("Manage League", LeagueMenu);
+  ss.addMenu("Manage Event", EventMenu);
   ss.addMenu("Process Data", AnalyzeDataMenu);
   //ss.addMenu("Test Menu", TestMenu);  
 }
@@ -312,7 +326,7 @@ function onRoundChangeWG_Demo40K(){
     MailApp.sendEmail(GenRecipients, EmailDataFR[0][1],"",{bcc:EmailDataFR[0][0],name:'Turn 1 Gaming League Manager',htmlBody:EmailDataFR[0][2]});
     
     // Execute Ranking function in Standing tab
-    fcnUpdateStandings(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExecData);
+    fcnUpdateStandings();
     
     // Copy all data to League Spreadsheet
     fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, cfgColRndSht, LastRound, 0);

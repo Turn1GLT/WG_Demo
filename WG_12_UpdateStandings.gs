@@ -6,18 +6,17 @@
 //
 // **********************************************
 
-function fcnUpdateStandings(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExecData){
-
-//  function fcnUpdateStandings(){
-//  var ss = SpreadsheetApp.getActiveSpreadsheet();
-//  
-//  // Config Sheet to get options
-//  var shtConfig = ss.getSheetByName('Config');
-//  var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
-//  var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
-//  var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
-//  var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
-//  var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
+function fcnUpdateStandings(){
+  
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // Config Sheet to get options
+  var shtConfig = ss.getSheetByName('Config');
+  var shtIDs = shtConfig.getRange(4,7,20,1).getValues();
+  var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
+  var cfgColRspSht = shtConfig.getRange(4,18,16,1).getValues();
+  var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
+  var cfgExecData  = shtConfig.getRange(4,24,16,1).getValues();
   
   Logger.log("Routine: fcnUpdateStandings");
   
@@ -28,15 +27,19 @@ function fcnUpdateStandings(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExe
   var NbPlayers = shtConfig.getRange('B13').getValue();
     
   // Column Values
-  var colPlyr =     cfgColRndSht[0][0]+1;
-  var colTeam =     cfgColRndSht[1][0]+1;
-  var colMatch =    cfgColRndSht[2][0]+1;
-  var colWins =     cfgColRndSht[3][0]+1;
-  var colLoss =     cfgColRndSht[4][0]+1;
-  var colTie =      cfgColRndSht[5][0]+1;
-  var colPts =      cfgColRndSht[6][0]+1;
-  var colWinPerc =  cfgColRndSht[7][0]+1;
-  var colLocation = cfgColRndSht[8][0]+1;
+  var colRndPlyr =     cfgColRndSht[ 0][0]+1;
+  var colRndStatus =   cfgColRndSht[ 1][0]+1;
+  var colRndMP =       cfgColRndSht[ 2][0]+1;
+  var colRndWins =     cfgColRndSht[ 3][0]+1;
+  var colRndLoss =     cfgColRndSht[ 4][0]+1;
+  var colRndTie =      cfgColRndSht[ 5][0]+1;
+  var colRndPts =      cfgColRndSht[ 6][0]+1;
+  var colRndWinPerc =  cfgColRndSht[ 7][0]+1;
+  var colRndSports =   cfgColRndSht[ 8][0]+1;
+  var colRndLocation = cfgColRndSht[ 9][0]+1;
+  var colRndBalBonus = cfgColRndSht[10][0]+1;
+  var colRndPenLoss =  cfgColRndSht[11][0]+1;
+  var colRndMatchup =  cfgColRndSht[12][0]+1;
     
 //  var shtTest = ss.getSheetByName('Test');
 //  shtTest.getRange(10,2,16,1).setValues(cfgColRndSht);
@@ -78,8 +81,7 @@ function fcnUpdateStandings(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExe
   PlyrInLimArray.length  = InLimit;
   PlyrOutLimArray.length = OutLimit;
   
-  
-  // Create New Ranges with those Arrays
+    // Create New Ranges with those Arrays
   // In Limit Array
   if(InLimit > 0){
     RngStandInLim = shtStand.getRange(6, 2, InLimit, NbColValues);
@@ -96,25 +98,33 @@ function fcnUpdateStandings(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExe
   // Points - Sorts the Standings Values by Points, Wins and Win Percentage
   if(evntRanking == 'Points'){
     // Sort In Limit Range
-    if(InLimit > 0)  RngStandInLim.sort([{column: colPts, ascending: false},{column: colWins, ascending: false},{column: colWinPerc, ascending: false}]);
+    if(InLimit > 0)  RngStandInLim.sort([{column: colRndPts, ascending: false},{column: colRndWins, ascending: false},{column: colRndWinPerc, ascending: false}]);
     // Sort Out Limit Range
-    if(OutLimit > 0) RngStandOutLim.sort([{column: colPts, ascending: false},{column: colWins, ascending: false},{column: colWinPerc, ascending: false}]);
+    if(OutLimit > 0) RngStandOutLim.sort([{column: colRndPts, ascending: false},{column: colRndWins, ascending: false},{column: colRndWinPerc, ascending: false}]);
   }
   // Wins - Sorts the Standings Values by Wins, by Points and by Win Percentage
   if(evntRanking == 'Wins'){
     // Sort In Limit Range
-    if(InLimit > 0)  RngStandInLim.sort([{column: colWins, ascending: false},{column: colPts, ascending: false},{column: colWinPerc, ascending: false}]);
+    if(InLimit > 0)  RngStandInLim.sort([{column: colRndWins, ascending: false},{column: colRndPts, ascending: false},{column: colRndWinPerc, ascending: false}]);
     // Sort Out Limit Range
-    if(OutLimit > 0) RngStandOutLim.sort([{column: colWins, ascending: false},{column: colPts, ascending: false},{column: colWinPerc, ascending: false}]);
+    if(OutLimit > 0) RngStandOutLim.sort([{column: colRndWins, ascending: false},{column: colRndPts, ascending: false},{column: colRndWinPerc, ascending: false}]);
   }
   // Win % - Sorts the Standings Values by Win Percentage and Matches Played
   if(evntRanking == 'Win%'){
     // Sort In Limit Range
-    if(InLimit > 0)  RngStandInLim.sort([{column: colWinPerc, ascending: false},{column: colMatch, ascending: false}]);
+    if(InLimit > 0)  RngStandInLim.sort([{column: colRndWinPerc, ascending: false},{column: colRndMP, ascending: false}]);
     // Sort Out Limit Range
-    if(OutLimit > 0) RngStandOutLim.sort([{column: colWinPerc, ascending: false},{column: colMatch, ascending: false}]);
+    if(OutLimit > 0) RngStandOutLim.sort([{column: colRndWinPerc, ascending: false},{column: colRndMP, ascending: false}]);
+  }
+  // Win % - Sorts the Standings Values by Win Percentage and Matches Played
+  if(evntRanking == 'Sportsmanship'){
+    // Sort In Limit Range
+    if(InLimit > 0)  RngStandInLim.sort([{column: colRndSports, ascending: false}]);
+    // Sort Out Limit Range
+    if(OutLimit > 0) RngStandOutLim.sort([{column: colRndSports, ascending: false}]);
   }
 }
+
 
 // **********************************************
 // function fcnCopyStandingsSheets()
@@ -160,6 +170,7 @@ function fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, cfgColRndSht, RspnR
   var RoundSheet = RspnRoundNum + 1; // Round 1 sheet is sheet[2]
   var RoundNum;
   var NbPlayers = shtConfig.getRange('B13').getValue();
+  var NbTeams =   shtConfig.getRange('B14').getValue();
   
   // Sheet Initialization
   var rngSheetInitEN = shtConfig.getRange(9,9);

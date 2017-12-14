@@ -246,7 +246,7 @@ function fcnProcessMatchWG() {
         Logger.log('--------- Updating Standings ---------');
         Logger.log('Update Standings');
         // Execute Ranking function in Standing tab
-        fcnUpdateStandings(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExecData);
+        fcnUpdateStandings();
         Logger.log('Copy to League Spreadsheets');
         // Copy all data to League Spreadsheet
         fcnCopyStandingsSheets(ss, shtConfig, cfgEvntParam, cfgColRndSht, Status[2], 0);

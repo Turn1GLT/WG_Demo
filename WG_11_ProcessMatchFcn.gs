@@ -77,7 +77,7 @@ function fcnPostMatchResultsWG(ss, shtConfig, ResponseData, MatchingRspnData, Ma
   var colArrRsltBal =      cfgColMatchRslt[10][0]-1;  
   
   // Column Values for Rounds Sheets
-  var colRndBalBonus = cfgColRndSht[ 9][0];
+  var colRndBalBonus = cfgColRndSht[10][0];
   
   var MatchPostedStatus = 0;
   var PT1;
@@ -209,13 +209,20 @@ function fcnPostRoundResultWG(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgC
   
   Logger.log("Routine: fcnPostResultRoundWG");
 
-  // Column Values for Rounds Sheets
+  // Column Values for Rounds Sheets  
   var colRndPlyr =     cfgColRndSht[ 0][0];
   var colRndStatus =   cfgColRndSht[ 1][0];
   var colRndMP =       cfgColRndSht[ 2][0];
-  var colRndLocation = cfgColRndSht[ 8][0];
-  var colRndBalBonus = cfgColRndSht[ 9][0];
-  var colRndMatchup =  cfgColRndSht[11][0];
+  var colRndWins =     cfgColRndSht[ 3][0];
+  var colRndLoss =     cfgColRndSht[ 4][0];
+  var colRndTie =      cfgColRndSht[ 5][0];
+  var colRndPts =      cfgColRndSht[ 6][0];
+  var colRndWinPerc =  cfgColRndSht[ 7][0];
+  var colRndSports =   cfgColRndSht[ 8][0];
+  var colRndLocation = cfgColRndSht[ 9][0];
+  var colRndBalBonus = cfgColRndSht[10][0];
+  var colRndPenLoss =  cfgColRndSht[11][0];
+  var colRndMatchup =  cfgColRndSht[12][0];
   
   // Column Values for Data in Match Result Sheet
   var colArrRsltRound =    cfgColMatchRslt[ 3][0]-1;

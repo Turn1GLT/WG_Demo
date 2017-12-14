@@ -35,7 +35,9 @@ function fcnRegistrationPlyrWG(shtResponse, RowResponse){
   var exeMemberLink = cfgExecData[7][0];
   
   // Event Parameters
-  var evntEscalation = cfgEvntParam[19][0];
+  var evntEscalation =  cfgEvntParam[19][0];
+  var evntLogArmyDef =  cfgEvntParam[37][0];
+  var evntLogArmyList = cfgEvntParam[38][0];
   
   // Match Report Form IDs
   var MatchFormIdEN = shtIDs[7][0];
@@ -95,21 +97,22 @@ function fcnRegistrationPlyrWG(shtResponse, RowResponse){
       subUpdatePlayerMember(shtConfig, shtPlayers, Member);
     }
     
-    
     // Create Player Army DB
-    fcnCrtPlayerArmyDB();
-    Logger.log("Army Database Generated");
+    if(evntLogArmyDef == "Enabled" || evntLogArmyList == "Enabled"){
+      fcnCrtPlayerArmyDB();
+      Logger.log("Army Database Generated");
     
 //    // Process Player Army List to Army DB 
 //    fcnProcessArmyList(shtIDs, shtConfig, shtPlayers, shtResponse, RegRspnVal, Member);
 //    Logger.log("Army Data Processed to Army DB");
-    
-    // Create Player Army Lists (Player Access)
-    fcnCrtPlayerArmyList();
-    Logger.log("Army List Generated");  
+      
+      // Create Player Army Lists (Player Access)
+      fcnCrtPlayerArmyList();
+      Logger.log("Army List Generated");  
+    }
     
     // Create Player Event Record (Player Access)
-    fcnCrtEvntPlayerRecord();
+    fcnCrtEvntRecord();
     Logger.log("Player Record Generated");  
     
     // If Escalation is Enabled, Create Player Escalation Bonus sheet 
@@ -124,7 +127,7 @@ function fcnRegistrationPlyrWG(shtResponse, RowResponse){
     }
     
     // Execute Ranking function in Standing tab
-    fcnUpdateStandings(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExecData);
+    fcnUpdateStandings();
       Logger.log("Overall Standings Updated");  
     
     // Copy all data to Standing League Spreadsheet
@@ -433,7 +436,9 @@ function fcnRegistrationTeamWG(shtResponse, RowResponse){
   var exeMemberLink = cfgExecData[7][0];
   
   // Event Parameters
-  var evntEscalation = cfgEvntParam[19][0];
+  var evntEscalation =  cfgEvntParam[19][0];
+  var evntLogArmyDef =  cfgEvntParam[37][0];
+  var evntLogArmyList = cfgEvntParam[38][0];
   
   // Match Report Form IDs
   var MatchFormIdEN = shtIDs[7][0];
@@ -484,7 +489,7 @@ function fcnRegistrationTeamWG(shtResponse, RowResponse){
   if(teamName != "") {
     
     // Create Team Event Record (Player Access)
-    fcnCrtTeamRecord();
+    //fcnCrtEvntRecord();
     Logger.log("Team Record Generated");  
     
     // If Escalation is Enabled, Create Player Escalation Bonus sheet 
@@ -499,7 +504,7 @@ function fcnRegistrationTeamWG(shtResponse, RowResponse){
     }
     
     // Execute Ranking function in Standing tab
-    fcnUpdateStandings(ss, cfgEvntParam, cfgColRspSht, cfgColRndSht, cfgExecData);
+    fcnUpdateStandings();
       Logger.log("Overall Standings Updated");  
     
     // Copy all data to Standing League Spreadsheet
@@ -625,7 +630,7 @@ function fcnAddTeamWG(shtIDs, shtConfig, shtTeams, RegRspnVal, cfgEvntParam, cfg
     if(colRspTeamPlyr != "") {
       colTblTeamPlyr[x] = cfgRegFormCnstrVal[x+8][2];
       TeamPlyr[x] = RegRspnVal[0][colTblTeamPlyr[x]-1];
-      Logger.log("x= %s, Player: %s",TeamPlyr[x])
+      Logger.log("x= %s, Player: %s",x, TeamPlyr[x])
     }
   }
   

@@ -502,15 +502,19 @@ function subPlayerWithMost(shtConfig, PlayerMostData, NbPlayers, shtRound){
   var cfgColRndSht = shtConfig.getRange(4,21,16,1).getValues();
   
   // Column Values
-  var colPlyr = cfgColRndSht[0][0];
-  var colTeam = cfgColRndSht[1][0];
-  var colWin = cfgColRndSht[3][0];
-  var colLos = cfgColRndSht[4][0];
-  var colTie = cfgColRndSht[5][0];
-  var colPoints = cfgColRndSht[6][0];
-  var colWinPerc = cfgColRndSht[7][0];
-  var colLocation = cfgColRndSht[8][0];
-  var colBalanceBonus = cfgColRndSht[10][0];
+  var colRndPlyr =     cfgColRndSht[ 0][0];
+  var colRndStatus =   cfgColRndSht[ 1][0];
+  var colRndMP =       cfgColRndSht[ 2][0];
+  var colRndWins =     cfgColRndSht[ 3][0];
+  var colRndLoss =     cfgColRndSht[ 4][0];
+  var colRndTie =      cfgColRndSht[ 5][0];
+  var colRndPts =      cfgColRndSht[ 6][0];
+  var colRndWinPerc =  cfgColRndSht[ 7][0];
+  var colRndSports =   cfgColRndSht[ 8][0];
+  var colRndLocation = cfgColRndSht[ 9][0];
+  var colRndBalBonus = cfgColRndSht[10][0];
+  var colRndPenLoss =  cfgColRndSht[11][0];
+  var colRndMatchup =  cfgColRndSht[12][0];
   
   var colParam;
   var Rank = 0;
@@ -524,11 +528,12 @@ function subPlayerWithMost(shtConfig, PlayerMostData, NbPlayers, shtRound){
   
   // Select Appropriate Column according to Param
   switch (PlayerMostData[0][0]){
-    case 'Wins'    : colParam = colWin-1; break;
-    case 'Loss'    : colParam = colLos-1; break;
-    case 'Points'  : colParam = colPoints-1; break;
-    case 'Win%'    : colParam = colWinPerc-1; break;
-    case 'Store'   : colParam = colLocation-1; break;
+    case 'Wins'    : colParam = colRndWins-1; break;
+    case 'Loss'    : colParam = colRndLoss-1; break;
+    case 'Points'  : colParam = colRndPts-1; break;
+    case 'Win%'    : colParam = colRndWinPerc-1; break;
+    case 'Sports'  : colParam = colRndSports-1; break;
+    case 'Store'   : colParam = colRndLocation-1; break;
   }
   
   // Loop through Selected Column to find the Player with the Most...
