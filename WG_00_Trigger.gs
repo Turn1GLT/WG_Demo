@@ -74,7 +74,7 @@ function onOpenWG_Demo40K() {
   EventMenu.push({name:"Refresh Menus", functionName:"onOpenWG_Demo40K"});
   EventMenu.push({name:"Initialize Event", functionName:"fcnInitializeEvent"});
   EventMenu.push({name:"Update Config ID & Links", functionName:"fcnUpdateLinksIDs"});
-  EventMenu.push({name:"Create Match Report Forms", functionName:"fcnCrtMatchReportForm_WG_S"});
+  EventMenu.push({name:"Create Match Report Forms", functionName:"fcnCrtMatchReportForm_WG"});
   EventMenu.push({name:"Setup Match Response Sheets",functionName:"fcnSetupMatchResponseSht"});
   if(evntFormat == "Single" || evntFormat == "Team+Players") EventMenu.push({name:"Create Player Registration Forms", functionName:"fcnCrtRegstnFormPlyr_WG"});
   if(evntFormat == "Team" || evntFormat == "Team+Players")   EventMenu.push({name:"Create Team Registration Forms", functionName:"fcnCrtRegstnFormTeam_WG"});

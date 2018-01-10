@@ -219,41 +219,41 @@ function subGetEmailRecipients(shtPlayers, Language){
 
 
 // **********************************************
-// function subCrtPlayerContact()
+// function subCrtContact()
 //
-// This function creates the Player Contact in Gmail Account
+// This function creates the Contact in Gmail Account
 //
 // **********************************************
 
-function subCrtPlayerContact(PlyrContactInfo){
+function subCrtContact(ContactInfo){
   
-  //  PlyrContactInfo[0]= First Name
-  //  PlyrContactInfo[1]= Last Name
-  //  PlyrContactInfo[2]= Email
-  //  PlyrContactInfo[3]= Language
+  //  ContactInfo[0]= First Name
+  //  ContactInfo[1]= Last Name
+  //  ContactInfo[2]= Email
+  //  ContactInfo[3]= Language
 
-  Logger.log("Routine: subCrtPlayerContact");
-  Logger.log("Player: %s, %s",PlyrContactInfo[1], PlyrContactInfo[0]);
+  Logger.log("Routine: subCrtContact");
+  Logger.log("Player: %s, %s",ContactInfo[1], ContactInfo[0]);
     
-  var Status = 'Player Contact Not Created';
+  var Status = 'Contact Not Created';
       
   // Check if player is already a contact
-  var PlayerContact = ContactsApp.getContact(PlyrContactInfo[2]);
+  var Contact = ContactsApp.getContact(ContactInfo[2]);
   
   // If Player is a contact, update First and Last Name
-  if(PlayerContact != null){
-    PlayerContact.setGivenName(PlyrContactInfo[0]);
-    PlayerContact.setFamilyName(PlyrContactInfo[1]);
-    Logger.log('Contact Updated: %s',PlayerContact.getFullName())
-    Status = 'Player Contact Updated';
+  if(Contact != null){
+    Contact.setGivenName(ContactInfo[0]);
+    Contact.setFamilyName(ContactInfo[1]);
+    Logger.log('Contact Updated: %s',Contact.getFullName())
+    Status = 'Contact Updated';
   }
   
   // If Player is not a contact, create it
   else { 
-    PlayerContact = ContactsApp.createContact(PlyrContactInfo[0], PlyrContactInfo[1], PlyrContactInfo[2]);
+    Contact = ContactsApp.createContact(ContactInfo[0], ContactInfo[1], ContactInfo[2]);
     // Get Player Contact
-    PlayerContact = ContactsApp.getContact(PlyrContactInfo[2]);
-    if(PlayerContact != null) Status = 'Player Contact Created';
+    Contact = ContactsApp.getContact(ContactInfo[2]);
+    if(Contact != null) Status = 'Contact Created';
   }
   
   Logger.log(Status);
@@ -263,18 +263,18 @@ function subCrtPlayerContact(PlyrContactInfo){
     
 
 // **********************************************
-// function subAddPlayerContactGroup()
+// function subAddToContactGroup()
 //
-// This function adds a player to the Contact Group   
+// This function adds a Contact to the Contact Group   
 //
 // **********************************************
 
-function subAddPlayerContactGroup(shtConfig, PlyrContactInfo){
+function subAddToContactGroup(shtConfig, ContactInfo){
 
-  //  PlyrContactInfo[0]= First Name
-  //  PlyrContactInfo[1]= Last Name
-  //  PlyrContactInfo[2]= Email
-  //  PlyrContactInfo[3]= Language
+  //  ContactInfo[0]= First Name
+  //  ContactInfo[1]= Last Name
+  //  ContactInfo[2]= Email
+  //  ContactInfo[3]= Language
   
   // Event Parameters
   var cfgEvntParam = shtConfig.getRange(4,4,48,1).getValues();
@@ -289,34 +289,34 @@ function subAddPlayerContactGroup(shtConfig, PlyrContactInfo){
   var ContactGroupEN;
   var ContactGroupFR;
     
-  Logger.log("Routine: subAddPlayerContactGroup");
-  Logger.log("Player: %s, %s",PlyrContactInfo[1],PlyrContactInfo[0]);
+  Logger.log("Routine: subAddToContactGroup");
+  Logger.log("Player: %s, %s",ContactInfo[1],ContactInfo[0]);
     
   // Get Player Contact
-  var PlayerContact = ContactsApp.getContact(PlyrContactInfo[2]);
+  var PlayerContact = ContactsApp.getContact(ContactInfo[2]);
   
   if(PlayerContact != null){
-    if(PlyrContactInfo[3] == "English"){
+    if(ContactInfo[3] == "English"){
       // Get Contact Group
       ContactGroupEN = ContactsApp.getContactGroup(evntCntctGrpNameEN);
       // If Contact Group does not exist, create it
       if(ContactGroupEN == null) ContactGroupEN = ContactsApp.createContactGroup(evntCntctGrpNameEN);
       // Add Contact to Contact Group
       ContactGroupEN.addContact(PlayerContact);
-      Status = 'Player added to Contact Group';
+      Status = 'Contact added to Contact Group';
     }
-    if(PlyrContactInfo[3] == "Français"){
+    if(ContactInfo[3] == "Français"){
       // Get Contact Group
       ContactGroupFR = ContactsApp.getContactGroup(evntCntctGrpNameFR);
       // If Contact Group does not exist, create it
       if(ContactGroupFR == null) ContactGroupFR = ContactsApp.createContactGroup(evntCntctGrpNameFR);
       // Add Contact to Contact Group
       ContactGroupFR.addContact(PlayerContact);
-      Status = 'Player added to Contact Group';
+      Status = 'Contact added to Contact Group';
     }
   }
   
-  if(Status != 'Player added to Contact Group') Status = 'Contact Group Error'
+  if(Status != 'Contact added to Contact Group') Status = 'Contact Group Error'
   
   Logger.log(Status);
   
@@ -571,25 +571,32 @@ function subPlayerWithMost(shtConfig, PlayerMostData, NbPlayers, shtRound){
 //
 // **********************************************
 
-function subCrtMatchRepPlyrList(shtConfig, shtPlayers, cfgEvntParam){
+function subCrtMatchRepComptrList(shtConfig, shtCompetitors, cfgEvntParam){
 
-  // Number of Players
-  var NbPlyr = shtConfig.getRange(13,2).getValue();
+  // Event Format (Singles, Team, Team+Players)
+  var evntFormat = cfgEvntParam[9][0];
+  
+  // Number of Competitors
+  var NbComptr;
   
   // Routine Variables
-  var Players;
-  var PlayerList;
+  var Competitors;
+  var CompetitorList;
   
+  // Define the Number of Competitors
+  if(evntFormat == "Single") NbComptr = shtConfig.getRange(13,2).getValue();
+  if(evntFormat == "Team")   NbComptr = shtConfig.getRange(14,2).getValue();
+    
   // Transfers Players Double Array to Single Array
-  if (NbPlyr > 0){
-    Players = shtPlayers.getRange(3,2,NbPlyr,1).getValues();
-    PlayerList = new Array(NbPlyr);
-    for(var i = 0; i < NbPlyr; i++){
-      PlayerList[i] = Players[i][0];
+  if (NbComptr > 0){
+    Competitors = shtCompetitors.getRange(3,2,NbComptr,1).getValues();
+    CompetitorList = new Array(NbComptr);
+    for(var i = 0; i < NbComptr; i++){
+      CompetitorList[i] = Competitors[i][0];
     }
   }
    
-  return PlayerList;
+  return CompetitorList;
 }
     
 // **********************************************

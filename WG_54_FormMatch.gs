@@ -6,9 +6,9 @@
 //
 // **********************************************
 
-function fcnCrtMatchReportForm_WG_S() {
+function fcnCrtMatchReportForm_WG() {
   
-  Logger.log("Routine: fcnCrtMatchReportForm_WG_S");
+  Logger.log("Routine: fcnCrtMatchReportForm_WG");
   
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var shtConfig =  ss.getSheetByName('Config');
@@ -42,7 +42,7 @@ function fcnCrtMatchReportForm_WG_S() {
   var evntMatchPtsMin =    0;
   var evntPtsGainedMatch = cfgEvntParam[27][0];
   var evntMatchPtsMax =    cfgEvntParam[28][0];
-  var evntTiePossible =    cfgEvntParam[31][0];
+  var evntTiePossible =    cfgEvntParam[32][0];
   
   var RoundNum = shtConfig.getRange(7,2).getValue();
   var RoundArray = new Array(1); RoundArray[0] = RoundNum;
@@ -160,8 +160,8 @@ function fcnCrtMatchReportForm_WG_S() {
     }
   }
 
-  // CREATE UNIT VALIDATIONS
-  // Number of Models in Unit
+  // CREATE VALIDATIONS
+  // Points Validation
   var PointsValidationEN = FormApp.createTextValidation()
   .setHelpText("Enter a number between " + evntMatchPtsMin + " and " + evntMatchPtsMax)
   .requireNumberBetween(evntMatchPtsMin, evntMatchPtsMax)

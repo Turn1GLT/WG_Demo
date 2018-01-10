@@ -226,7 +226,7 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
   
   var ArmyDefOffset = 2;
   
-  var PlyrContactInfo = new Array(4); // [0]= First Name, [1]= Last Name, [2]= Email Address, [3]= Language Preference
+  var ContactInfo = new Array(4); // [0]= First Name, [1]= Last Name, [2]= Email Address, [3]= Language Preference
   
   // Email
   PlyrEmail = RegRspnVal[0][colRspEmail-1];
@@ -353,27 +353,27 @@ function fcnAddPlayerWG(shtIDs, shtConfig, shtPlayers, RegRspnVal, cfgEvntParam,
     Logger.log("-----------------------------");
 
     // Set Player Contact Info 
-    PlyrContactInfo[0]= PlyrFrstName;
-    PlyrContactInfo[1]= PlyrLastName;
-    PlyrContactInfo[2]= PlyrEmail;
-    PlyrContactInfo[3]= PlyrLanguage;
+    ContactInfo[0]= PlyrFrstName;
+    ContactInfo[1]= PlyrLastName;
+    ContactInfo[2]= PlyrEmail;
+    ContactInfo[3]= PlyrLanguage;
     
     // Add Player Info to Contact List and Contact Group
-    var PlyrCntctStatus = subCrtPlayerContact(PlyrContactInfo);
-    if(PlyrCntctStatus == "Player Contact Created" || PlyrCntctStatus == "Player Contact Updated") {
+    var CntctStatus = subCrtContact(ContactInfo);
+    if(CntctStatus == "Contact Created" || CntctStatus == "Contact Updated") {
       // Set Contact Created in Players Sheet
       shtPlayers.getRange(NextPlayerRow, colTblEmailContact).setValue("X");
       shtExtPlayers.getRange(NextPlayerRow, colTblEmailContact).setValue("X");
       // Add to Contact Group   
-      var CntctGrpStatus = subAddPlayerContactGroup(shtConfig, PlyrContactInfo);
-      if(CntctGrpStatus == "Player added to Contact Group") {
+      var CntctGrpStatus = subAddToContactGroup(shtConfig, ContactInfo);
+      if(CntctGrpStatus == "Contact added to Contact Group") {
         // Set Added in Contact Group in Players Sheet
         shtPlayers.getRange(NextPlayerRow, colTblEmailContactGrp).setValue("X");
         shtExtPlayers.getRange(NextPlayerRow, colTblEmailContactGrp).setValue("X");
       }
-      else Logger.log("Player Added to Contact Group");
+      else Logger.log("Contact Added to Contact Group");
     }
-    else Logger.log("Player Contact NOT Created");
+    else Logger.log("Contact NOT Created");
  
   }
   
@@ -499,7 +499,7 @@ function fcnRegistrationTeamWG(shtResponse, RowResponse){
     }
     // Add Team to Match Report Forms
     if(MatchFormIdEN != "" && MatchFormIdFR != ""){
-      fcnModifyReportFormWG(shtConfig, shtIDs, shtPlayers, cfgEvntParam, evntEscalation);
+      fcnModifyReportFormWG(shtConfig, shtIDs, shtTeams, cfgEvntParam, evntEscalation);
       Logger.log("Match Report Form Updated");  
     }
     
@@ -602,7 +602,7 @@ function fcnAddTeamWG(shtIDs, shtConfig, shtTeams, RegRspnVal, cfgEvntParam, cfg
   
   var ArmyDefOffset = 2;
   
-  var TeamCntctInfo = new Array(4); // [0]= First Name, [1]= Last Name, [2]= Email Address, [3]= Language Preference
+  var CntctInfo = new Array(4); // [0]= First Name, [1]= Last Name, [2]= Email Address, [3]= Language Preference
   
   // Email
   TeamCntctEmail = RegRspnVal[0][colRspCntctEmail-1];
@@ -627,10 +627,11 @@ function fcnAddTeamWG(shtIDs, shtConfig, shtTeams, RegRspnVal, cfgEvntParam, cfg
   for(var x = 0; x < evntNbPlyrTeam; x++){
     // Copies colTeamPx Value (colTeamP1 starts at [8][1] )
     colRspTeamPlyr = cfgRegFormCnstrVal[x+8][1];
+    // If Value in Response Column is not null
     if(colRspTeamPlyr != "") {
+      // Gets Team Table Column Value
       colTblTeamPlyr[x] = cfgRegFormCnstrVal[x+8][2];
-      TeamPlyr[x] = RegRspnVal[0][colTblTeamPlyr[x]-1];
-      Logger.log("x= %s, Player: %s",x, TeamPlyr[x])
+      TeamPlyr[x] = RegRspnVal[0][colRspTeamPlyr-1];
     }
   }
   
@@ -649,23 +650,23 @@ function fcnAddTeamWG(shtIDs, shtConfig, shtTeams, RegRspnVal, cfgEvntParam, cfg
     // Team Contact Full Name
     shtTeams.getRange(NextTeamRow, colTblCntctFullName).setValue(TeamCntctFullName);
     shtExtTeams.getRange(NextTeamRow, colTblCntctFullName).setValue(TeamCntctFullName);
-    Logger.log("Team Name: %s",TeamCntctFullName);
+    Logger.log("Team Contact Name: %s",TeamCntctFullName);
     
     // Team Contact Email Address
     shtTeams.getRange(NextTeamRow, colTblCntctEmail).setValue(TeamCntctEmail);
     shtExtTeams.getRange(NextTeamRow, colTblCntctEmail).setValue(TeamCntctEmail);
-    Logger.log("Email Address: %s",TeamCntctEmail);
+    Logger.log("Team Contact Email Address: %s",TeamCntctEmail);
     
     // Team Contact Language
     shtTeams.getRange(NextTeamRow, colTblCntctLanguage).setValue(TeamCntctLanguage);
     shtExtTeams.getRange(NextTeamRow, colTblCntctLanguage).setValue(TeamCntctLanguage);
-    Logger.log("Language: %s",TeamCntctLanguage); 
+    Logger.log("Team Contact Language: %s",TeamCntctLanguage); 
     
     // Team Contact Phone Number
     if(TeamCntctPhone != ""){
       shtTeams.getRange(NextTeamRow, colTblCntctPhone).setValue(TeamCntctPhone);
       shtExtTeams.getRange(NextTeamRow, colTblCntctPhone).setValue(TeamCntctPhone);
-      Logger.log("Phone: %s",TeamCntctPhone); 
+      Logger.log("Team Contact Phone: %s",TeamCntctPhone); 
     }
     Logger.log("-----------------------------");
 	
@@ -679,33 +680,33 @@ function fcnAddTeamWG(shtIDs, shtConfig, shtTeams, RegRspnVal, cfgEvntParam, cfg
       if(TeamPlyr[x] != "") {
         shtTeams.getRange(NextTeamRow, colTblTeamPlyr[x]).setValue(TeamPlyr[x]);
         shtExtTeams.getRange(NextTeamRow, colTblTeamPlyr[x]).setValue(TeamPlyr[x]);
-        Logger.log("Team Player %s: %s",x,TeamPlyr[x]);  
+        Logger.log("Team Player %s: %s",x+1,TeamPlyr[x]);  
       }
     }
     Logger.log("-----------------------------");
     
     // Set Team Contact Info 
-    TeamCntctInfo[0]= TeamCntctFrstName;
-    TeamCntctInfo[1]= TeamCntctLastName;
-    TeamCntctInfo[2]= TeamCntctEmail;
-    TeamCntctInfo[3]= TeamCntctLanguage;
+    CntctInfo[0]= TeamCntctFrstName;
+    CntctInfo[1]= TeamCntctLastName;
+    CntctInfo[2]= TeamCntctEmail;
+    CntctInfo[3]= TeamCntctLanguage;
     
     // Add Team Info to Contact List and Contact Group
-    var TeamCntctStatus = subCrtPlayerContact(TeamCntctInfo);
-    if(TeamCntctStatus == "Team Contact Created" || TeamCntctStatus == "Team Contact Updated") {
+    var CntctStatus = subCrtContact(CntctInfo);
+    if(CntctStatus == "Contact Created" || CntctStatus == "Contact Updated") {
       // Set Contact Created in Teams Sheet
       shtTeams.getRange(NextTeamRow, colTblContact).setValue("X");
       shtExtTeams.getRange(NextTeamRow, colTblContact).setValue("X");
       // Add to Contact Group   
-      var TeamCntctGrpStatus = subAddPlayerContactGroup(shtConfig, TeamCntctInfo);
-      if(TeamCntctGrpStatus == "Team added to Contact Group") {
+      var CntctGrpStatus = subAddToContactGroup(shtConfig, CntctInfo);
+      if(CntctGrpStatus == "Contact added to Contact Group") {
         // Set Added in Contact Group in Teams Sheet
         shtTeams.getRange(NextTeamRow, colTblContactGrp).setValue("X");
         shtExtTeams.getRange(NextTeamRow, colTblContactGrp).setValue("X");
       }
-      else Logger.log("Team Added to Contact Group");
+      else Logger.log("Contact Added to Contact Group");
     }
-    else Logger.log("Team Contact NOT Created");
+    else Logger.log("Contact NOT Created");
  
   }
   
@@ -776,7 +777,7 @@ function fcnProcessArmyList(shtIDs, shtConfig, shtPlayers, shtResponse, RegRspnV
 //
 // **********************************************
 
-function fcnModifyReportFormWG(shtConfig, shtIDs, shtPlayers, cfgEvntParam, evntEscalation) {
+function fcnModifyReportFormWG(shtConfig, shtIDs, shtCompetitors, cfgEvntParam, evntEscalation) {
 
   var MatchFormEN = FormApp.openById(shtIDs[7][0]);
   var MatchFormItemEN = MatchFormEN.getItems();
@@ -786,24 +787,23 @@ function fcnModifyReportFormWG(shtConfig, shtIDs, shtPlayers, cfgEvntParam, evnt
  
   // Function Variables
   var ItemTitle;
-  var ItemPlayerListEN;
-  var ItemPlayerListFR;
-  var ItemPlayerChoice;
+  var ItemComptrListEN;
+  var ItemComptrListFR;
   
-  var PlayerList = subCrtMatchRepPlyrList(shtConfig, shtPlayers, cfgEvntParam);
+  var CompetitorList = subCrtMatchRepComptrList(shtConfig, shtCompetitors, cfgEvntParam);
   
   // Loops in Match Form to Find Players List
   for(var item = 0; item < MatchFormNbItem; item++){
     ItemTitle = MatchFormItemEN[item].getTitle();
-    if(ItemTitle == "Winning Player" || ItemTitle == "Losing Player"){
+    if(ItemTitle == "Winning Player" || ItemTitle == "Losing Player" || ItemTitle == "Winning Team" || ItemTitle == "Losing Team"){
       
       // Get the List Item from the Match Report Form
-      ItemPlayerListEN = MatchFormItemEN[item].asListItem();
-      ItemPlayerListFR = MatchFormItemFR[item].asListItem();
+      ItemComptrListEN = MatchFormItemEN[item].asListItem();
+      ItemComptrListFR = MatchFormItemFR[item].asListItem();
       
       // Set the Player List to the Match Report Forms
-      ItemPlayerListEN.setChoiceValues(PlayerList);
-      ItemPlayerListFR.setChoiceValues(PlayerList);
+      ItemComptrListEN.setChoiceValues(CompetitorList);
+      ItemComptrListFR.setChoiceValues(CompetitorList);
     }
   }
   
@@ -821,12 +821,12 @@ function fcnModifyReportFormWG(shtConfig, shtIDs, shtPlayers, cfgEvntParam, evnt
       if(ItemTitle == "Player"){
         
         // Get the List Item from the Round Booster Report Form
-        ItemPlayerListEN = EscltBonusFormItemEN[item].asListItem();
-        ItemPlayerListFR = EscltBonusFormItemFR[item].asListItem();
+        ItemComptrListEN = EscltBonusFormItemEN[item].asListItem();
+        ItemComptrListFR = EscltBonusFormItemFR[item].asListItem();
 
         // Set the Player List to the Round Booster Report Forms
-        ItemPlayerListEN.setChoiceValues(PlayerList);
-        ItemPlayerListFR.setChoiceValues(PlayerList);
+        ItemComptrListEN.setChoiceValues(CompetitorList);
+        ItemComptrListFR.setChoiceValues(CompetitorList);
       }
     }
   }
